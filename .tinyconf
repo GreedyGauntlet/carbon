@@ -1,0 +1,14 @@
+PROJECT src
+MAIN main.c
+LIB vendor/raylib/lib
+INCLUDE vendor/raylib/include
+INCLUDE vendor/EasyC/include
+LINUX LINK glfw
+LINUX LINK GLU
+LINUX LINK GL
+LINUX LINK pthread
+LINUX LINK m
+LINUX LINK :linux_amdx64_libraylib.a
+SOURCE vendor/EasyC/include
+FLAG audit
+FLAG fast
