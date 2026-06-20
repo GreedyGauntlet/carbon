@@ -1,6 +1,10 @@
-#include <stdio.h>
+#include "core/entrypoint.h"
+#include "core/application.h"
 
 int main(int argc, char *argv[]) {
-    printf("Hello World\n");
+    PreloadExtensions();
+    InitializeApplication();
+    RunApplication();
+    DestroyApplication();
     return 0;
 }
