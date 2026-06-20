@@ -9,6 +9,8 @@
 #define DECLARE(name) struct name; typedef struct name name;
 
 #define INVALID_ENTITY 0
+#define MAX_NAME_LEN 256
+#define MAX_LINE_WIDTH 2048
 
 typedef uint64_t EntityID;
 
@@ -25,6 +27,9 @@ DECLARE(Entity);
 DECLARE(System);
 DECLARE(ComponentStorage);
 DECLARE(Registry);
+DECLARE(Panel);
+DECLARE(UI);
+DECLARE(Popup);
 
 typedef void (*WorldDrawFunction)(World* world);
 typedef void (*WorldUpdateFunction)(World* world, float dt);
@@ -42,10 +47,18 @@ typedef void (*SystemMouseScrollEventFunction)(System* system, Vector2 offset);
 typedef void (*SystemMouseMoveFunction)(System* system, Vector2 position);
 typedef void (*SystemCleanFunction)(System* system);
 
+typedef void (*PanelFunction)(float width, float height);
+typedef void (*CleanFunction)(void);
+typedef void (*SelectFunction)(size_t index);
+typedef size_t (*DropdownSelectFunction)(void* data, size_t index);
+
+typedef int (*PopupFunction)(size_t, size_t, size_t, size_t);
+
 DECLARE_HASHMAP(int, BOOL, KeyMap);
 DECLARE_HASHMAP(EntityID, size_t, EntityMap);
 DECLARE_HASHMAP(size_t, ComponentStorage*, StorageMap);
 DECLARE_ARRLIST(EntityID);
+DECLARE_ARRLIST(Panel);
 DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);

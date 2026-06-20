@@ -1,6 +1,10 @@
 #include "application.h"
 #include "data/definitions.h"
+#include "data/colors.h"
+#include "data/input.h"
+#include "data/fonts.h"
 #include "core/scene.h"
+#include "ui/panels/graph.h"
 
 static Application g_application = { 0 };
 static size_t g_resolution_width = 1600;
@@ -13,6 +17,12 @@ void InitializeApplication() {
 	SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(g_resolution_width, g_resolution_height, g_application.name == NULL ? "Carbon Engine" : g_application.name);
+    InitializeInput();
+    InitializeColors();
+    InitializeFonts();
+    g_application.ui = GenerateUI();
+    ARRLIST_Panel_add(&(g_application.ui->panels), GenerateGraphPanel());
+    SetPrimaryUI(g_application.ui);
 }
 
 void SetApplicationName(const char* name) {
@@ -30,6 +40,7 @@ void SetApplicationSize(const size_t width, const size_t height) {
 
 void RunApplication() {
     while(!WindowShouldClose()) {
+        UpdateUI(g_application.ui);
         if (g_application.scenes.size > 0) {
             Scene* scene = g_application.scenes.data[g_application.current];
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
@@ -124,13 +135,16 @@ void RunApplication() {
                         scene->worlds.data[i]->systems.data[j]->update(scene->worlds.data[i]->systems.data[j], GetFrameTime());
             }
         }
+        PreRenderUI(g_application.ui);
         BeginDrawing();
         ClearBackground(RAYWHITE);
+        DrawUI(g_application.ui, 0, 0, GetScreenWidth(), GetScreenHeight());
         EndDrawing();
     }
 }
 
 void DestroyApplication() {
+    DestroyUI(g_application.ui);
     CloseWindow();
     HASHMAP_KeyMap_clear(&g_application.keymap);
     ARRLIST_int_clear(&g_application.keylist);
