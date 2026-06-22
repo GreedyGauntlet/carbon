@@ -45,6 +45,8 @@ static RenderTexture2D g_ui_scratch_target = { 0 };
 static RenderTexture2D g_current_ui_target = { 0 };
 static BOOL g_scratch_target_in_use = FALSE;
 static BOOL g_ui_disabled = FALSE;
+static UI* g_fullscreen_ui = NULL;
+static UI* g_current_prendered_ui = NULL;
 
 #define LINE_HEIGHT 20
 #define NAMEBAR_HEIGHT 25
@@ -307,7 +309,7 @@ static void HandleTextInput() {
 void DrawUI(UI* ui, size_t x, size_t y, size_t w, size_t h) {
     if (InputButtonUp(IK_MOUSELEFT)) g_active_ui_element = NULL;
     if (UIRequestsBlockInput()) BlockInputs();
-    DrawUI_helper(ui, x, y, w, h);
+    DrawUI_helper(g_fullscreen_ui ? g_fullscreen_ui : ui, x, y, w, h);
     if (g_popup != NULL) {
         UnblockInputs();
         DrawPopup(x, y, w, h);
@@ -322,26 +324,28 @@ void DrawUI(UI* ui, size_t x, size_t y, size_t w, size_t h) {
     }
 }
 
-static void PreRenderUI_helper(UI* ui) {
+static void PreRenderUI_helper(UI* ui, BOOL full) {
     EZ_ASSERT((ui->left && ui->right) || (!ui->left && !ui->right), "UI branches must be split evenly");
     if (ui->left && ui->right) {
-        PreRenderUI_helper((UI*)(ui->left));
-        PreRenderUI_helper((UI*)(ui->right));
+        PreRenderUI_helper((UI*)(ui->left), full);
+        PreRenderUI_helper((UI*)(ui->right), full);
     } else if (IsRenderTextureValid(ui->panels.data[ui->selected].texture) && ui->panels.data[ui->selected].draw) {
         g_ui_cursor = (Vector2){ 10, 5 };
-        g_ui_position = (Vector2){ ui->x , ui->y };
+        g_ui_position = full ? (Vector2){ 0, 0 } : (Vector2){ ui->x , ui->y };
+        g_current_prendered_ui = ui;
         if (ui->panels.data[ui->selected].name[0] != 0 && !ui->panels.data[ui->selected].flush) g_ui_position.y += NAMEBAR_HEIGHT;
         BeginTextureMode(ui->panels.data[ui->selected].texture);
         g_current_ui_target = ui->panels.data[ui->selected].texture;
         ClearBackground((Color){0, 0, 0, 0});
-        ui->panels.data[ui->selected].draw(ui->w, ui->h);
+        ui->panels.data[ui->selected].draw(full ? (size_t)GetScreenWidth() : ui->w, full ? (size_t)GetScreenHeight() : ui->h);
         EndTextureMode();
     }
 }
 
 void PreRenderUI(UI* ui) {
     if (UIRequestsBlockInput()) BlockInputs();
-    PreRenderUI_helper(ui);
+    if (g_fullscreen_ui) PreRenderUI_helper(g_fullscreen_ui, TRUE);
+    else PreRenderUI_helper(ui, FALSE);
     UnblockInputs();
 }
 
@@ -813,4 +817,9 @@ void PausePreRender() {
 
 void ResumePreRender() {
     if (g_current_ui_target.id != 0) BeginTextureMode(g_current_ui_target);
+}
+
+void ToggleFullScreen() {
+    if (g_current_prendered_ui == g_fullscreen_ui) g_fullscreen_ui = NULL;
+    else g_fullscreen_ui = g_current_prendered_ui;
 }

@@ -21,4 +21,10 @@ void SetScene(const char* name);
 
 Scene* GetActiveScene();
 
+BOOL Playing();
+
+void Pause();
+
+void Resume();
+
 #endif

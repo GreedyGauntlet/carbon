@@ -31,6 +31,9 @@ DECLARE(Panel);
 DECLARE(UI);
 DECLARE(Popup);
 
+typedef void (*SceneInitializeFunction)(Scene* scene);
+typedef void (*SceneCleanFunction)(Scene* scene);
+
 typedef void (*WorldDrawFunction)(World* world);
 typedef void (*WorldUpdateFunction)(World* world, float dt);
 typedef void (*WorldKeyEventFunction)(World* world, int key, InputAction action);

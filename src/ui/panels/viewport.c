@@ -1,7 +1,9 @@
 #include "viewport.h"
 #include "core/application.h"
+#include "core/scene.h"
 #include "data/definitions.h"
 #include "data/colors.h"
+#include "data/input.h"
 #include "ui/ui.h"
 
 static Vector2 g_viewport_slice = { 0 };
@@ -15,6 +17,11 @@ static BOOL DrawFullscreenButton(float x, float y) {
     DrawRectangle(x + offset + ((25 - (offset * 2)) / 2.0f) - (inner / 2.0f), y + offset, inner + 1, 25 - (offset * 2), MappedColor(PANEL_NB_COLOR));
     DrawRectangle(x + offset, y + offset + ((25 - (offset * 2)) / 2.0f) - (inner / 2.0f), 25 - (offset * 2), inner + 1, MappedColor(PANEL_NB_COLOR));
     DrawRectangle(x + offset + ((25 - (offset * 2)) / 2.0f) - (thickness / 2.0f), y + offset + ((25 - (offset * 2)) / 2.0f) - (thickness / 2.0f), thickness, thickness, MappedColor(PANEL_NB_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -35,6 +42,11 @@ static BOOL DrawSettingsButton(float x, float y) {
         (Rectangle){ x + 12.0f, y + 12.0f, cogw, cogl },
         (Vector2){ cogw / 2.0f, cogl / 2.0f }, 120.0f, MappedColor(UI_BTN_COLOR));
     DrawCircle(x + 12.5f, y + 12.5f, inner, MappedColor(PANEL_NB_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -50,6 +62,11 @@ static BOOL DrawResetButton(float x, float y) {
         (Vector2){ x + 18.75f - (tri / 2.0f), y + 12.5f },
         (Vector2){ x + 18.75f + (tri / 2.0f), y + 12.5f },
         MappedColor(UI_BTN_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -61,6 +78,11 @@ static BOOL DrawPlayButton(float x, float y) {
         (Vector2){ x + 12.5f - (width / 2.0f), y + 12.5f + (height / 2.0f) },
         (Vector2){ x + 12.5f + (width / 2.0f), y + 12.5f },
         MappedColor(UI_BTN_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -70,6 +92,11 @@ static BOOL DrawPauseButton(float x, float y) {
     const float space = 3.0f;
     DrawRectangle(x + 12.5f - (space / 2.0f) - width, y + 12.5f - (height / 2.0f), width, height, MappedColor(UI_BTN_COLOR));
     DrawRectangle(x + 12.5f + (space / 2.0f), y + 12.5f - (height / 2.0f), width, height, MappedColor(UI_BTN_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -87,6 +114,11 @@ static BOOL DrawFastForwardButton(float x, float y) {
         (Vector2){ x + 12.5f - (width / 2.0f) + (space / 2.0f), y + 12.5f + (height / 2.0f) },
         (Vector2){ x + 12.5f + (width / 2.0f) + (space / 2.0f), y + 12.5f },
         MappedColor(UI_BTN_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -101,6 +133,11 @@ static BOOL DrawStepButton(float x, float y) {
         (Vector2){ x + 12.5f + (width / 2.0f) + space, y + 12.5f },
         MappedColor(UI_BTN_COLOR));
     DrawRectangle(x + 12.5f - (width / 2.0f) - bar, y + 12.5f - (height / 2.0f), bar, height, MappedColor(UI_BTN_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
 }
 
@@ -115,10 +152,14 @@ static void DrawViewportPanel(float width, float height) {
     ClearBackground(BLACK);
     DrawRectangle(0, 0, width, 25, MappedColor(PANEL_NB_COLOR));
     DrawRectangle(0, 25, width, 1, MappedColor(PANEL_DIVIDER_COLOR));
-    DrawFullscreenButton(0, 0);
+    if (DrawFullscreenButton(0, 0)) ToggleFullScreen();
     DrawSettingsButton(width - 25, 0);
-    DrawResetButton(width / 2.0f - 50, 0);
-    DrawPlayButton(width / 2.0f - 25, 0);
+    if (DrawResetButton(width / 2.0f - 50, 0) && GetActiveScene()) ResetScene(GetActiveScene());
+    if (Playing()) {
+        if (DrawPauseButton(width / 2.0f - 25, 0)) Pause();
+    } else {
+        if (DrawPlayButton(width / 2.0f - 25, 0)) Resume();
+    }
     DrawFastForwardButton(width / 2.0f + 0, 0);
     DrawStepButton(width / 2.0f + 25, 0);
     Scene* scene = GetActiveScene();

@@ -20,6 +20,8 @@ struct Application {
 struct Scene {
     const char* name;
     ARRLIST_WorldPtr worlds;
+    SceneInitializeFunction init;
+    SceneCleanFunction clean;
 };
 
 struct World {

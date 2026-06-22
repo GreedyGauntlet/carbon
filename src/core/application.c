@@ -17,6 +17,7 @@ static Application g_application = { 0 };
 static size_t g_resolution_width = 1600;
 static size_t g_resolution_height = 900;
 static Vector2 g_windowsize = { -1.0f, -1.0f };
+static BOOL g_playing = FALSE;
 
 static void ApplicationResized() {
     if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
@@ -77,7 +78,7 @@ void RunApplication() {
     while(!WindowShouldClose()) {
         ApplicationResized();
         UpdateUI(g_application.ui);
-        if (g_application.scenes.size > 0) {
+        if (g_application.scenes.size > 0 && g_playing) {
             Scene* scene = g_application.scenes.data[g_application.current];
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
                 int mb = IsMouseButtonPressed(MOUSE_BUTTON_LEFT) ? MOUSE_BUTTON_LEFT : MOUSE_BUTTON_RIGHT;
@@ -285,4 +286,16 @@ void SetScene(const char* name) {
 Scene* GetActiveScene() {
     if (g_application.scenes.size > 0) return g_application.scenes.data[g_application.current];
     return NULL;
+}
+
+BOOL Playing() {
+    return g_playing;
+}
+
+void Pause() {
+    g_playing = FALSE;
+}
+
+void Resume() {
+    g_playing = TRUE;
 }

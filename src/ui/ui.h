@@ -117,4 +117,6 @@ void PausePreRender();
 
 void ResumePreRender();
 
+void ToggleFullScreen();
+
 #endif

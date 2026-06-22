@@ -8,12 +8,10 @@
 #include "ecs/components.h"
 #include <easylogger.h>
 static void Move(const Entity e, float dt){
-    EntityPosition(e)->x += dt * 50.0f;
+    EntityPosition(e)->x += dt * 100.0f;
     EntityPosition(e)->y += dt * 50.0f;
 }
-static void DevTest() {
-    Scene* scene = GenerateScene("Development");
-    AddScene(scene);
+static void InitDev(Scene* scene) {
     World* world = GenerateWorld(NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     AddWorld(scene, world);
     Entity e = CreateEntity(world);
@@ -32,6 +30,13 @@ static void DevTest() {
     e = CreateEntityP(world, 100, 50, 0.5f);
     AddComponent(e, TextComponent, "TEST TEST TEST", TEXT_ALIGN_CENTER, TL_ANCHOR, (Color){255,255,255,255}, 20.0f);
     EZ_INFO("Success?");
+}
+static void CleanDev(Scene* scene) {
+    WipeScene(scene);
+}
+static void DevTest() {
+    Scene* scene = GenerateScene("Development", InitDev, CleanDev);
+    AddScene(scene);
 }
 
 void DefaultEntryPoint() {}
