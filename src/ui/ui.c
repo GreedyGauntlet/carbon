@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "ui/popup.h"
+#include "ui/panels/viewport.h"
 #include "data/definitions.h"
 #include "data/colors.h"
 #include "data/input.h"
@@ -174,7 +175,7 @@ static void DrawUI_helper(UI* ui, size_t x, size_t y, size_t w, size_t h) {
     } else {
         DrawRectangle(x, y, w, h, MappedColor(PANEL_BG_COLOR));
         float namebar_dif = ui->panels.data[ui->selected].name[0] != 0 && !ui->panels.data[ui->selected].flush ? NAMEBAR_HEIGHT : 0.0f;
-        //if (strcmp(ui->panels.data[ui->selected].name, "Viewport") == 0) SetViewportRec((Rectangle){ x, y + namebar_dif, w, h - namebar_dif }); TODO: come back to this when implmenting viewport
+        if (strcmp(ui->panels.data[ui->selected].name, "Viewport") == 0) SetViewportSlice((Vector2){ w, h - 26 });
         if (namebar_dif > 0.0) {
             DrawRectangle(x, y, w, NAMEBAR_HEIGHT, MappedColor(PANEL_NB_COLOR));
 			int xplus = x;
@@ -804,4 +805,12 @@ void DisableUI() {
 
 void EnableUI() {
     g_ui_disabled = FALSE;
+}
+
+void PausePreRender() {
+    if (g_current_ui_target.id != 0) EndTextureMode();
+}
+
+void ResumePreRender() {
+    if (g_current_ui_target.id != 0) BeginTextureMode(g_current_ui_target);
 }

@@ -24,4 +24,8 @@ void DestroyWorld(World* world);
 
 ARRLIST_EntityID* WorldGetEntities(World* world, size_t type);
 
+void DestroyEntity(Entity e);
+
+void FlushRemovalQueue(World* world);
+
 #endif

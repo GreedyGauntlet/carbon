@@ -4,6 +4,7 @@
 #include "ecs/components.h"
 #include "ecs/registry.h"
 #include "systems/system.h"
+#include "systems/draw.h"
 
 World* GenerateWorld(
         WorldDrawFunction draw,
@@ -22,6 +23,7 @@ World* GenerateWorld(
     world->mousemove = mousemove;
     world->clean = clean;
     world->registry = GenerateRegistry();
+    AddSystem(world, GenerateDrawSystem());
     return world;
 }
 
@@ -43,6 +45,14 @@ void AddSystem(World* world, System* system) {
 }
 
 void DestroyWorld(World* world) {
+    ARRLIST_EntityID* scripts = GetEntities(world, ScriptComponent);
+    if (scripts) {
+        for (size_t i = 0; i < scripts->size; i++) {
+            Entity e = (Entity){ scripts->data[i], world };
+            ScriptComponent* sc = GetComponent(e, ScriptComponent);
+            if (sc->clean) sc->clean(e);
+        }
+    }
     if (world->clean) world->clean(world);
     for (size_t i = 0; i < world->systems.size; i++)
         DestroySystem(world->systems.data[i]);
@@ -53,4 +63,18 @@ void DestroyWorld(World* world) {
 
 ARRLIST_EntityID* WorldGetEntities(World* world, size_t type) {
     return RegistryGetEntities(world->registry, type);
+}
+
+void DestroyEntity(Entity e) {
+    ARRLIST_EntityID_add(&(e.context->removal), e.id);
+    if (HasComponent(e, ScriptComponent)) {
+        ScriptComponent* sc = GetComponent(e, ScriptComponent);
+        if (sc->clean) sc->clean(e);
+    }
+}
+
+void FlushRemovalQueue(World* world) {
+    for (size_t i = 0; i < world->removal.size; i++)
+        RegistryEraseEntity(world->registry, world->removal.data[i]);
+    ARRLIST_EntityID_clear(&(world->removal));
 }

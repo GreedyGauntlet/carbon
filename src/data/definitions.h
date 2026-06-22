@@ -32,11 +32,7 @@ struct World {
     WorldCleanFunction clean;
     Registry* registry;
     ARRLIST_SystemPtr systems;
-};
-
-struct Entity {
-    EntityID id;
-    World* context;
+    ARRLIST_EntityID removal;
 };
 
 struct System {

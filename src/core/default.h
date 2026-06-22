@@ -5,6 +5,4 @@
 
 void DefaultEntryPoint();
 
-REGISTER_PRELOAD(DefaultEntryPoint);
-
 #endif

@@ -19,4 +19,6 @@ void AddScene(Scene* scene);
 
 void SetScene(const char* name);
 
+Scene* GetActiveScene();
+
 #endif

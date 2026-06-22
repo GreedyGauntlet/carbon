@@ -4,11 +4,28 @@
 #include "data/input.h"
 #include "data/fonts.h"
 #include "core/scene.h"
+#include "core/world.h"
+#include "ui/panels/viewport.h"
+#include "ui/panels/console.h"
+#include "ui/panels/scenes.h"
 #include "ui/panels/graph.h"
+#include "ui/panels/edit.h"
+#include "ecs/components.h"
+#include "ecs/entity.h"
 
 static Application g_application = { 0 };
 static size_t g_resolution_width = 1600;
 static size_t g_resolution_height = 900;
+static Vector2 g_windowsize = { -1.0f, -1.0f };
+
+static void ApplicationResized() {
+    if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
+        (g_windowsize.x != GetScreenWidth() || g_windowsize.y != GetScreenHeight())) {
+        g_windowsize.x = GetScreenWidth();
+        g_windowsize.y = GetScreenHeight();
+        ResizeUI(g_application.ui);
+    }
+}
 
 void InitializeApplication() {
     #ifndef PROD_BUILD
@@ -21,7 +38,25 @@ void InitializeApplication() {
     InitializeColors();
     InitializeFonts();
     g_application.ui = GenerateUI();
-    ARRLIST_Panel_add(&(g_application.ui->panels), GenerateGraphPanel());
+    g_application.ui->left = GenerateUI();
+    g_application.ui->right = GenerateUI();
+    ((UI*)g_application.ui->right)->right = GenerateUI();
+    ((UI*)g_application.ui->right)->left = GenerateUI();
+    ((UI*)g_application.ui->right)->divide = GetScreenHeight() - 560;
+    ((UI*)g_application.ui->right)->vertical = TRUE;
+    ((UI*)g_application.ui->left)->right = GenerateUI();
+    ((UI*)g_application.ui->left)->left = GenerateUI();
+    ((UI*)((UI*)g_application.ui->left)->left)->left = GenerateUI();
+    ((UI*)((UI*)g_application.ui->left)->left)->right = GenerateUI();
+    ((UI*)((UI*)g_application.ui->left)->left)->divide = GetScreenHeight() - 420;
+    ((UI*)((UI*)g_application.ui->left)->left)->vertical = TRUE;
+    ((UI*)g_application.ui->left)->divide = 350;
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), GenerateEditPanel());
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), GenerateConsolePanel());
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), GenerateViewportPanel());
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateScenesPanel());
+    ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateGraphPanel());
+    g_application.ui->divide = 1250;
     SetPrimaryUI(g_application.ui);
 }
 
@@ -40,6 +75,7 @@ void SetApplicationSize(const size_t width, const size_t height) {
 
 void RunApplication() {
     while(!WindowShouldClose()) {
+        ApplicationResized();
         UpdateUI(g_application.ui);
         if (g_application.scenes.size > 0) {
             Scene* scene = g_application.scenes.data[g_application.current];
@@ -51,6 +87,14 @@ void RunApplication() {
                     for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                         if (scene->worlds.data[i]->systems.data[j]->mousebutton)
                             scene->worlds.data[i]->systems.data[j]->mousebutton(scene->worlds.data[i]->systems.data[j], mb, INPUTPRESS);
+                    ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
+                    if (scripts) {
+                        for (size_t j = 0; j < scripts->size; j++) {
+                            Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
+                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                            if (sc->mousebutton) sc->mousebutton(e, mb, INPUTPRESS);
+                        }
+                    }
                 }
             }
             if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) || IsMouseButtonReleased(MOUSE_BUTTON_RIGHT)) {
@@ -61,6 +105,14 @@ void RunApplication() {
                     for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                         if (scene->worlds.data[i]->systems.data[j]->mousebutton)
                             scene->worlds.data[i]->systems.data[j]->mousebutton(scene->worlds.data[i]->systems.data[j], mb, INPUTRELEASE);
+                    ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
+                    if (scripts) {
+                        for (size_t j = 0; j < scripts->size; j++) {
+                            Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
+                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                            if (sc->mousebutton) sc->mousebutton(e, mb, INPUTRELEASE);
+                        }
+                    }
                 }
             }
             if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
@@ -71,6 +123,14 @@ void RunApplication() {
                     for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                         if (scene->worlds.data[i]->systems.data[j]->mousebutton)
                             scene->worlds.data[i]->systems.data[j]->mousebutton(scene->worlds.data[i]->systems.data[j], mb, INPUTDOWN);
+                    ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
+                    if (scripts) {
+                        for (size_t j = 0; j < scripts->size; j++) {
+                            Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
+                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                            if (sc->mousebutton) sc->mousebutton(e, mb, INPUTDOWN);
+                        }
+                    }
                 }
             }
             Vector2 mdelt = GetMouseDelta();
@@ -82,6 +142,14 @@ void RunApplication() {
                     for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                         if (scene->worlds.data[i]->systems.data[j]->mousemove)
                             scene->worlds.data[i]->systems.data[j]->mousemove(scene->worlds.data[i]->systems.data[j], GetMousePosition());
+                    ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
+                    if (scripts) {
+                        for (size_t j = 0; j < scripts->size; j++) {
+                            Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
+                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                            if (sc->mousemove) sc->mousemove(e, GetMousePosition());
+                        }
+                    }
                 }
             }
             if (mscroll.x != 0 || mscroll.y != 0) {
@@ -91,6 +159,14 @@ void RunApplication() {
                     for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                         if (scene->worlds.data[i]->systems.data[j]->mousescroll)
                             scene->worlds.data[i]->systems.data[j]->mousescroll(scene->worlds.data[i]->systems.data[j], mscroll);
+                    ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
+                    if (scripts) {
+                        for (size_t j = 0; j < scripts->size; j++) {
+                            Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
+                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                            if (sc->mousescroll) sc->mousescroll(e, mscroll);
+                        }
+                    }
                 }
             }
             int kcode = 0;
@@ -115,6 +191,19 @@ void RunApplication() {
                                 if (IsKeyPressed(g_application.keylist.data[i]))
                                     scene->worlds.data[j]->systems.data[k]->key(scene->worlds.data[j]->systems.data[k], g_application.keylist.data[j], INPUTPRESS);
                             }
+                        ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[j], ScriptComponent);
+                        if (scripts) {
+                            for (size_t k = 0; k < scripts->size; k++) {
+                                Entity e = (Entity){ scripts->data[k], scene->worlds.data[j] };
+                                ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                                if (sc->key) {
+                                    sc->key(e, g_application.keylist.data[i], INPUTDOWN);
+                                    if (IsKeyPressed(g_application.keylist.data[i]))
+                                        sc->key(e, g_application.keylist.data[i], INPUTPRESS);
+                                }
+
+                            }
+                        }
                     }
                 } else if (IsKeyReleased(g_application.keylist.data[i])) {
                     for (size_t j = 0; j < scene->worlds.size; j++) {
@@ -124,6 +213,14 @@ void RunApplication() {
                         for (size_t k = 0; k < scene->worlds.data[j]->systems.size; k++)
                             if (scene->worlds.data[j]->systems.data[k]->key)
                                 scene->worlds.data[j]->systems.data[k]->key(scene->worlds.data[j]->systems.data[k], g_application.keylist.data[j], INPUTRELEASE);
+                        ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[j], ScriptComponent);
+                        if (scripts) {
+                            for (size_t k = 0; k < scripts->size; k++) {
+                                Entity e = (Entity){ scripts->data[k], scene->worlds.data[j] };
+                                ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                                if (sc->key) sc->key(e, g_application.keylist.data[i], INPUTRELEASE);
+                            }
+                        }
                     }
                 }
             }
@@ -133,6 +230,15 @@ void RunApplication() {
                 for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                     if (scene->worlds.data[i]->systems.data[j]->update)
                         scene->worlds.data[i]->systems.data[j]->update(scene->worlds.data[i]->systems.data[j], GetFrameTime());
+                ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
+                if (scripts) {
+                    for (size_t j = 0; j < scripts->size; j++) {
+                        Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
+                        ScriptComponent* sc = GetComponent(e, ScriptComponent);
+                        if (!sc->initialized && sc->init) { sc->init(e); sc->initialized = TRUE; }
+                        if (sc->update) sc->update(e, GetFrameTime());
+                    }
+                }
             }
         }
         PreRenderUI(g_application.ui);
@@ -140,6 +246,12 @@ void RunApplication() {
         ClearBackground(RAYWHITE);
         DrawUI(g_application.ui, 0, 0, GetScreenWidth(), GetScreenHeight());
         EndDrawing();
+        for (size_t i = 0; i < g_application.scenes.size; i++) {
+            Scene* s = g_application.scenes.data[i];
+            for (size_t j = 0; j < s->worlds.size; j++) {
+                FlushRemovalQueue(s->worlds.data[j]);
+            }
+        }
     }
 }
 
@@ -168,4 +280,9 @@ void SetScene(const char* name) {
         }
     }
     EZ_ASSERT(FALSE, "Unable to set the scene \"%s\" that does not exist", name);
+}
+
+Scene* GetActiveScene() {
+    if (g_application.scenes.size > 0) return g_application.scenes.data[g_application.current];
+    return NULL;
 }

@@ -3,9 +3,19 @@
 
 typedef void (*EntryPoint)(void);
 
-#define REGISTER_PRELOAD(func) __attribute__((section("preloads"))) \
-    EntryPoint ext = func;
+#define CONCAT_IMPL(a, b) a##b
+#define CONCAT(a, b) CONCAT_IMPL(a, b)
+
+#define REGISTER_PRELOAD(func) \
+    __attribute__((section("preloads"))) \
+    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+
+#define REGISTER_POSTLOAD(func) \
+    __attribute__((section("postloads"))) \
+    EntryPoint CONCAT(ext_, __COUNTER__) = func;
 
 void PreloadExtensions();
+
+void PostloadExtensions();
 
 #endif

@@ -8,6 +8,11 @@
 #define HasComponent(entity, component) EntityHasComponent(entity, (size_t)component##_TYPE)
 #define RemoveComponent(entity, component) EntityRemoveComponent(entity, (size_t)component##_TYPE)
 
+struct Entity {
+    EntityID id;
+    World* context;
+};
+
 void* EntityAddComponent(const Entity e, size_t type, void* component, size_t size);
 
 void* EntityGetComponent(const Entity e, size_t type);

@@ -4,6 +4,7 @@
 int main(int argc, char *argv[]) {
     PreloadExtensions();
     InitializeApplication();
+    PostloadExtensions();
     RunApplication();
     DestroyApplication();
     return 0;

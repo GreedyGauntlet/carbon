@@ -113,4 +113,8 @@ void DisableUI();
 
 void EnableUI();
 
+void PausePreRender();
+
+void ResumePreRender();
+
 #endif

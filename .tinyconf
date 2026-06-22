@@ -11,4 +11,3 @@ LINUX LINK m
 LINUX LINK :linux_amdx64_libraylib.a
 SOURCE vendor/EasyC/include
 FLAG audit
-FLAG fast
