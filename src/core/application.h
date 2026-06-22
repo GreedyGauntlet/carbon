@@ -27,4 +27,10 @@ void Pause();
 
 void Resume();
 
+BOOL IsFast();
+
+void ToggleFastForward();
+
+void Step(size_t steps);
+
 #endif

@@ -119,4 +119,6 @@ void ResumePreRender();
 
 void ToggleFullScreen();
 
+BOOL IsFullScreen();
+
 #endif

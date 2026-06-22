@@ -5,6 +5,7 @@
 #include "data/fonts.h"
 #include "core/scene.h"
 #include "core/world.h"
+#include "core/config.h"
 #include "ui/panels/viewport.h"
 #include "ui/panels/console.h"
 #include "ui/panels/scenes.h"
@@ -18,6 +19,8 @@ static size_t g_resolution_width = 1600;
 static size_t g_resolution_height = 900;
 static Vector2 g_windowsize = { -1.0f, -1.0f };
 static BOOL g_playing = FALSE;
+static BOOL g_fastforward = FALSE;
+static size_t g_steps = 0;
 
 static void ApplicationResized() {
     if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
@@ -78,6 +81,10 @@ void RunApplication() {
     while(!WindowShouldClose()) {
         ApplicationResized();
         UpdateUI(g_application.ui);
+        if (g_playing && g_steps > 0) {
+            g_steps--;
+            if (g_steps == 0) Pause();
+        }
         if (g_application.scenes.size > 0 && g_playing) {
             Scene* scene = g_application.scenes.data[g_application.current];
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
@@ -227,17 +234,17 @@ void RunApplication() {
             }
             for (size_t i = 0; i < scene->worlds.size; i++) {
                 if (scene->worlds.data[i]->update)
-                    scene->worlds.data[i]->update(scene->worlds.data[i], GetFrameTime());
+                    scene->worlds.data[i]->update(scene->worlds.data[i], GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
                 for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                     if (scene->worlds.data[i]->systems.data[j]->update)
-                        scene->worlds.data[i]->systems.data[j]->update(scene->worlds.data[i]->systems.data[j], GetFrameTime());
+                        scene->worlds.data[i]->systems.data[j]->update(scene->worlds.data[i]->systems.data[j], GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
                 ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
                 if (scripts) {
                     for (size_t j = 0; j < scripts->size; j++) {
                         Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
                         ScriptComponent* sc = GetComponent(e, ScriptComponent);
                         if (!sc->initialized && sc->init) { sc->init(e); sc->initialized = TRUE; }
-                        if (sc->update) sc->update(e, GetFrameTime());
+                        if (sc->update) sc->update(e, GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
                     }
                 }
             }
@@ -294,8 +301,22 @@ BOOL Playing() {
 
 void Pause() {
     g_playing = FALSE;
+    g_steps = 0;
 }
 
 void Resume() {
     g_playing = TRUE;
+}
+
+BOOL IsFast() {
+    return g_fastforward;
+}
+
+void ToggleFastForward() {
+    g_fastforward = !g_fastforward;
+}
+
+void Step(size_t steps) {
+    Resume();
+    g_steps = steps + 1;
 }

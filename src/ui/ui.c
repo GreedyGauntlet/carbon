@@ -823,3 +823,7 @@ void ToggleFullScreen() {
     if (g_current_prendered_ui == g_fullscreen_ui) g_fullscreen_ui = NULL;
     else g_fullscreen_ui = g_current_prendered_ui;
 }
+
+BOOL IsFullScreen() {
+    return g_fullscreen_ui != NULL;
+}
