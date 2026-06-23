@@ -56,7 +56,6 @@ EXPOSE_COMPONENT(TransformComponent) {
 EXPOSE_COMPONENT(TextComponent) {
     char* text;
     TextAlignment alignment;
-    ViewportAnchor anchor;
     Color color;
     float size;
 };
@@ -83,6 +82,10 @@ EXPOSE_COMPONENT(ScriptComponent) {
     ScriptComponentMouseScrollEventFunction mousescroll;
     void* arbitrary;
     BOOL initialized;
+};
+
+EXPOSE_COMPONENT(AnchorComponent) {
+    ViewportAnchor anchor;
 };
 
 #endif

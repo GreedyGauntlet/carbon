@@ -1,5 +1,7 @@
 #include "input.h"
+#include "ui/panels/viewport.h"
 #include <easylogger.h>
+#include <raymath.h>
 
 static InputMap g_input_map = { 0 };
 
@@ -11,6 +13,8 @@ DEFINE_INPUT_KEY(IK_LEFT, KEY_LEFT, "Left");
 DEFINE_INPUT_KEY(IK_RIGHT, KEY_RIGHT, "Right");
 DEFINE_INPUT_KEY(IK_UP, KEY_UP, "Up");
 DEFINE_INPUT_KEY(IK_DOWN, KEY_DOWN, "Down");
+DEFINE_INPUT_KEY(IK_ZOOM, KEY_Z, "Z");
+DEFINE_INPUT_KEY(IK_TOGGLE_HINTS, KEY_H, "H");
 END_INPUT_KEY_DEFINITIONS()
 
 START_INPUT_BUTTON_DEFINITIONS()
@@ -88,4 +92,8 @@ BOOL InputButtonUp(const int btn) {
     EZ_ASSERT(btn < NUM_BUTTON_INPUTS, "Invalid button code");
     if (g_input_map.blocked) return FALSE;
     return IsMouseButtonUp(g_input_map.btnmap[btn]);
+}
+
+Vector2 InputMousePosition() {
+    return Vector2Subtract(GetMousePosition(), GetViewportPosition());
 }

@@ -27,8 +27,9 @@ static void InitDev(Scene* scene) {
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
     AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){0,0,255,255});
-    e = CreateEntityP(world, 100, 50, 0.5f);
-    AddComponent(e, TextComponent, "TEST TEST TEST", TEXT_ALIGN_CENTER, TL_ANCHOR, (Color){255,255,255,255}, 20.0f);
+    e = CreateEntityP(world, 0, 0, 0.5f);
+    AddComponent(e, TextComponent, "TEST TEST TEST", TEXT_ALIGN_CENTER, (Color){255,255,255,255}, 20.0f);
+    AddComponent(e, AnchorComponent, CENTER_ANCHOR);
     EZ_INFO("Success?");
 }
 static void CleanDev(Scene* scene) {

@@ -30,6 +30,8 @@ DECLARE_INPUT_KEY(IK_LEFT);
 DECLARE_INPUT_KEY(IK_RIGHT);
 DECLARE_INPUT_KEY(IK_UP);
 DECLARE_INPUT_KEY(IK_DOWN);
+DECLARE_INPUT_KEY(IK_ZOOM);
+DECLARE_INPUT_KEY(IK_TOGGLE_HINTS);
 END_INPUT_KEY_DECLARATIONS();
 
 START_INPUT_BUTTON_DECLARATIONS();
@@ -71,5 +73,7 @@ BOOL InputButtonReleased(const int btn);
 BOOL InputButtonDown(const int btn);
 
 BOOL InputButtonUp(const int btn);
+
+Vector2 InputMousePosition();
 
 #endif

@@ -1,15 +1,21 @@
 #include "viewport.h"
 #include "core/application.h"
 #include "core/scene.h"
+#include "core/binds.h"
 #include "core/config.h"
 #include "data/definitions.h"
 #include "data/colors.h"
 #include "data/input.h"
 #include "ui/ui.h"
 #include "ui/popup.h"
+#include <raymath.h>
 
 static Vector2 g_viewport_slice = { 0 };
+static Vector2 g_viewport_position = { 0 };
 static RenderTexture2D g_viewport_target = { 0 };
+static BOOL g_rfocused = FALSE;
+static BOOL g_zfocused = FALSE;
+static BOOL g_show_hints = FALSE;
 
 static BOOL DrawFullscreenButton(float x, float y) {
     const float offset = 5.0f;
@@ -25,6 +31,10 @@ static BOOL DrawFullscreenButton(float x, float y) {
         GetMouseY() > y + UIGetPosition().y &&
         GetMouseY() < y + UIGetPosition().y + 25) return TRUE;
     return FALSE;
+}
+
+static void ToggleHints() {
+    g_show_hints = !g_show_hints;
 }
 
 static BOOL DrawSettingsButton(float x, float y) {
@@ -186,10 +196,39 @@ static void DrawViewportPanel(float width, float height) {
         (Vector2){ 0, 0 },
         0.0f,
         (Color){ 255, 255, 255, 255 });
+    if (g_show_hints && HoveredPanel() && strcmp(HoveredPanel(), "Viewport") == 0) {
+        DrawCurrentBinds(0, 26);
+    }
+}
+
+static void PanCamera() {
+    if (g_rfocused) {
+        Vector2 delta = GetMouseDelta();
+        Config()->camera.target = Vector2Add(Vector2Scale(delta, -1.0f / Config()->camera.zoom), Config()->camera.target);
+    }
+}
+
+static void ZoomCamera() {
+    if (g_zfocused) {
+        Vector2 delta = GetMouseDelta();
+        Vector2 focus = Vector2Add(GetViewportPosition(), Vector2Scale(GetViewportSlice(), 0.5f));
+        Vector2 prev = Vector2Subtract(Vector2Subtract(GetMousePosition(), delta), focus);
+        Vector2 current = Vector2Subtract(GetMousePosition(), focus);
+        Config()->camera.zoom += Vector2Length(delta) * 0.01f * (Vector2Length(prev) > Vector2Length(current) ? -1.0f : 1.0f);
+        if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
+    }
 }
 
 static void UpdateViewportPanel(float width, float height) {
     ResizeViewportTarget();
+    const char* hpanel = HoveredPanel();
+    BOOL hovered = hpanel && strcmp(hpanel, "Viewport") == 0;
+    if (InputButtonReleased(IK_MOUSERIGHT)) g_rfocused = FALSE;
+    if (InputKeyReleased(IK_ZOOM)) g_zfocused = FALSE;
+    if (InputButtonPressed(IK_MOUSERIGHT) && hovered) g_rfocused = TRUE;
+    if (InputKeyPressed(IK_ZOOM) && hovered) g_zfocused = TRUE;
+    Config()->camera.zoom += GetMouseWheelMove() * 0.1f;
+    if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
 }
 
 static void CleanViewportPanel() {
@@ -204,6 +243,9 @@ Panel GenerateViewportPanel() {
     p.clean = CleanViewportPanel;
 	p.flush = TRUE;
     g_viewport_target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+    AddBind("pan viewport camera", PanCamera, (BindCommand){ IK_MOUSERIGHT, BIND_BUTTON_END });
+    AddBind("zoom viewport camera", ZoomCamera, (BindCommand){ IK_ZOOM, BIND_KEY_END });
+    AddBind("toggle input hints", ToggleHints, (BindCommand){ IK_TOGGLE_HINTS, BIND_KEY_PRESSED });
 	return p;
 }
 
@@ -211,6 +253,14 @@ Vector2 GetViewportSlice() {
     return g_viewport_slice;
 }
 
+Vector2 GetViewportPosition() {
+    return g_viewport_position;
+}
+
 void SetViewportSlice(Vector2 slice) {
     g_viewport_slice = slice;
+}
+
+void SetViewportPosition(Vector2 pos) {
+    g_viewport_position = pos;
 }

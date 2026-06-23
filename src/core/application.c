@@ -3,9 +3,10 @@
 #include "data/colors.h"
 #include "data/input.h"
 #include "data/fonts.h"
+#include "core/config.h"
 #include "core/scene.h"
 #include "core/world.h"
-#include "core/config.h"
+#include "core/binds.h"
 #include "ui/panels/viewport.h"
 #include "ui/panels/console.h"
 #include "ui/panels/scenes.h"
@@ -249,6 +250,7 @@ void RunApplication() {
                 }
             }
         }
+        if (!UIRequestsBlockInput()) ListenBinds();
         PreRenderUI(g_application.ui);
         BeginDrawing();
         ClearBackground(RAYWHITE);
@@ -264,6 +266,7 @@ void RunApplication() {
 }
 
 void DestroyApplication() {
+    CleanBinds();
     DestroyUI(g_application.ui);
     CloseWindow();
     HASHMAP_KeyMap_clear(&g_application.keymap);
