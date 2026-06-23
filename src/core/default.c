@@ -30,6 +30,8 @@ static void InitDev(Scene* scene) {
     e = CreateEntityP(world, 0, 0, 0.5f);
     AddComponent(e, TextComponent, "TEST TEST TEST", TEXT_ALIGN_CENTER, (Color){255,255,255,255}, 20.0f);
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
+    e = CreateEntityP(world, 0, 0, 100);
+    AddComponent(e, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 2.0f);
     EZ_INFO("Success?");
 }
 static void CleanDev(Scene* scene) {

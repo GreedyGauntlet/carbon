@@ -64,6 +64,7 @@ EXPOSE_COMPONENT(CameraComponent) {
     BOOL enabled;
     Vector2 offset;
     float rotation;
+    float zoom;
 };
 
 EXPOSE_COMPONENT(ShapeComponent) {

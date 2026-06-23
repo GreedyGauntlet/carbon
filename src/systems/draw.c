@@ -4,6 +4,7 @@
 #include "systems/system.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
+#include "core/application.h"
 #include "core/world.h"
 #include "core/config.h"
 #include <easysort.h>
@@ -16,6 +17,7 @@ IMPL_EASYSORT(EntityID);
 typedef void (*DrawComponentFunc)(Entity, Vector2);
 
 static World* g_current_world = NULL;
+static BOOL g_viewcam_locked = FALSE;
 
 static float ExtractZValue(EntityID e) {
     Entity entity = (Entity){ e, g_current_world };
@@ -108,6 +110,7 @@ static void DrawDrawSystem(System* system) {
     ARRLIST_EntityID* images = GetEntities(system->context, ImageComponent);
     ARRLIST_EntityID* shapes = GetEntities(system->context, ShapeComponent);
     ARRLIST_EntityID* texts = GetEntities(system->context, TextComponent);
+    ARRLIST_EntityID* cameras = GetEntities(system->context, CameraComponent);
     ARRLIST_EntityID anchors = { 0 };
     ARRLIST_int anchorfuncs = { 0 };
     #define DRAWTYPES 3
@@ -115,7 +118,22 @@ static void DrawDrawSystem(System* system) {
     DrawComponentFunc funcs[DRAWTYPES] = { DrawImageComponent, DrawShapeComponent, DrawTextComponent };
     size_t indices[DRAWTYPES] = { 0, 0, 0 };
     Config()->camera.offset = (Vector2){ GetViewportSlice().x / 2.0f, GetViewportSlice().y / 2.0f };
-    BeginMode2D(Config()->camera);
+    Camera2D camera = Config()->camera;
+    g_viewcam_locked = FALSE;
+    if (Playing() && cameras) {
+        for (size_t i = 0; i < cameras->size; i++) {
+            Entity e = (Entity){ cameras->data[i], system->context };
+            CameraComponent* cc = GetComponent(e, CameraComponent);
+            if (cc->enabled) {
+                camera.target = Vector2Add((Vector2){ EntityPosition(e)->x, EntityPosition(e)->y }, cc->offset);
+                camera.rotation = cc->rotation;
+                camera.zoom = cc->zoom;
+                g_viewcam_locked = TRUE;
+                break;
+            }
+        }
+    }
+    BeginMode2D(camera);
     while (TRUE) {
         float zs[DRAWTYPES] = { FLT_MAX, FLT_MAX, FLT_MAX };
         BOOL done = TRUE;
@@ -163,4 +181,8 @@ static void UpdateDrawSystem(System* system, float dt) {
 
 System* GenerateDrawSystem() {
     return GenerateSystem(DrawDrawSystem, UpdateDrawSystem, NULL, NULL, NULL, NULL, NULL);
+}
+
+BOOL ViewCameraLocked() {
+    return g_viewcam_locked;
 }

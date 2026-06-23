@@ -8,6 +8,7 @@
 #include "data/input.h"
 #include "ui/ui.h"
 #include "ui/popup.h"
+#include "systems/draw.h"
 #include <raymath.h>
 
 static Vector2 g_viewport_slice = { 0 };
@@ -202,14 +203,14 @@ static void DrawViewportPanel(float width, float height) {
 }
 
 static void PanCamera() {
-    if (g_rfocused) {
+    if (g_rfocused && !ViewCameraLocked()) {
         Vector2 delta = GetMouseDelta();
         Config()->camera.target = Vector2Add(Vector2Scale(delta, -1.0f / Config()->camera.zoom), Config()->camera.target);
     }
 }
 
 static void ZoomCamera() {
-    if (g_zfocused) {
+    if (g_zfocused && !ViewCameraLocked()) {
         Vector2 delta = GetMouseDelta();
         Vector2 focus = Vector2Add(GetViewportPosition(), Vector2Scale(GetViewportSlice(), 0.5f));
         Vector2 prev = Vector2Subtract(Vector2Subtract(GetMousePosition(), delta), focus);
@@ -227,8 +228,10 @@ static void UpdateViewportPanel(float width, float height) {
     if (InputKeyReleased(IK_ZOOM)) g_zfocused = FALSE;
     if (InputButtonPressed(IK_MOUSERIGHT) && hovered) g_rfocused = TRUE;
     if (InputKeyPressed(IK_ZOOM) && hovered) g_zfocused = TRUE;
-    Config()->camera.zoom += GetMouseWheelMove() * 0.1f;
-    if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
+    if (!ViewCameraLocked()) {
+        Config()->camera.zoom += GetMouseWheelMove() * 0.1f;
+        if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
+    }
 }
 
 static void CleanViewportPanel() {

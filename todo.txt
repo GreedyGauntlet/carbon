@@ -1,0 +1,1 @@
+1. notify warning on play if no primary cam or if multiple primary cams
