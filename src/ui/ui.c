@@ -27,6 +27,7 @@ typedef struct {
     size_t cursor;
     Vector2 origin;
     float width;
+    BOOL submitted;
 } TextInputData;
 
 static UI* g_primary_ui = NULL;
@@ -47,9 +48,6 @@ static BOOL g_scratch_target_in_use = FALSE;
 static BOOL g_ui_disabled = FALSE;
 static UI* g_fullscreen_ui = NULL;
 static UI* g_current_prendered_ui = NULL;
-
-#define LINE_HEIGHT 20
-#define NAMEBAR_HEIGHT 25
 
 UI* GetLeftUI(UI* ui) {
     return (UI*)(ui->left);
@@ -255,6 +253,7 @@ static void DrawDropdownMenu() {
 }
 
 static void HandleTextInput() {
+    if (g_textinput_data.cursor > strlen(g_textinput_data.buffer)) g_textinput_data.cursor = 0;
     int c;
     size_t pre_cursor = g_textinput_data.cursor;
     static float backspace_timer = 0.0f;
@@ -278,7 +277,7 @@ static void HandleTextInput() {
     if (InputKeyPressed(IK_DOWN)) g_textinput_data.cursor = strlen(g_textinput_data.buffer);
     if ((backspace_timer > 0.5f || InputKeyPressed(IK_BACKSPACE)) && g_textinput_data.cursor > 0) {
         g_textinput_data.buffer[g_textinput_data.cursor - 1] = '\0';
-        for (size_t i = g_textinput_data.cursor; i < g_textinput_data.size - 1; i++)
+        for (size_t i = g_textinput_data.cursor - 1; i < g_textinput_data.size - 1; i++)
             g_textinput_data.buffer[i] = g_textinput_data.buffer[i+1];
         g_textinput_data.cursor--;
     }
@@ -286,7 +285,11 @@ static void HandleTextInput() {
         GetMousePosition(),
         (Rectangle){ g_textinput_data.origin.x, g_textinput_data.origin.y, g_textinput_data.width, LINE_HEIGHT - 2 }))) {
         g_textinput_data.active = FALSE;
-        g_textinput_data.data = NULL;
+        if (InputKeyPressed(IK_ENTER)) {
+            g_textinput_data.submitted = TRUE;
+        } else {
+            g_textinput_data.data = NULL;
+        }
     }
     if (InputButtonPressed(IK_MOUSELEFT) && CheckCollisionPointRec(
         GetMousePosition(),
@@ -503,7 +506,9 @@ void UICheckbox(BOOL* value) {
 }
 
 void UICheckboxLabeled(const char* label, BOOL* value) {
+    float prex = g_ui_cursor.x;
     UIDrawText(label);
+    UISetCursor(prex, g_ui_cursor.y);
     float xdif = MeasureTextEx(FontAsset(), label, LINE_HEIGHT, 0).x;
     UIMoveCursor(xdif + 5, -LINE_HEIGHT);
 	UICheckbox(value);
@@ -757,12 +762,23 @@ void UIDropdownMenu_(PersistantUIData* data, size_t width, size_t num_items, cha
     g_ui_cursor.x = 10;
 }
 
-void UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_t size, size_t width) {
+BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_t size, size_t width, BOOL noclear) {
+    BOOL retval = FALSE;
     const float s_cursor_limit = 0.5f;
     DrawTextEx(FontAsset(), label, g_ui_cursor, LINE_HEIGHT, 0, MappedColor(UI_TEXT_COLOR));
     Vector2 text_size = MeasureTextEx(FontAsset(), label, LINE_HEIGHT, 0);
     float box_width = width - text_size.x - 10;
-    if (box_width < 0) return;
+    if (g_textinput_data.submitted && g_textinput_data.data == data) {
+        if (noclear) {
+            g_textinput_data = (TextInputData){
+                buffer, size, TRUE, data, strlen(buffer), 
+                (Vector2){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y}, box_width, FALSE};
+        } else {
+            g_textinput_data.data = NULL;
+        }
+        retval = TRUE;
+    }
+    if (box_width < 0) return retval;
     g_ui_cursor.x += text_size.x + 10;
     if (!g_scratch_target_in_use) {
         g_ui_scratch_target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
@@ -799,12 +815,13 @@ void UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_
         if (InputButtonPressed(IK_MOUSELEFT)) {
             g_textinput_data = (TextInputData){
                 buffer, size, TRUE, data, strlen(buffer), 
-                (Vector2){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y}, box_width};
+                (Vector2){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y}, box_width, FALSE};
             data->arbitrary_timer = 0.0f;
         }
     }
     g_ui_cursor.x = 10;
     g_ui_cursor.y += LINE_HEIGHT;
+    return retval;
 }
 
 void DisableUI() {

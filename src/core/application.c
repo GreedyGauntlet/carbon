@@ -47,7 +47,7 @@ void InitializeApplication() {
     g_application.ui->right = GenerateUI();
     ((UI*)g_application.ui->right)->right = GenerateUI();
     ((UI*)g_application.ui->right)->left = GenerateUI();
-    ((UI*)g_application.ui->right)->divide = GetScreenHeight() - 560;
+    ((UI*)g_application.ui->right)->divide = GetScreenHeight() - 360;
     ((UI*)g_application.ui->right)->vertical = TRUE;
     ((UI*)g_application.ui->left)->right = GenerateUI();
     ((UI*)g_application.ui->left)->left = GenerateUI();
@@ -56,8 +56,8 @@ void InitializeApplication() {
     ((UI*)((UI*)g_application.ui->left)->left)->divide = GetScreenHeight() - 420;
     ((UI*)((UI*)g_application.ui->left)->left)->vertical = TRUE;
     ((UI*)g_application.ui->left)->divide = 350;
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), GenerateEditPanel());
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), GenerateConsolePanel());
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), GenerateEditPanel());
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), GenerateConsolePanel());
     ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), GenerateViewportPanel());
     ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateScenesPanel());
     ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateGraphPanel());

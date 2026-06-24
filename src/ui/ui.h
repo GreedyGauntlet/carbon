@@ -9,6 +9,9 @@
       static PersistantUIData s_ui_data_##__COUNTER__ = { 0 }; \
       func(&s_ui_data_##__COUNTER__, __VA_ARGS__);})
 
+#define LINE_HEIGHT 20
+#define NAMEBAR_HEIGHT 25
+
 typedef struct {
     size_t arbitrary_counter;
     float arbitrary_timer;
@@ -105,9 +108,9 @@ void UIDropdownMenu_(PersistantUIData* data, size_t width, size_t num_items, cha
 #define UIDropdownMenu(width, num_items, items, func, param) \
     PERSISTANT_UI(UIDropdownMenu_, width, num_items, items, func, param)
 
-void UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_t size, size_t width);
-#define UITextInput(label, buffer, size, width) \
-    PERSISTANT_UI(UITextInput_, label, buffer, size, width)
+BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_t size, size_t width, BOOL noclear);
+#define UITextInput(label, buffer, size, width, noclear) \
+    PERSISTANT_UI(UITextInput_, label, buffer, size, width, noclear)
 
 void DisableUI();
 

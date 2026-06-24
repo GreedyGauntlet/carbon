@@ -20,6 +20,14 @@ typedef enum {
     INPUTDOWN,
 } InputAction;
 
+typedef enum {
+    LEVEL_NONE = 0,
+    LEVEL_TRACE = 1,
+    LEVEL_INFO = 2,
+    LEVEL_WARN = 3,
+    LEVEL_ERROR = 4
+} MessageLevel;
+
 DECLARE(Application);
 DECLARE(Scene);
 DECLARE(World);
