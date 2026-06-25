@@ -228,7 +228,7 @@ static void UpdateViewportPanel(float width, float height) {
     if (InputKeyReleased(IK_ZOOM)) g_zfocused = FALSE;
     if (InputButtonPressed(IK_MOUSERIGHT) && hovered) g_rfocused = TRUE;
     if (InputKeyPressed(IK_ZOOM) && hovered) g_zfocused = TRUE;
-    if (!ViewCameraLocked()) {
+    if (!ViewCameraLocked() && hovered) {
         Config()->camera.zoom += GetMouseWheelMove() * 0.1f;
         if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
     }
