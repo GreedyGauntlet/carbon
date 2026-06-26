@@ -1,4 +1,5 @@
 #include "default.h"
+#include "commands/configure.h"
 
 // TODO: delete this!!!
 #include "core/scene.h"
@@ -6,6 +7,7 @@
 #include "core/application.h"
 #include "ecs/entity.h"
 #include "ecs/components.h"
+#include "util/logger.h"
 #include <easylogger.h>
 static void Move(const Entity e, float dt){
     EntityPosition(e)->x += dt * 100.0f;
@@ -32,7 +34,7 @@ static void InitDev(Scene* scene) {
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
     e = CreateEntityP(world, 0, 0, 100);
     AddComponent(e, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 2.0f);
-    EZ_INFO("Success?");
+    loginfo("Success?");
 }
 static void CleanDev(Scene* scene) {
     WipeScene(scene);
@@ -42,8 +44,13 @@ static void DevTest() {
     AddScene(scene);
 }
 
-void DefaultEntryPoint() {}
+void DefaultPreload() { }
 
-REGISTER_PRELOAD(DefaultEntryPoint);
-REGISTER_POSTLOAD(DefaultEntryPoint);
+void DefaultPostload() {
+    // register config commands here
+    RegisterCommand((Command){ "config", ConfigureCommand });
+}
+
+REGISTER_PRELOAD(DefaultPreload);
+REGISTER_POSTLOAD(DefaultPostload);
 REGISTER_POSTLOAD(DevTest);

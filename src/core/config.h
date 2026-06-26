@@ -9,6 +9,8 @@ typedef struct {
     Camera2D camera;
     BOOL limitlogs;
     MessageLevel logfilter;
+    BOOL printlogs;
+    BOOL echologs;
 } AppConfig;
 
 AppConfig* Config();

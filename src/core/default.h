@@ -3,6 +3,8 @@
 
 #include "core/entrypoint.h"
 
-void DefaultEntryPoint();
+void DefaultPreload();
+
+void DefaultPostload();
 
 #endif

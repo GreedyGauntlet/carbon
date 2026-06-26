@@ -10,12 +10,16 @@
 #define MAX_OUTPUT_SIZE (512 + MAX_COMMAND_SIZE)
 #define CONSOLE_HISTORY 100
 
+DECLARE_ARRLIST(Command);
+IMPL_ARRLIST(Command);
+
 static char g_commandbuffer[MAX_COMMAND_SIZE] = { 0 };
 static char g_outputbuffer[CONSOLE_HISTORY][MAX_OUTPUT_SIZE] = { 0 };
 static MessageLevel g_loglevels[CONSOLE_HISTORY] = { 0 };
 static size_t g_history_pointer = 0;
 static char* g_log_filter_labels[5] = { "none", "traces", "info", "warnings", "errors" };
 static float g_scrolldiff = 0.0f;
+static ARRLIST_Command g_commands = { 0 };
 
 static size_t DropdownSelectLogFilter(void* data, size_t index) {
     if (index != (size_t)-1) {
@@ -40,27 +44,6 @@ static int Mins(float time) {
 
 static int Hours(float time) {
     return ((int)time / 3600);
-}
-
-static void SubmitConsoleOutput(const char* output, MessageLevel level) {
-    if (g_history_pointer == 0) g_history_pointer = CONSOLE_HISTORY - 1;
-    else g_history_pointer--;
-    float time = GetTime();
-    snprintf(g_outputbuffer[g_history_pointer], MAX_OUTPUT_SIZE - 1, "[%s%d:%s%d:%s%d.%d] %s ",
-             Hours(time) < 10 ? "0" : "", Hours(time),
-             Mins(time) < 10 ? "0" : "", Mins(time),
-             Secs(time) < 10 ? "0" : "", Secs(time),
-             Milli(time), output);
-    g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 1] = '\0';
-    if (strnlen(output, MAX_OUTPUT_SIZE) > MAX_OUTPUT_SIZE - 14) {
-        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 2] = ' ';
-        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 3] = ')';
-        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 4] = '.';
-        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 5] = '.';
-        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 6] = '.';
-        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 7] = '(';
-    }
-    g_loglevels[g_history_pointer] = level;
 }
 
 static float CalculateLogHeight(float width) {
@@ -145,6 +128,56 @@ static BOOL DrawLog(float* cursory, float width, size_t* index) {
     return TRUE;
 }
 
+static BOOL IsAlphaNumeric(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= 0 && c <= 9);
+}
+
+static char** PeelCommand(char* command, int* argc) {
+    int parts = 1;
+    for (int i = strlen(command) - 1; command[i] == ' '; i--) command[i] = '\0';
+    for (int i = 0; command[i] != '\0'; i++) {
+        if (command[i] == ' ' && command[i + 1] == ' ') {
+            for (int j = i; command[j] != '\0'; j++) {
+                command[j] = command[j + 1];
+            }
+            i--;
+        }
+    }
+    for (int i = 0; command[i] != '\0'; i++) {
+        if (command[i] == ' ') parts++;
+    }
+    char** list = EZ_ALLOC(parts, sizeof(char*));
+    list[0] = command;
+    *argc = parts;
+    parts = 1;
+    for (int i = 0; command[i] != '\0'; i++) {
+        if (command[i] == ' ') {
+            command[i] = '\0';
+            list[parts] = &(command[i + 1]);
+            parts++;
+        }
+    }
+    return list;
+}
+
+static void ExecuteCommand(char* command) {
+    if (!IsAlphaNumeric(command[0])) {
+        SubmitConsoleOutput(LEVEL_ERROR, "Invalid or empty command detected");
+        return;
+    }
+    int argc = 0;
+    char** split = PeelCommand(command, &argc);
+    for (size_t i = 0; i < g_commands.size; i++) {
+        if (strcmp(split[0], g_commands.data[i].phrase) == 0) {
+            if (!g_commands.data[i].function(&(split[1]), argc - 1)) SubmitConsoleOutput(LEVEL_ERROR, "Unable to execute command due to invalid arguments");
+            EZ_FREE(split);
+            return;
+        }
+    }
+    SubmitConsoleOutput(LEVEL_ERROR, "Unknown precursor detected: \"%s\"", split[0]);
+    EZ_FREE(split);
+}
+
 static void DrawConsolePanel(float width, float height) {
     float logheight = CalculateLogHeight(width - 10);
     if (HoveredPanel() && strcmp(HoveredPanel(), "Console") == 0) {
@@ -172,23 +205,61 @@ static void DrawConsolePanel(float width, float height) {
     UISetCursor(10, height - 75);
     UIDivider(width - 20);
     if (UITextInput("cmd >>", g_commandbuffer, sizeof(g_commandbuffer), width - 20, TRUE)) {
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_TRACE);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_INFO);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_WARN);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_ERROR);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_TRACE);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_INFO);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_WARN);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_ERROR);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_TRACE);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_INFO);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_WARN);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_ERROR);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_TRACE);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_INFO);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_WARN);
-        SubmitConsoleOutput(g_commandbuffer, LEVEL_ERROR);
+        if (Config()->echologs) {
+            SubmitConsoleOutput(LEVEL_TRACE, ">> %s", g_commandbuffer);
+        }
+        ExecuteCommand(g_commandbuffer);
         memset(g_commandbuffer, '\0', MAX_COMMAND_SIZE);
+    }
+}
+
+static void CleanConsolePanel() {
+    ARRLIST_Command_clear(&g_commands);
+}
+
+void RegisterCommand(Command command) {
+    ARRLIST_Command_add(&g_commands, command);
+}
+
+void SubmitConsoleOutput(MessageLevel level, const char* output, ...) {
+    if (g_history_pointer == 0) g_history_pointer = CONSOLE_HISTORY - 1;
+    else g_history_pointer--;
+    float time = GetTime();
+    va_list args;
+    va_start(args, output);
+    char fmtbuffer[MAX_OUTPUT_SIZE - 12] = { 0 };
+    vsnprintf(fmtbuffer, sizeof(fmtbuffer) - 1, output, args);
+    snprintf(g_outputbuffer[g_history_pointer], MAX_OUTPUT_SIZE - 1, "[%s%d:%s%d:%s%d.%d] %s ",
+             Hours(time) < 10 ? "0" : "", Hours(time),
+             Mins(time) < 10 ? "0" : "", Mins(time),
+             Secs(time) < 10 ? "0" : "", Secs(time),
+             Milli(time), fmtbuffer);
+    g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 1] = '\0';
+    if (strnlen(output, MAX_OUTPUT_SIZE) > MAX_OUTPUT_SIZE - 14) {
+        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 2] = ' ';
+        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 3] = ')';
+        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 4] = '.';
+        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 5] = '.';
+        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 6] = '.';
+        g_outputbuffer[g_history_pointer][MAX_OUTPUT_SIZE - 7] = '(';
+    }
+    g_loglevels[g_history_pointer] = level;
+    if (Config()->printlogs) {
+        switch (level) {
+            case LEVEL_TRACE:
+                EZ_TRACE(fmtbuffer);
+                break;
+            case LEVEL_INFO:
+                EZ_INFO(fmtbuffer);
+                break;
+            case LEVEL_WARN:
+                EZ_WARN(fmtbuffer);
+                break;
+            case LEVEL_ERROR:
+                EZ_ERROR(fmtbuffer);
+                break;
+            default: break;
+        }
     }
 }
 
@@ -196,8 +267,6 @@ Panel GenerateConsolePanel() {
 	Panel p = { 0 };
 	SetupPanel(&p, "Console");
 	p.draw = DrawConsolePanel;
+    p.clean = CleanConsolePanel;
 	return p;
 }
-
-// TODO:
-// - command sustem
