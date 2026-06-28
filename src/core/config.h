@@ -11,6 +11,9 @@ typedef struct {
     MessageLevel logfilter;
     BOOL printlogs;
     BOOL echologs;
+    MessageLevel notificationfilter;
+    BOOL enablenotifications;
+    BOOL logsnotify;
 } AppConfig;
 
 AppConfig* Config();

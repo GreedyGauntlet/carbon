@@ -7,4 +7,8 @@ void DefaultPreload();
 
 void DefaultPostload();
 
+void DefaultPreupdate();
+
+void DefaultCleanup();
+
 #endif

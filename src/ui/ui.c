@@ -1,5 +1,6 @@
 #include "ui.h"
 #include "ui/popup.h"
+#include "ui/notification.h"
 #include "ui/panels/viewport.h"
 #include "data/definitions.h"
 #include "data/colors.h"
@@ -328,6 +329,7 @@ void DrawUI(UI* ui, size_t x, size_t y, size_t w, size_t h) {
         UnblockInputs();
         HandleTextInput();
     }
+    DrawNotifications();
 }
 
 static void PreRenderUI_helper(UI* ui, BOOL full) {

@@ -21,11 +21,11 @@ typedef enum {
 } InputAction;
 
 typedef enum {
-    LEVEL_NONE = 0,
-    LEVEL_TRACE = 1,
-    LEVEL_INFO = 2,
-    LEVEL_WARN = 3,
-    LEVEL_ERROR = 4
+    LEVEL_NONE  = 0, // no logs at all
+    LEVEL_TRACE = 1, // verbose information
+    LEVEL_INFO  = 2, // specifically requested information
+    LEVEL_WARN  = 3, // information hinting towards failing behavior
+    LEVEL_ERROR = 4  // information explicitly stating failure
 } MessageLevel;
 
 DECLARE(Application);
@@ -38,6 +38,7 @@ DECLARE(Registry);
 DECLARE(Panel);
 DECLARE(UI);
 DECLARE(Popup);
+DECLARE(Notification);
 
 typedef void (*SceneInitializeFunction)(Scene* scene);
 typedef void (*SceneCleanFunction)(Scene* scene);
@@ -70,6 +71,7 @@ DECLARE_HASHMAP(EntityID, size_t, EntityMap);
 DECLARE_HASHMAP(size_t, ComponentStorage*, StorageMap);
 DECLARE_ARRLIST(EntityID);
 DECLARE_ARRLIST(Panel);
+DECLARE_ARRLIST(Notification);
 DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);

@@ -5,12 +5,12 @@
 #include "data/fonts.h"
 #include "core/config.h"
 #include "ui/ui.h"
+#include "ui/notification.h"
 
 #define MAX_COMMAND_SIZE 256
 #define MAX_OUTPUT_SIZE (512 + MAX_COMMAND_SIZE)
 #define CONSOLE_HISTORY 100
 
-DECLARE_ARRLIST(Command);
 IMPL_ARRLIST(Command);
 
 static char g_commandbuffer[MAX_COMMAND_SIZE] = { 0 };
@@ -160,24 +160,6 @@ static char** PeelCommand(char* command, int* argc) {
     return list;
 }
 
-static void ExecuteCommand(char* command) {
-    if (!IsAlphaNumeric(command[0])) {
-        SubmitConsoleOutput(LEVEL_ERROR, "Invalid or empty command detected");
-        return;
-    }
-    int argc = 0;
-    char** split = PeelCommand(command, &argc);
-    for (size_t i = 0; i < g_commands.size; i++) {
-        if (strcmp(split[0], g_commands.data[i].phrase) == 0) {
-            if (!g_commands.data[i].function(&(split[1]), argc - 1)) SubmitConsoleOutput(LEVEL_ERROR, "Unable to execute command due to invalid arguments");
-            EZ_FREE(split);
-            return;
-        }
-    }
-    SubmitConsoleOutput(LEVEL_ERROR, "Unknown precursor detected: \"%s\"", split[0]);
-    EZ_FREE(split);
-}
-
 static void DrawConsolePanel(float width, float height) {
     float logheight = CalculateLogHeight(width - 10);
     if (HoveredPanel() && strcmp(HoveredPanel(), "Console") == 0) {
@@ -215,6 +197,10 @@ static void DrawConsolePanel(float width, float height) {
 
 static void CleanConsolePanel() {
     ARRLIST_Command_clear(&g_commands);
+}
+
+ARRLIST_Command GetCommands() {
+    return g_commands;
 }
 
 void RegisterCommand(Command command) {
@@ -261,6 +247,25 @@ void SubmitConsoleOutput(MessageLevel level, const char* output, ...) {
             default: break;
         }
     }
+    if (Config()->logsnotify) Notify(level, g_outputbuffer[g_history_pointer]);
+}
+
+void ExecuteCommand(char* command) {
+    if (!IsAlphaNumeric(command[0])) {
+        SubmitConsoleOutput(LEVEL_ERROR, "Invalid or empty command detected");
+        return;
+    }
+    int argc = 0;
+    char** split = PeelCommand(command, &argc);
+    for (size_t i = 0; i < g_commands.size; i++) {
+        if (strcmp(split[0], g_commands.data[i].phrase) == 0) {
+            g_commands.data[i].function(&(split[1]), argc - 1);
+            EZ_FREE(split);
+            return;
+        }
+    }
+    SubmitConsoleOutput(LEVEL_ERROR, "Unknown precursor detected: \"%s\"", split[0]);
+    EZ_FREE(split);
 }
 
 Panel GenerateConsolePanel() {

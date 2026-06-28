@@ -7,6 +7,9 @@ static AppConfig g_config = {
     FALSE,
     LEVEL_NONE,
     TRUE,
+    TRUE,
+    LEVEL_NONE,
+    TRUE,
     TRUE
 };
 

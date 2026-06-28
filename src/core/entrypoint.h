@@ -14,8 +14,20 @@ typedef void (*EntryPoint)(void);
     __attribute__((section("postloads"))) \
     EntryPoint CONCAT(ext_, __COUNTER__) = func;
 
+#define REGISTER_PREUPDATE(func) \
+    __attribute__((section("preupdates"))) \
+    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+
+#define REGISTER_CLEANUP(func) \
+    __attribute__((section("cleanups"))) \
+    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+
 void PreloadExtensions();
 
 void PostloadExtensions();
+
+void PreupdateExtensions();
+
+void CleanupExtensions();
 
 #endif

@@ -3,6 +3,8 @@
 
 #include "data/declarations.h"
 
+#define MAX_NOTIFICATION_SIZE 2048
+
 struct Application {
     const char* name;
     const char* goodbye;
@@ -87,6 +89,11 @@ struct Popup {
     PopupFunction behavior;
     size_t options;
     void* results;
+};
+
+struct Notification {
+    char message[MAX_NOTIFICATION_SIZE];
+    MessageLevel level;
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include "data/colors.h"
 #include "data/input.h"
 #include "data/fonts.h"
+#include "core/entrypoint.h"
 #include "core/config.h"
 #include "core/scene.h"
 #include "core/world.h"
@@ -12,6 +13,7 @@
 #include "ui/panels/scenes.h"
 #include "ui/panels/graph.h"
 #include "ui/panels/edit.h"
+#include "ui/notification.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
 
@@ -81,6 +83,7 @@ void SetApplicationSize(const size_t width, const size_t height) {
 void RunApplication() {
     while(!WindowShouldClose()) {
         ApplicationResized();
+        PreupdateExtensions();
         UpdateUI(g_application.ui);
         if (g_playing && g_steps > 0) {
             g_steps--;
@@ -266,6 +269,7 @@ void RunApplication() {
 }
 
 void DestroyApplication() {
+    CleanNotifications();
     CleanBinds();
     DestroyUI(g_application.ui);
     CloseWindow();
@@ -273,6 +277,7 @@ void DestroyApplication() {
     ARRLIST_int_clear(&g_application.keylist);
     for (size_t i = 0; i < g_application.scenes.size; i++) DestroyScene(g_application.scenes.data[i]);
     ARRLIST_ScenePtr_clear(&g_application.scenes);
+    CleanupExtensions();
     #ifndef PROD_BUILD
     EZ_ASSERT(EZ_ALLOCATED() == 0, "Memory cleanup revealed a leak of %d bytes", (int)(EZ_ALLOCATED() - g_application.memory));
     #endif
