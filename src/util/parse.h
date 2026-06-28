@@ -11,4 +11,6 @@ BOOL ParseBool(const char* str, BOOL* value);
 
 BOOL ParseFilter(const char* str, MessageLevel* value);
 
+char* ReconstructCommand(char** argv, int argc);
+
 #endif

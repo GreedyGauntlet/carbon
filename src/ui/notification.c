@@ -1,5 +1,6 @@
 #include "notification.h"
 #include "data/definitions.h"
+#include "data/colors.h"
 #include "core/config.h"
 #include "data/fonts.h"
 #include "ui/ui.h"
@@ -19,20 +20,59 @@ void DrawNotifications() {
     if (g_notifications.size > 0) {
         g_pulse_end_timer += GetFrameTime();
         for (size_t i = 0; i < g_notifications.size; i++) {
-            int rx = GetScreenWidth() - UITextWidth(g_notifications.data[i].message) - 20;
+            int rx = Config()->flipnotifications ? GetScreenWidth() - UITextWidth(g_notifications.data[i].message) - 20 : 10;
             int ry = g_anchor_y + (g_section_height * i);
-            int rw = UITextWidth(g_notifications.data[i].message) + 10;
+            int rw = UITextWidth(g_notifications.data[i].message) + 10 + 20;
             if (i == 0 && g_pulse_end_timer > g_notification_read_speed)
-                rx += ((g_pulse_end_timer - g_notification_read_speed) / SWIPE_TIME) * (rw + 10);
+                rx += ((g_pulse_end_timer - g_notification_read_speed) / SWIPE_TIME) * (rw + 10) * (Config()->flipnotifications ? 1.0f : -1.0f);
+            MessageLevel ml = g_notifications.data[i].level;
+            Color ncol = ml == LEVEL_WARN ? MappedColor(NOTIFICATION_WARN_COLOR) :
+                (ml == LEVEL_INFO ? MappedColor(NOTIFICATION_INFO_COLOR) :
+                (ml == LEVEL_ERROR ? MappedColor(NOTIFICATION_ERROR_COLOR) : 
+                MappedColor(NOTIFICATION_TRACE_COLOR)));
+            Color ngcol = ncol;
+            ngcol.a = 50;
+            Color subtle = MappedColor(NOTIFICATION_TEXT_COLOR);
+            subtle.g *= 0.8f;
+            subtle.r = subtle.g;
+            subtle.b = subtle.g;
             if (Config()->enablenotifications) {
+                DrawRectangle(
+                    rx - 1, ry - 1, rw + 2,
+                    20 + 10 + 2,
+                    ncol);
                 DrawRectangle(
                     rx, ry, rw,
                     20 + 10,
-                    RED);
+                    MappedColor(NOTIFICATION_BG_COLOR));
+                DrawRectangleGradientH(
+                    rx + (rw / 2.0f) + 1, ry, rw / 2.0f,
+                    20 + 10,
+                    (Color){ 0, 0, 0, 0},
+                    ngcol);
                 DrawTextEx(
                     FontAsset(),
-                    g_notifications.data[i].message, (Vector2){rx + 5, ry + 5}, 20, 0,
-                    WHITE);
+                    g_notifications.data[i].message, (Vector2){rx + 5 + 20, ry + 5}, 20, 0,
+                    MappedColor(NOTIFICATION_TEXT_COLOR));
+                if (ml == LEVEL_INFO || ml == LEVEL_TRACE) {
+                    DrawCircle(rx + 12, ry + 15, 7, subtle);
+                    DrawCircle(rx + 12, ry + 15, 6, ncol);
+                    DrawRectangle(rx + 11, ry + 11, 2, 5, subtle);
+                    DrawRectangle(rx + 11, ry + 17, 2, 2, subtle);
+                } else {
+                    DrawTriangle(
+                        (Vector2){rx + 12, ry + 7},
+                        (Vector2){rx + 4, ry + 22},
+                        (Vector2){rx + 20, ry + 22},
+                        subtle);
+                    DrawTriangle(
+                        (Vector2){rx + 12, ry + 9},
+                        (Vector2){rx + 6, ry + 21},
+                        (Vector2){rx + 18, ry + 21},
+                        ncol);
+                    DrawRectangle(rx + 11, ry + 13, 2, 4, subtle);
+                    DrawRectangle(rx + 11, ry + 18, 2, 2, subtle);
+                }
             }
         }
         if (g_pulse_end_timer > (g_notification_read_speed + SWIPE_TIME)) {

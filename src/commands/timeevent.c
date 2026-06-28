@@ -31,20 +31,6 @@ static void CleanTimeEvents() {
     ARRLIST_float_clear(&g_eventtimes);
 }
 
-static char* ReconstructCommand(char** argv, int argc) {
-    size_t totalsize = 0;
-    for (int i = 0; i < argc; i++) totalsize += 1 + strlen(argv[i]);
-    char* command = EZ_ALLOC(totalsize, sizeof(char));
-    int ptr = 0;
-    for (int i = 0; i < argc; i++) {
-        strcpy(command + ptr, argv[i]);
-        ptr += strlen(argv[i]) + 1;
-        command[ptr - 1] = ' ';
-    }
-    command[totalsize - 1] = '\0';
-    return command;
-}
-
 BOOL TimeEventCommand(char** argv, int argc) {
     if (argc < 2) {
         logerror("Not enough arguments specified - there must be at least 1 float and 1 string command!");

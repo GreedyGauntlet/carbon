@@ -37,6 +37,7 @@ BOOL ConfigureCommand(char** argv, int argc) {
         REGISTER_CONFIG_READ_MESSAGELEVEL(notificationfilter);
         REGISTER_CONFIG_READ_BOOL(enablenotifications);
         REGISTER_CONFIG_READ_BOOL(logsnotify);
+        REGISTER_CONFIG_READ_BOOL(flipnotifications);
         logerror("Unknown config parameter \"%s\" detected - unable to read", argv[1]);
     } else if (strcmp(argv[0], "write") == 0) {
         if (argc != 3) {
@@ -50,6 +51,7 @@ BOOL ConfigureCommand(char** argv, int argc) {
         REGISTER_CONFIG_WRITE(notificationfilter, Filter);
         REGISTER_CONFIG_WRITE(enablenotifications, Bool);
         REGISTER_CONFIG_WRITE(logsnotify, Bool);
+        REGISTER_CONFIG_WRITE(flipnotifications, Bool);
         logerror("Unable to write to unknown config parameter \"%s\"", argv[1]);
     } else {
         logerror("Unknown second argument \"%s\" detected - expected <read/write>", argv[0]);

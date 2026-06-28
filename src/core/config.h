@@ -14,6 +14,7 @@ typedef struct {
     MessageLevel notificationfilter;
     BOOL enablenotifications;
     BOOL logsnotify;
+    BOOL flipnotifications;
 } AppConfig;
 
 AppConfig* Config();

@@ -10,7 +10,8 @@ static AppConfig g_config = {
     TRUE,
     LEVEL_NONE,
     TRUE,
-    TRUE
+    TRUE,
+    FALSE
 };
 
 AppConfig* Config() {

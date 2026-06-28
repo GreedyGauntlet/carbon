@@ -57,3 +57,17 @@ BOOL ParseFilter(const char* str, MessageLevel* value) {
     }
     return TRUE;
 }
+
+char* ReconstructCommand(char** argv, int argc) {
+    size_t totalsize = 0;
+    for (int i = 0; i < argc; i++) totalsize += 1 + strlen(argv[i]);
+    char* command = EZ_ALLOC(totalsize, sizeof(char));
+    int ptr = 0;
+    for (int i = 0; i < argc; i++) {
+        strcpy(command + ptr, argv[i]);
+        ptr += strlen(argv[i]) + 1;
+        command[ptr - 1] = ' ';
+    }
+    command[totalsize - 1] = '\0';
+    return command;
+}

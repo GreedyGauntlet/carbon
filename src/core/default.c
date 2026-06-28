@@ -2,6 +2,7 @@
 #include "commands/configure.h"
 #include "commands/timeevent.h"
 #include "commands/help.h"
+#include "commands/notify.h"
 
 // TODO: delete this!!!
 #include "core/scene.h"
@@ -36,7 +37,7 @@ static void InitDev(Scene* scene) {
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
     e = CreateEntityP(world, 0, 0, 100);
     AddComponent(e, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 2.0f);
-    loginfo("Success?");
+    loginfo("Successfully set up test scene");
 }
 static void CleanDev(Scene* scene) {
     WipeScene(scene);
@@ -53,6 +54,7 @@ void DefaultPostload() {
     RegisterCommand((Command){ "help", HelpCommand, "help {usage|descriptions}", "Outputs help on console commands"});
     RegisterCommand((Command){ "config", ConfigureCommand, "config {read|write} {<param>} (<value>)", "Read or write to the editor config" });
     RegisterCommand((Command){ "timeevent", TimeEventCommand, "timeevent {<seconds>} ...", "Set a command to execute in a given amount of time" });
+    RegisterCommand((Command){ "notify", NotifyCommand, "notify <level> ...", "Send a notification of a given level and with the given text" });
 }
 
 void DefaultPreupdate() { }
