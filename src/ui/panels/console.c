@@ -247,7 +247,11 @@ void SubmitConsoleOutput(MessageLevel level, const char* output, ...) {
             default: break;
         }
     }
-    if (Config()->logsnotify) Notify(level, g_outputbuffer[g_history_pointer]);
+    if (Config()->logsnotify) {
+        int spaceptr = 0;
+        for (;g_outputbuffer[g_history_pointer][spaceptr] != ' '; spaceptr++) {}
+        Notify(level, g_outputbuffer[g_history_pointer] + spaceptr + 1);
+    }
 }
 
 void ExecuteCommand(char* command) {

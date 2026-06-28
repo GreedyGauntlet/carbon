@@ -38,6 +38,7 @@ void InitializeApplication() {
     #ifndef PROD_BUILD
     g_application.memory = EZ_ALLOCATED();
     #endif
+    InitConfig();
 	SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(g_resolution_width, g_resolution_height, g_application.name == NULL ? "Carbon Engine" : g_application.name);
@@ -278,6 +279,7 @@ void DestroyApplication() {
     for (size_t i = 0; i < g_application.scenes.size; i++) DestroyScene(g_application.scenes.data[i]);
     ARRLIST_ScenePtr_clear(&g_application.scenes);
     CleanupExtensions();
+    CleanConfig();
     #ifndef PROD_BUILD
     EZ_ASSERT(EZ_ALLOCATED() == 0, "Memory cleanup revealed a leak of %d bytes", (int)(EZ_ALLOCATED() - g_application.memory));
     #endif

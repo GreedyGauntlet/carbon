@@ -19,4 +19,10 @@ typedef struct {
 
 AppConfig* Config();
 
+void ResetConfig();
+
+void InitConfig();
+
+void CleanConfig();
+
 #endif
