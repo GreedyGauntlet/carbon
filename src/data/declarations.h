@@ -66,9 +66,6 @@ typedef size_t (*DropdownSelectFunction)(void* data, size_t index);
 
 typedef int (*PopupFunction)(size_t, size_t, size_t, size_t);
 
-DECLARE_HASHMAP(int, BOOL, KeyMap);
-DECLARE_HASHMAP(EntityID, size_t, EntityMap);
-DECLARE_HASHMAP(size_t, ComponentStorage*, StorageMap);
 DECLARE_ARRLIST(EntityID);
 DECLARE_ARRLIST(Panel);
 DECLARE_ARRLIST(Notification);
@@ -76,6 +73,11 @@ DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);
 DECLARE_ARRLIST_NAMED(SystemPtr, System*);
+DECLARE_HASHMAP(int, BOOL, KeyMap);
+DECLARE_HASHMAP(EntityID, size_t, EntityMap);
+DECLARE_HASHMAP(size_t, ComponentStorage*, StorageMap);
+DECLARE_HASHMAP(EntityID, EntityID, Parents);
+DECLARE_HASHMAP(EntityID, ARRLIST_EntityID*, Children);
 
 #undef DECLARE
 

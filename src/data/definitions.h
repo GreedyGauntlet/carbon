@@ -37,6 +37,8 @@ struct World {
     Registry* registry;
     ARRLIST_SystemPtr systems;
     ARRLIST_EntityID removal;
+    HASHMAP_Parents parents;
+    HASHMAP_Children children;
 };
 
 struct System {

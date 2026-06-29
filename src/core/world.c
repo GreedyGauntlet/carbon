@@ -5,7 +5,6 @@
 #include "ecs/registry.h"
 #include "systems/system.h"
 #include "systems/draw.h"
-#include "systems/family.h"
 
 World* GenerateWorld(
         WorldDrawFunction draw,
@@ -25,7 +24,6 @@ World* GenerateWorld(
     world->clean = clean;
     world->registry = GenerateRegistry();
     AddSystem(world, GenerateDrawSystem());
-    AddSystem(world, GenerateFamilySystem());
     return world;
 }
 
@@ -47,6 +45,14 @@ void AddSystem(World* world, System* system) {
 }
 
 void DestroyWorld(World* world) {
+    for (size_t i = 0; i < world->children.capacity; i++) {
+        if (world->children.entries[i].used == 1) {
+            ARRLIST_EntityID_clear(world->children.entries[i].value);
+            EZ_FREE(world->children.entries[i].value);
+        }
+    }
+    HASHMAP_Children_clear(&(world->children));
+    HASHMAP_Parents_clear(&(world->parents));
     ARRLIST_EntityID* scripts = GetEntities(world, ScriptComponent);
     if (scripts) {
         for (size_t i = 0; i < scripts->size; i++) {
@@ -80,3 +86,63 @@ void FlushRemovalQueue(World* world) {
         RegistryEraseEntity(world->registry, world->removal.data[i]);
     ARRLIST_EntityID_clear(&(world->removal));
 }
+
+BOOL HasParent(Entity e) {
+    return HASHMAP_Parents_has(&(e.context->parents), e.id);
+}
+
+BOOL HasChild(Entity parent, Entity child) {
+    ARRLIST_EntityID* children = GetChildren(parent);
+    for (size_t i = 0; i < children->size; i++) {
+        if (children->data[i] == child.id) return TRUE;
+    }
+    return FALSE;
+}
+
+void OrphanChild(Entity e) {
+    EZ_ASSERT(HasParent(e), "This child does not have a parent");
+    Entity parent = GetParent(e);
+    ARRLIST_EntityID* children = GetChildren(parent);
+    HASHMAP_Parents_remove(&(e.context->parents), e.id);
+    for (size_t i = 0; i < children->size; i++) {
+        if (children->data[i] == e.id) {
+            ARRLIST_EntityID_remove(children, i);
+            return;
+        }
+    }
+    EZ_ASSERT(TRUE, "Broken parent-child link detected");
+}
+
+Entity GetParent(Entity e) {
+    EZ_ASSERT(HasParent(e), "Cannot get a parent if entity does not have one");
+    return (Entity){ HASHMAP_Parents_get(&(e.context->parents), e.id), e.context };
+}
+
+ARRLIST_EntityID* GetChildren(Entity e) {
+    if (HASHMAP_Children_has(&(e.context->children), e.id)) {
+        return HASHMAP_Children_get(&(e.context->children), e.id);
+    }
+    ARRLIST_EntityID* newarr = EZ_ALLOC(1, sizeof(ARRLIST_EntityID));
+    HASHMAP_Children_set(&(e.context->children), e.id, newarr);
+    return newarr;
+}
+
+void LinkFamily(Entity parent, Entity child) {
+    EZ_ASSERT(!HasChild(parent, child), "This parent already has this child");
+    EZ_ASSERT(!HasParent(child), "This child already a parent");
+    ARRLIST_EntityID* children = GetChildren(parent);
+    ARRLIST_EntityID_add(children, child.id);
+    HASHMAP_Parents_set(&(child.context->parents), child.id, parent.id);
+}
+
+// Next:
+// 7. make get recursive global transform function to traverse parents
+// 8. use that in draw system properly
+// 9. yay parent component implemented
+// 10. work on scene management panel
+// 11. implement scene switching
+// 12. implement entity list
+// 13. make sure you calculate properly so only loop through and list entities that are visible
+// 14. gah make it scrollable again
+// 15. keep track of selected entity
+// 16. done with sprint!

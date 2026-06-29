@@ -28,4 +28,16 @@ void DestroyEntity(Entity e);
 
 void FlushRemovalQueue(World* world);
 
+BOOL HasParent(Entity e);
+
+BOOL HasChild(Entity parent, Entity child);
+
+void OrphanChild(Entity e);
+
+Entity GetParent(Entity e);
+
+ARRLIST_EntityID* GetChildren(Entity e);
+
+void LinkFamily(Entity parent, Entity child);
+
 #endif
