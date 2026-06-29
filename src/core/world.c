@@ -5,6 +5,7 @@
 #include "ecs/registry.h"
 #include "systems/system.h"
 #include "systems/draw.h"
+#include "systems/family.h"
 
 World* GenerateWorld(
         WorldDrawFunction draw,
@@ -24,6 +25,7 @@ World* GenerateWorld(
     world->clean = clean;
     world->registry = GenerateRegistry();
     AddSystem(world, GenerateDrawSystem());
+    AddSystem(world, GenerateFamilySystem());
     return world;
 }
 

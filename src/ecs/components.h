@@ -89,4 +89,8 @@ EXPOSE_COMPONENT(AnchorComponent) {
     ViewportAnchor anchor;
 };
 
+EXPOSE_COMPONENT(ParentComponent) {
+    EntityID parentid;
+};
+
 #endif
