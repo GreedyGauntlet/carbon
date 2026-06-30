@@ -5,6 +5,7 @@
 #include "ecs/registry.h"
 #include "systems/system.h"
 #include "systems/draw.h"
+#include <raymath.h>
 
 World* GenerateWorld(
         WorldDrawFunction draw,
@@ -135,10 +136,22 @@ void LinkFamily(Entity parent, Entity child) {
     HASHMAP_Parents_set(&(child.context->parents), child.id, parent.id);
 }
 
+Vector3 GetWorldPosition(Entity e) { // WARNING: so uh im too lazy to turn everything into mat4s right now so this does not account for rotation/scale! If this is a problem later I'll get around to fixing it. In the meantime fuck you!
+    if (HasParent(e)) return Vector3Add(*EntityPosition(e), GetWorldPosition(GetParent(e)));
+    return *EntityPosition(e);
+}
+
+Vector2 GetWorldScale(Entity e) {
+    if (HasParent(e)) return Vector2Multiply(*EntityScale(e), GetWorldScale(GetParent(e)));
+    return *EntityScale(e);
+}
+
+float GetWorldRotation(Entity e) {
+    if (HasParent(e)) return *EntityRotation(e) + GetWorldRotation(GetParent(e));
+    return *EntityRotation(e);
+}
+
 // Next:
-// 7. make get recursive global transform function to traverse parents
-// 8. use that in draw system properly
-// 9. yay parent component implemented
 // 10. work on scene management panel
 // 11. implement scene switching
 // 12. implement entity list

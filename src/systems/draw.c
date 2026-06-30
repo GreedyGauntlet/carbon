@@ -21,27 +21,29 @@ static BOOL g_viewcam_locked = FALSE;
 
 static float ExtractZValue(EntityID e) {
     Entity entity = (Entity){ e, g_current_world };
-    return EntityPosition(entity)->z; 
+    return GetWorldPosition(entity).z; 
 }
 
 static void DrawImageComponent(Entity e, Vector2 origin) {
     ImageComponent* ic = GetComponent(e, ImageComponent);
-    TransformComponent* tc = GetComponent(e, TransformComponent);
+    Vector3 translation = GetWorldPosition(e);
+    Vector2 scale = GetWorldScale(e);
     DrawTexturePro(
         ic->texture,
         (Rectangle){0, 0, ic->texture.width, ic->texture.height},
         (Rectangle){
-            tc->translation.x - tc->scale.x/2.0f + origin.x,
-            tc->translation.y - tc->scale.y/2.0f + origin.y,
-            tc->scale.x, tc->scale.y},
+            translation.x - scale.x/2.0f + origin.x,
+            translation.y - scale.y/2.0f + origin.y,
+            scale.x, scale.y},
         (Vector2){0, 0}, 0, WHITE);
 }
 
 static void DrawTextComponent(Entity e, Vector2 origin) {
     TextComponent* tc = GetComponent(e, TextComponent);
     Font default_font = GetFontDefault();
-    Vector2 text_size = MeasureTextEx(default_font, tc->text, tc->size, 2);
-    Vector2 tpos = (Vector2){ EntityPosition(e)->x + origin.x, EntityPosition(e)->y + origin.y };
+    Vector2 text_size = MeasureTextEx(default_font, tc->text, tc->size * GetWorldScale(e).x, 2);
+    Vector3 translation = GetWorldPosition(e);
+    Vector2 tpos = (Vector2){ translation.x + origin.x, translation.y + origin.y };
     tpos.y -= text_size.y / 2.0f;
     switch (tc->alignment) {
         case TEXT_ALIGN_CENTER:
@@ -53,19 +55,20 @@ static void DrawTextComponent(Entity e, Vector2 origin) {
             break;
         default: break;
     }
-    DrawTextEx(default_font, tc->text, tpos, tc->size, 2, tc->color);
+    DrawTextEx(default_font, tc->text, tpos, tc->size * GetWorldScale(e).x, 2, tc->color);
 }
 
 static void DrawShapeComponent(Entity e, Vector2 origin) {
     ShapeComponent* sc = GetComponent(e, ShapeComponent);
-    TransformComponent* tc = GetComponent(e, TransformComponent);
+    Vector3 translation = GetWorldPosition(e);
+    Vector2 scale = GetWorldScale(e);
     if (sc->type == RECTANGLE_SHAPE) {
-        DrawRectangle(tc->translation.x - (tc->scale.x / 2.0f) + origin.x,
-                      tc->translation.y - (tc->scale.y / 2.0f) + origin.y,
-                      tc->scale.x, tc->scale.y, sc->color);
+        DrawRectangle(translation.x - (scale.x / 2.0f) + origin.x,
+                      translation.y - (scale.y / 2.0f) + origin.y,
+                      scale.x, scale.y, sc->color);
     } else {
-        float radius = (tc->scale.x + tc->scale.y) / 4.0f;
-        DrawCircle(tc->translation.x + origin.x, tc->translation.y + origin.y, radius, sc->color);
+        float radius = (scale.x + scale.y) / 4.0f;
+        DrawCircle(translation.x + origin.x, translation.y + origin.y, radius, sc->color);
     }
 }
 
@@ -125,8 +128,8 @@ static void DrawDrawSystem(System* system) {
             Entity e = (Entity){ cameras->data[i], system->context };
             CameraComponent* cc = GetComponent(e, CameraComponent);
             if (cc->enabled) {
-                camera.target = Vector2Add((Vector2){ EntityPosition(e)->x, EntityPosition(e)->y }, cc->offset);
-                camera.rotation = cc->rotation;
+                camera.target = Vector2Add((Vector2){ GetWorldPosition(e).x, GetWorldPosition(e).y }, cc->offset);
+                camera.rotation = cc->rotation + GetWorldRotation(e);
                 camera.zoom = cc->zoom;
                 g_viewcam_locked = TRUE;
                 break;

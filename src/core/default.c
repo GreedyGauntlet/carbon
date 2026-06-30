@@ -23,11 +23,6 @@ static void InitDev(Scene* scene) {
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
     AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){255,0,0,255});
-    e = CreateEntityP(world, 0, 50, -1);
-    EntityScale(e)->x = 100;
-    EntityScale(e)->y = 100;
-    AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){0,255,0,255});
-    AddComponent(e, ScriptComponent, NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE);
     e = CreateEntityP(world, 75, 25, 1);
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
@@ -35,8 +30,14 @@ static void InitDev(Scene* scene) {
     e = CreateEntityP(world, 0, 0, 0.5f);
     AddComponent(e, TextComponent, "TEST TEST TEST", TEXT_ALIGN_CENTER, (Color){255,255,255,255}, 20.0f);
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
-    e = CreateEntityP(world, 0, 0, 100);
-    AddComponent(e, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 2.0f);
+    e = CreateEntityP(world, 0, 50, -1);
+    EntityScale(e)->x = 100;
+    EntityScale(e)->y = 100;
+    AddComponent(e, ShapeComponent, RECTANGLE_SHAPE, (Color){0,255,0,255});
+    AddComponent(e, ScriptComponent, NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE);
+    Entity c = CreateEntityP(world, 0, 0, 100);
+    AddComponent(c, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 1.0f);
+    LinkFamily(e, c);
     loginfo("Successfully set up test scene");
 }
 static void CleanDev(Scene* scene) {

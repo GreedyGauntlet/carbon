@@ -40,4 +40,10 @@ ARRLIST_EntityID* GetChildren(Entity e);
 
 void LinkFamily(Entity parent, Entity child);
 
+Vector3 GetWorldPosition(Entity e);
+
+Vector2 GetWorldScale(Entity e);
+
+float GetWorldRotation(Entity e);
+
 #endif
