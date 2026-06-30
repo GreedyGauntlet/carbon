@@ -27,6 +27,7 @@ struct Scene {
 };
 
 struct World {
+    const char* name;
     WorldDrawFunction draw;
     WorldUpdateFunction update;
     WorldKeyEventFunction key;

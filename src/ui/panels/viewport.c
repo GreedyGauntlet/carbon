@@ -220,6 +220,10 @@ static void ZoomCamera() {
     }
 }
 
+static void ResetCamera() {
+    Config()->camera = (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f };
+}
+
 static void UpdateViewportPanel(float width, float height) {
     ResizeViewportTarget();
     const char* hpanel = HoveredPanel();
@@ -249,6 +253,7 @@ Panel GenerateViewportPanel() {
     AddBind("pan viewport camera", PanCamera, (BindCommand){ IK_MOUSERIGHT, BIND_BUTTON_END });
     AddBind("zoom viewport camera", ZoomCamera, (BindCommand){ IK_ZOOM, BIND_KEY_END });
     AddBind("toggle input hints", ToggleHints, (BindCommand){ IK_TOGGLE_HINTS, BIND_KEY_PRESSED });
+    AddBind("reset viewport camera", ResetCamera, (BindCommand){ IK_RESET_CAMERA, BIND_KEY_PRESSED });
 	return p;
 }
 

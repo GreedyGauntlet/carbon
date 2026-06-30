@@ -17,7 +17,7 @@ static void Move(const Entity e, float dt){
     EntityPosition(e)->y += dt * 50.0f;
 }
 static void InitDev(Scene* scene) {
-    World* world = GenerateWorld(NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    World* world = GenerateWorld("Test World", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     AddWorld(scene, world);
     Entity e = CreateEntity(world);
     EntityScale(e)->x = 100;

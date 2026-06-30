@@ -8,6 +8,7 @@
 #include <raymath.h>
 
 World* GenerateWorld(
+        const char* name,
         WorldDrawFunction draw,
         WorldUpdateFunction update,
         WorldKeyEventFunction key,
@@ -16,6 +17,7 @@ World* GenerateWorld(
         WorldMouseMoveFunction mousemove,
         WorldCleanFunction clean) {
     World* world = EZ_ALLOC(1, sizeof(World));
+    world->name = name;
     world->draw = draw;
     world->update = update;
     world->key = key;
@@ -31,12 +33,27 @@ World* GenerateWorld(
 Entity CreateEntity(World* world) {
     Entity e = (Entity){ RegistryCreateEntity(world->registry), world };
     AddComponent(e, TransformComponent, {0.0f, 0.0f, 0.0f}, 0.0f, {1.0f, 1.0f});
+    AddComponent(e, TagComponent, "Untitled Entity");
     return e;
 }
 
 Entity CreateEntityP(World* world, float x, float y, float z) {
     Entity e = CreateEntity(world);
     *(EntityPosition(e)) = (Vector3){ x, y, z };
+    return e;
+}
+
+Entity CreateEntityN(World* world, const char* name) {
+    Entity e = CreateEntity(world);
+    TagComponent* tc = GetComponent(e, TagComponent);
+    tc->tag = name;
+    return e;
+}
+
+Entity CreateEntityNP(World* world, const char* name, float x, float y, float z) {
+    Entity e = CreateEntityP(world, x, y, z);
+    TagComponent* tc = GetComponent(e, TagComponent);
+    tc->tag = name;
     return e;
 }
 
@@ -158,4 +175,5 @@ float GetWorldRotation(Entity e) {
 // 13. make sure you calculate properly so only loop through and list entities that are visible
 // 14. gah make it scrollable again
 // 15. keep track of selected entity
+// 15.5 dont forget to make active scene a part of editor settings
 // 16. done with sprint!

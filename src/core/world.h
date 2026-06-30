@@ -6,6 +6,7 @@
 #define GetEntities(world, component) WorldGetEntities(world, (size_t)component##_TYPE)
 
 World* GenerateWorld(
+        const char* name,
         WorldDrawFunction draw,
         WorldUpdateFunction update,
         WorldKeyEventFunction key,
@@ -17,6 +18,10 @@ World* GenerateWorld(
 Entity CreateEntity(World* world);
 
 Entity CreateEntityP(World* world, float x, float y, float z);
+
+Entity CreateEntityN(World* world, const char* name);
+
+Entity CreateEntityNP(World* world, const char* name, float x, float y, float z);
 
 void AddSystem(World* world, System* system);
 
