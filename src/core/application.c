@@ -16,14 +16,17 @@
 #include "ui/notification.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
+#include "util/logger.h"
 
 static Application g_application = { 0 };
+static ARRLIST_StaticString g_scene_names = { 0 };
 static size_t g_resolution_width = 1600;
 static size_t g_resolution_height = 900;
 static Vector2 g_windowsize = { -1.0f, -1.0f };
 static BOOL g_playing = FALSE;
 static BOOL g_fastforward = FALSE;
 static size_t g_steps = 0;
+static BOOL g_vsync = TRUE;
 
 static void ApplicationResized() {
     if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
@@ -82,7 +85,22 @@ void SetApplicationSize(const size_t width, const size_t height) {
 }
 
 void RunApplication() {
+    if (Config()->startupscene && HasScene(Config()->activescene)) {
+        SetScene(Config()->activescene);
+    } else if (Config()->startupscene) {
+        logwarn("Unable to override startup scene");
+    }
     while(!WindowShouldClose()) {
+        if (g_vsync != Config()->vsync) {
+            g_vsync = Config()->vsync;
+			if (Config()->vsync) {
+                SetWindowState(FLAG_VSYNC_HINT);
+                logtrace("VSYNC on");
+            } else {
+                ClearWindowState(FLAG_VSYNC_HINT);
+                logtrace("VSYNC off");
+            }
+        }
         ApplicationResized();
         PreupdateExtensions();
         UpdateUI(g_application.ui);
@@ -270,6 +288,8 @@ void RunApplication() {
 }
 
 void DestroyApplication() {
+    CleanConfig();
+    ARRLIST_StaticString_clear(&g_scene_names);
     CleanNotifications();
     CleanBinds();
     DestroyUI(g_application.ui);
@@ -279,7 +299,6 @@ void DestroyApplication() {
     for (size_t i = 0; i < g_application.scenes.size; i++) DestroyScene(g_application.scenes.data[i]);
     ARRLIST_ScenePtr_clear(&g_application.scenes);
     CleanupExtensions();
-    CleanConfig();
     #ifndef PROD_BUILD
     EZ_ASSERT(EZ_ALLOCATED() == 0, "Memory cleanup revealed a leak of %d bytes", (int)(EZ_ALLOCATED() - g_application.memory));
     #endif
@@ -288,6 +307,16 @@ void DestroyApplication() {
 
 void AddScene(Scene* scene) {
     ARRLIST_ScenePtr_add(&g_application.scenes, scene);
+    ARRLIST_StaticString_add(&g_scene_names, scene->name);
+}
+
+BOOL HasScene(const char* name) {
+    for (size_t i = 0; i < g_application.scenes.size; i++) {
+        if (strcmp(g_application.scenes.data[i]->name, name) == 0) {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 void SetScene(const char* name) {
@@ -329,4 +358,8 @@ void ToggleFastForward() {
 void Step(size_t steps) {
     Resume();
     g_steps = steps + 1;
+}
+
+ARRLIST_StaticString* SceneNames() {
+    return &g_scene_names;
 }

@@ -15,6 +15,9 @@ typedef struct {
     BOOL enablenotifications;
     BOOL logsnotify;
     BOOL flipnotifications;
+    char activescene[512];
+    BOOL startupscene;
+    BOOL vsync;
 } AppConfig;
 
 AppConfig* Config();

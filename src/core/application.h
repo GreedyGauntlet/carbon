@@ -17,6 +17,8 @@ void DestroyApplication();
 
 void AddScene(Scene* scene);
 
+BOOL HasScene(const char* name);
+
 void SetScene(const char* name);
 
 Scene* GetActiveScene();
@@ -32,5 +34,7 @@ BOOL IsFast();
 void ToggleFastForward();
 
 void Step(size_t steps);
+
+ARRLIST_StaticString* SceneNames();
 
 #endif

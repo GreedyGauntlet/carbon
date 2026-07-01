@@ -41,6 +41,7 @@ typedef enum {
 
 EXPOSE_COMPONENT(TagComponent) {
     const char* tag;
+    BOOL metacollapsed;
 };
 
 EXPOSE_COMPONENT(ImageComponent) {

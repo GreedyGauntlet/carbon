@@ -73,6 +73,7 @@ DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);
 DECLARE_ARRLIST_NAMED(SystemPtr, System*);
+DECLARE_ARRLIST_NAMED(StaticString, const char*);
 DECLARE_HASHMAP(int, BOOL, KeyMap);
 DECLARE_HASHMAP(EntityID, size_t, EntityMap);
 DECLARE_HASHMAP(size_t, ComponentStorage*, StorageMap);

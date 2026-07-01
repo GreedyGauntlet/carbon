@@ -1,11 +1,13 @@
 #include "config.h"
+#include "data/definitions.h"
 #include "util/logger.h"
+#include "core/application.h"
 
 static AppConfig g_config = { 0 };
 static AppConfig g_default_config = { 
     2.0f,
     1,
-    (Camera2D){ (Vector2){ 0, 0}, (Vector2){ 0, 0 }, 0, 1.0f },
+    (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f },
     FALSE,
     LEVEL_NONE,
     TRUE,
@@ -13,7 +15,10 @@ static AppConfig g_default_config = {
     LEVEL_NONE,
     TRUE,
     TRUE,
-    FALSE
+    FALSE,
+    "",
+    FALSE,
+    TRUE
 };
 
 AppConfig* Config() {
@@ -44,6 +49,7 @@ void InitConfig() {
 }
 
 void CleanConfig() {
+    strncpy(g_config.activescene, GetActiveScene()->name, 256);
     FILE *file = fopen(".carbonconf", "wb");
     if (file) {
         fwrite(Config(), 1, sizeof(AppConfig), file);

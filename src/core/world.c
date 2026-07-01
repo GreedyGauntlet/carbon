@@ -33,7 +33,7 @@ World* GenerateWorld(
 Entity CreateEntity(World* world) {
     Entity e = (Entity){ RegistryCreateEntity(world->registry), world };
     AddComponent(e, TransformComponent, {0.0f, 0.0f, 0.0f}, 0.0f, {1.0f, 1.0f});
-    AddComponent(e, TagComponent, "Untitled Entity");
+    AddComponent(e, TagComponent, "Untitled Entity", FALSE);
     return e;
 }
 
