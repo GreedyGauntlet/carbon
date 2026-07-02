@@ -5,6 +5,7 @@
 IMPL_ARRLIST(EntityID);
 IMPL_ARRLIST(Panel);
 IMPL_ARRLIST(Notification);
+IMPL_ARRLIST(Script);
 IMPL_ARRLIST_NAMED(ScenePtr, Scene*);
 IMPL_ARRLIST_NAMED(WorldPtr, World*);
 IMPL_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);

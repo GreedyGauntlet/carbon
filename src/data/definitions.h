@@ -99,4 +99,32 @@ struct Notification {
     MessageLevel level;
 };
 
+struct AssetPack {
+    ARRLIST_StaticString texnames;
+//    ARRLIST_Texture2D textures;
+    ARRLIST_StaticString animnames;
+//    ARRLIST_Animation animations;
+    ARRLIST_StaticString audionames;
+//    ARRLIST_Animation audios;
+};
+
+struct ScriptPack {
+    ARRLIST_StaticString names;
+    ARRLIST_StaticString descriptions;
+    ARRLIST_Script scripts;
+};
+
+struct Script {
+    ScriptComponentInitializeFunction init;
+    ScriptComponentUpdateFunction update;
+    ScriptComponentDrawFunction draw;
+    ScriptComponentCleanFunction clean;
+    ScriptComponentKeyEventFunction key;
+    ScriptComponentMouseButtonEventFunction mousebutton;
+    ScriptComponentMouseMoveFunction mousemove;
+    ScriptComponentMouseScrollEventFunction mousescroll;
+    void* arbitrary;
+    BOOL initialized;
+};
+
 #endif

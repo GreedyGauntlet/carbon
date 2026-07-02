@@ -7,15 +7,6 @@
 #define START_COMPONENT_DEFINITIONS() enum { CLEAN_COMPONENT_COUNTER = __COUNTER__ } 
 START_COMPONENT_DEFINITIONS();
 
-typedef void (*ScriptComponentInitializeFunction)(const Entity e);
-typedef void (*ScriptComponentDrawFunction)(const Entity e);
-typedef void (*ScriptComponentUpdateFunction)(const Entity e, float dt);
-typedef void (*ScriptComponentCleanFunction)(const Entity e);
-typedef void (*ScriptComponentKeyEventFunction)(const Entity e, int key, InputAction action);
-typedef void (*ScriptComponentMouseButtonEventFunction)(const Entity e, int key, InputAction action);
-typedef void (*ScriptComponentMouseScrollEventFunction)(const Entity e, Vector2 offset);
-typedef void (*ScriptComponentMouseMoveFunction)(const Entity e, Vector2 position);
-
 typedef enum {
     TEXT_ALIGN_CENTER,
     TEXT_ALIGN_LEFT,

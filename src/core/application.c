@@ -13,6 +13,8 @@
 #include "ui/panels/scenes.h"
 #include "ui/panels/graph.h"
 #include "ui/panels/edit.h"
+#include "ui/panels/assets.h"
+#include "ui/panels/scripts.h"
 #include "ui/notification.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
@@ -66,6 +68,8 @@ void InitializeApplication() {
     ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), GenerateConsolePanel());
     ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), GenerateViewportPanel());
     ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateScenesPanel());
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateAssetsPanel());
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateScriptsPanel());
     ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateGraphPanel());
     g_application.ui->divide = 1250;
     SetPrimaryUI(g_application.ui);
@@ -89,6 +93,13 @@ void RunApplication() {
         SetScene(Config()->activescene);
     } else if (Config()->startupscene) {
         logwarn("Unable to override startup scene");
+    }
+    if (Config()->startupentity) {
+        if (Config()->selectedworld < GetActiveScene()->worlds.size) {
+            SelectEntity((Entity){ Config()->selectedentity, GetActiveScene()->worlds.data[Config()->selectedworld] });
+        } else {
+            logwarn("Unable to find previously selected entity");
+        }
     }
     while(!WindowShouldClose()) {
         if (g_vsync != Config()->vsync) {

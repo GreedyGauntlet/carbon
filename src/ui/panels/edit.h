@@ -5,4 +5,8 @@
 
 Panel GenerateEditPanel();
 
+void SelectEntity(Entity e);
+
+Entity SelectedEntity();
+
 #endif

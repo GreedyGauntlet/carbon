@@ -39,6 +39,9 @@ DECLARE(Panel);
 DECLARE(UI);
 DECLARE(Popup);
 DECLARE(Notification);
+DECLARE(AssetPack);
+DECLARE(ScriptPack);
+DECLARE(Script);
 
 typedef void (*SceneInitializeFunction)(Scene* scene);
 typedef void (*SceneCleanFunction)(Scene* scene);
@@ -59,6 +62,15 @@ typedef void (*SystemMouseScrollEventFunction)(System* system, Vector2 offset);
 typedef void (*SystemMouseMoveFunction)(System* system, Vector2 position);
 typedef void (*SystemCleanFunction)(System* system);
 
+typedef void (*ScriptComponentInitializeFunction)(const Entity e);
+typedef void (*ScriptComponentDrawFunction)(const Entity e);
+typedef void (*ScriptComponentUpdateFunction)(const Entity e, float dt);
+typedef void (*ScriptComponentCleanFunction)(const Entity e);
+typedef void (*ScriptComponentKeyEventFunction)(const Entity e, int key, InputAction action);
+typedef void (*ScriptComponentMouseButtonEventFunction)(const Entity e, int key, InputAction action);
+typedef void (*ScriptComponentMouseScrollEventFunction)(const Entity e, Vector2 offset);
+typedef void (*ScriptComponentMouseMoveFunction)(const Entity e, Vector2 position);
+
 typedef void (*PanelFunction)(float width, float height);
 typedef void (*CleanFunction)(void);
 typedef void (*SelectFunction)(size_t index);
@@ -69,6 +81,7 @@ typedef int (*PopupFunction)(size_t, size_t, size_t, size_t);
 DECLARE_ARRLIST(EntityID);
 DECLARE_ARRLIST(Panel);
 DECLARE_ARRLIST(Notification);
+DECLARE_ARRLIST(Script);
 DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);

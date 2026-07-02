@@ -51,4 +51,6 @@ Vector2 GetWorldScale(Entity e);
 
 float GetWorldRotation(Entity e);
 
+BOOL IsActiveWorld(World* world);
+
 #endif

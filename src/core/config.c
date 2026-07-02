@@ -2,6 +2,8 @@
 #include "data/definitions.h"
 #include "util/logger.h"
 #include "core/application.h"
+#include "ecs/entity.h"
+#include "ui/panels/edit.h"
 
 static AppConfig g_config = { 0 };
 static AppConfig g_default_config = { 
@@ -17,7 +19,10 @@ static AppConfig g_default_config = {
     TRUE,
     FALSE,
     "",
-    FALSE,
+    TRUE,
+    TRUE,
+    0,
+    0,
     TRUE
 };
 
@@ -50,6 +55,15 @@ void InitConfig() {
 
 void CleanConfig() {
     strncpy(g_config.activescene, GetActiveScene()->name, 256);
+    g_config.selectedworld = 0;
+    Entity e = SelectedEntity();
+    g_config.selectedentity = e.id;
+    for (size_t i = 0; i < GetActiveScene()->worlds.size; i++) {
+        if (GetActiveScene()->worlds.data[i] == e.context) {
+            g_config.selectedworld = i;
+            break;
+        }
+    }
     FILE *file = fopen(".carbonconf", "wb");
     if (file) {
         fwrite(Config(), 1, sizeof(AppConfig), file);

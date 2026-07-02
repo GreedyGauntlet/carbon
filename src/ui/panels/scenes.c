@@ -6,7 +6,9 @@
 #include "data/input.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
+#include "ui/panels/edit.h"
 #include "ui/ui.h"
+#include "util/logger.h"
 #include <easyhash.h>
 
 static uint64_t HashWorldPointer(World* ptr) { return ez_hash_uint64_t((uint64_t)ptr); }
@@ -21,6 +23,7 @@ static size_t DropdownSelectActiveScene(void* data, size_t index) {
     ARRLIST_StaticString* names = SceneNames();
     if (index != (size_t)-1) {
         SetScene(names->data[index]);
+        SelectEntity((Entity){ 0, 0 });
         return index;
     } else {
         Scene* active = GetActiveScene();
@@ -42,7 +45,10 @@ static void DrawEntityOption(Entity e, float offset, float width, float height) 
     }
     if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){UIGetCursor().x - 2 + UIGetPosition().x, UIGetCursor().y + UIGetPosition().y, width - UIGetCursor().x - 10, 20})) {
         DrawRectangle(UIGetCursor().x - 2, UIGetCursor().y, width - UIGetCursor().x - 10, 20, MappedColor(UI_HIGHLIGHT_COLOR));
+        if (InputButtonPressed(IK_MOUSELEFT)) SelectEntity(e);
     }
+    if (SelectedEntity().id == e.id && SelectedEntity().context == e.context)
+        DrawRectangle(UIGetCursor().x - 2, UIGetCursor().y, width - UIGetCursor().x - 10, 20, MappedColor(UI_SELECTED_COLOR));
     UIDrawText("%s", tc->tag);
     if (children && children->size > 0 && CheckCollisionPointRec(GetMousePosition(), (Rectangle){UIGetCursor().x + offset - 22, UIGetCursor().y + UIGetPosition().y - 19, 19, 19})) {
         DrawRectangle(UIGetCursor().x + offset - 22, UIGetCursor().y - 19, 19, 19, MappedColor(UI_HIGHLIGHT_COLOR));

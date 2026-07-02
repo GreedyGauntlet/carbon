@@ -18,6 +18,9 @@ typedef struct {
     char activescene[512];
     BOOL startupscene;
     BOOL vsync;
+    size_t selectedentity;
+    size_t selectedworld;
+    BOOL startupentity;
 } AppConfig;
 
 AppConfig* Config();

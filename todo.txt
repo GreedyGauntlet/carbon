@@ -1,1 +1,21 @@
 1. notify warning on play if no primary cam or if multiple primary cams
+2. ScriptPack
+3. script panel
+4. asset pack
+5. source component
+6. listener component
+7. animation component
+8. asset panel
+9. edit panel
+--- finish sprint ---
+1. panel extensions
+2. custom panel config
+3. ui state save
+--- finish sprint ---
+1. anti aliasing
+2. highlight hovered entity
+3. click gameobject
+4. highlight selected entity
+--- finish sprint ---
+1. release mode
+--- done!!! ---

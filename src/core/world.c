@@ -5,6 +5,7 @@
 #include "ecs/registry.h"
 #include "systems/system.h"
 #include "systems/draw.h"
+#include "core/application.h"
 #include <raymath.h>
 
 World* GenerateWorld(
@@ -168,12 +169,10 @@ float GetWorldRotation(Entity e) {
     return *EntityRotation(e);
 }
 
-// Next:
-// 10. work on scene management panel
-// 11. implement scene switching
-// 12. implement entity list
-// 13. make sure you calculate properly so only loop through and list entities that are visible
-// 14. gah make it scrollable again
-// 15. keep track of selected entity
-// 15.5 dont forget to make active scene a part of editor settings
-// 16. done with sprint!
+BOOL IsActiveWorld(World* world) {
+    Scene* scene = GetActiveScene();
+    for (size_t i = 0; i < scene->worlds.size; i++) {
+        if (scene->worlds.data[i] == world) return TRUE;
+    }
+    return FALSE;
+}
