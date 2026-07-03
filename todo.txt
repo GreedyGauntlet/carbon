@@ -1,6 +1,3 @@
-1. notify warning on play if no primary cam or if multiple primary cams
-2. ScriptPack
-3. script panel
 4. asset pack
 5. source component
 6. listener component
@@ -18,4 +15,5 @@
 4. highlight selected entity
 --- finish sprint ---
 1. release mode
+2. test with empty everything to ensure engine can run blank
 --- done!!! ---

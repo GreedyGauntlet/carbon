@@ -419,6 +419,47 @@ void UIDrawText(const char* text, ...) {
     g_ui_cursor.x = 10;
 }
 
+void UIDrawTextWrapped(float width, const char* text, ...) {
+    va_list args;
+    va_start(args, text);
+    vsnprintf(g_ui_text_buffer, MAX_LINE_WIDTH - 1, text, args);
+    char* phrase = g_ui_text_buffer;
+    char buffer[MAX_LINE_WIDTH] = { 0 };
+    int i = 0;
+    char* oldp = phrase;
+    size_t oldi = i;
+    BOOL first = TRUE;
+    while (phrase[0] != '\0') {
+        buffer[i] = phrase[0];
+        if (buffer[i] == ' ' || buffer[i] == '\n') {
+            float twidth = MeasureTextEx(FontAsset(), buffer, LINE_HEIGHT, 0).x;
+            if (twidth > width || buffer[i] == '\n') {
+                buffer[i] = ' ';
+                if (first || twidth <= width) {
+                    oldi = i;
+                    oldp = phrase;
+                }
+                buffer[oldi] = '\0';
+                DrawTextEx(FontAsset(), buffer, g_ui_cursor, LINE_HEIGHT, 0, MappedColor(UI_TEXT_COLOR));
+                g_ui_cursor.y += LINE_HEIGHT;
+                memset(buffer, '\0', MAX_LINE_WIDTH);
+                i = -1;
+                phrase = oldp;
+                first = TRUE;
+            } else {
+                oldp = phrase;
+                oldi = i;
+                first = FALSE;
+            }
+        }
+        phrase++;
+        i++;
+    }
+    DrawTextEx(FontAsset(), buffer, g_ui_cursor, LINE_HEIGHT, 0, MappedColor(UI_TEXT_COLOR));
+    g_ui_cursor.y += LINE_HEIGHT;
+    g_ui_cursor.x = 10;
+}
+
 void UIDrawSubtleText(const char* text, ...) {
     va_list args;
     va_start(args, text);

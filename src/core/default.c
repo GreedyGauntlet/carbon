@@ -19,7 +19,7 @@ static void Move(const Entity e, float dt){
 static void InitDev(Scene* scene) {
     World* world = GenerateWorld("Test World", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     Script ms = (Script){NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE};
-    size_t movescript = PackScript(scene, ms, "Move", "Test Description");
+    size_t movescript = PackScript(scene, ms, "Move", "Test Description:\n\n1. This is a test description for a script that moves an entity in like uh a direction\n2.Yeah thats like it");
     AddWorld(scene, world);
     Entity e = CreateEntity(world);
     EntityScale(e)->x = 100;

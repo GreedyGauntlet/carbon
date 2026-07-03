@@ -356,6 +356,24 @@ void Pause() {
 
 void Resume() {
     g_playing = TRUE;
+    if (GetActiveScene()) {
+        Scene* scene = GetActiveScene();
+        for (size_t i = 0; i < scene->worlds.size; i++) {
+            ARRLIST_EntityID* cameras = GetEntities(scene->worlds.data[i], CameraComponent);
+            int numc = 0;
+            for (size_t j = 0; cameras && j < cameras->size; j++) {
+                Entity e = (Entity){ cameras->data[i], scene->worlds.data[i] };
+                if (GetComponent(e, CameraComponent)->enabled) numc++;
+            }
+            if (numc == 0) {
+                logwarn("No active camera component detected detected in the current scene's %dth world", (int)i);
+            } else if (numc > 1) {
+                logwarn("More than one active camera component detected detected in the current scene's %dth world", (int)i);
+            }
+        }
+    } else {
+        logwarn("No active scene to play!");
+    }
 }
 
 BOOL IsFast() {
