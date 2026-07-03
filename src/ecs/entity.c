@@ -36,3 +36,14 @@ float* EntityRotation(const Entity e) {
     TransformComponent* tc = GetComponent(e, TransformComponent);
     return &(tc->rotation);
 }
+
+Script* EntityScript(const Entity e) {
+    if (HasComponent(e, ScriptComponent)) {
+        Scene* scene = e.context->parent;
+        size_t scriptid = GetComponent(e, ScriptComponent)->id;
+        if (scriptid == (size_t)-1) return NULL;
+        EZ_ASSERT(scriptid < scene->scripts.scripts.size, "Invalid script ID [%d] detected", (int)scriptid);
+        return &(scene->scripts.scripts.data[scriptid]);
+    }
+    return NULL;
+}

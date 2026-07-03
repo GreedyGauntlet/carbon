@@ -76,8 +76,8 @@ void DestroyWorld(World* world) {
     if (scripts) {
         for (size_t i = 0; i < scripts->size; i++) {
             Entity e = (Entity){ scripts->data[i], world };
-            ScriptComponent* sc = GetComponent(e, ScriptComponent);
-            if (sc->clean) sc->clean(e);
+            Script* sc = EntityScript(e);
+            if (sc && sc->clean) sc->clean(e);
         }
     }
     if (world->clean) world->clean(world);
@@ -94,10 +94,8 @@ ARRLIST_EntityID* WorldGetEntities(World* world, size_t type) {
 
 void DestroyEntity(Entity e) {
     ARRLIST_EntityID_add(&(e.context->removal), e.id);
-    if (HasComponent(e, ScriptComponent)) {
-        ScriptComponent* sc = GetComponent(e, ScriptComponent);
-        if (sc->clean) sc->clean(e);
-    }
+    Script* sc = EntityScript(e);
+    if (sc && sc->clean) sc->clean(e);
 }
 
 void FlushRemovalQueue(World* world) {

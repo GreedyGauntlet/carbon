@@ -95,4 +95,17 @@ DECLARE_HASHMAP(EntityID, ARRLIST_EntityID*, Children);
 
 #undef DECLARE
 
+struct Script {
+    ScriptComponentInitializeFunction init;
+    ScriptComponentUpdateFunction update;
+    ScriptComponentDrawFunction draw;
+    ScriptComponentCleanFunction clean;
+    ScriptComponentKeyEventFunction key;
+    ScriptComponentMouseButtonEventFunction mousebutton;
+    ScriptComponentMouseMoveFunction mousemove;
+    ScriptComponentMouseScrollEventFunction mousescroll;
+    void* arbitrary;
+    BOOL initialized;
+};
+
 #endif

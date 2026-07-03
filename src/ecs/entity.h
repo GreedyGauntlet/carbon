@@ -27,4 +27,6 @@ Vector2* EntityScale(const Entity e);
 
 float* EntityRotation(const Entity e);
 
+Script* EntityScript(const Entity e);
+
 #endif

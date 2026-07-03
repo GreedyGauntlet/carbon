@@ -18,6 +18,8 @@ static void Move(const Entity e, float dt){
 }
 static void InitDev(Scene* scene) {
     World* world = GenerateWorld("Test World", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    Script ms = (Script){NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE};
+    size_t movescript = PackScript(scene, ms, "Move", "Test Description");
     AddWorld(scene, world);
     Entity e = CreateEntity(world);
     EntityScale(e)->x = 100;
@@ -36,7 +38,7 @@ static void InitDev(Scene* scene) {
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
     AddComponent(e, ShapeComponent, RECTANGLE_SHAPE, (Color){0,255,0,255});
-    AddComponent(e, ScriptComponent, NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE);
+    AddComponent(e, ScriptComponent, movescript);
     Entity c = CreateEntityNP(world, "I have a parent", 0, 0, 100);
     AddComponent(c, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 1.0f);
     LinkFamily(e, c);

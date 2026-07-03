@@ -65,16 +65,7 @@ EXPOSE_COMPONENT(ShapeComponent) {
 };
 
 EXPOSE_COMPONENT(ScriptComponent) {
-    ScriptComponentInitializeFunction init;
-    ScriptComponentUpdateFunction update;
-    ScriptComponentDrawFunction draw;
-    ScriptComponentCleanFunction clean;
-    ScriptComponentKeyEventFunction key;
-    ScriptComponentMouseButtonEventFunction mousebutton;
-    ScriptComponentMouseMoveFunction mousemove;
-    ScriptComponentMouseScrollEventFunction mousescroll;
-    void* arbitrary;
-    BOOL initialized;
+    size_t id;
 };
 
 EXPOSE_COMPONENT(AnchorComponent) {

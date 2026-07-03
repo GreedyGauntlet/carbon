@@ -19,11 +19,18 @@ struct Application {
     #endif
 };
 
+struct ScriptPack {
+    ARRLIST_StaticString names;
+    ARRLIST_StaticString descriptions;
+    ARRLIST_Script scripts;
+};
+
 struct Scene {
     const char* name;
     ARRLIST_WorldPtr worlds;
     SceneInitializeFunction init;
     SceneCleanFunction clean;
+    ScriptPack scripts;
 };
 
 struct World {
@@ -40,6 +47,7 @@ struct World {
     ARRLIST_EntityID removal;
     HASHMAP_Parents parents;
     HASHMAP_Children children;
+    Scene* parent;
 };
 
 struct System {
@@ -106,25 +114,6 @@ struct AssetPack {
 //    ARRLIST_Animation animations;
     ARRLIST_StaticString audionames;
 //    ARRLIST_Animation audios;
-};
-
-struct ScriptPack {
-    ARRLIST_StaticString names;
-    ARRLIST_StaticString descriptions;
-    ARRLIST_Script scripts;
-};
-
-struct Script {
-    ScriptComponentInitializeFunction init;
-    ScriptComponentUpdateFunction update;
-    ScriptComponentDrawFunction draw;
-    ScriptComponentCleanFunction clean;
-    ScriptComponentKeyEventFunction key;
-    ScriptComponentMouseButtonEventFunction mousebutton;
-    ScriptComponentMouseMoveFunction mousemove;
-    ScriptComponentMouseScrollEventFunction mousescroll;
-    void* arbitrary;
-    BOOL initialized;
 };
 
 #endif

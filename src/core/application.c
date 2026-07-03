@@ -133,8 +133,8 @@ void RunApplication() {
                     if (scripts) {
                         for (size_t j = 0; j < scripts->size; j++) {
                             Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
-                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                            if (sc->mousebutton) sc->mousebutton(e, mb, INPUTPRESS);
+                            Script* sc = EntityScript(e);
+                            if (sc && sc->mousebutton) sc->mousebutton(e, mb, INPUTPRESS);
                         }
                     }
                 }
@@ -151,8 +151,8 @@ void RunApplication() {
                     if (scripts) {
                         for (size_t j = 0; j < scripts->size; j++) {
                             Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
-                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                            if (sc->mousebutton) sc->mousebutton(e, mb, INPUTRELEASE);
+                            Script* sc = EntityScript(e);
+                            if (sc && sc->mousebutton) sc->mousebutton(e, mb, INPUTRELEASE);
                         }
                     }
                 }
@@ -169,8 +169,8 @@ void RunApplication() {
                     if (scripts) {
                         for (size_t j = 0; j < scripts->size; j++) {
                             Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
-                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                            if (sc->mousebutton) sc->mousebutton(e, mb, INPUTDOWN);
+                            Script* sc = EntityScript(e);
+                            if (sc && sc->mousebutton) sc->mousebutton(e, mb, INPUTDOWN);
                         }
                     }
                 }
@@ -188,8 +188,8 @@ void RunApplication() {
                     if (scripts) {
                         for (size_t j = 0; j < scripts->size; j++) {
                             Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
-                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                            if (sc->mousemove) sc->mousemove(e, GetMousePosition());
+                            Script* sc = EntityScript(e);
+                            if (sc && sc->mousemove) sc->mousemove(e, GetMousePosition());
                         }
                     }
                 }
@@ -205,8 +205,8 @@ void RunApplication() {
                     if (scripts) {
                         for (size_t j = 0; j < scripts->size; j++) {
                             Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
-                            ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                            if (sc->mousescroll) sc->mousescroll(e, mscroll);
+                            Script* sc = EntityScript(e);
+                            if (sc && sc->mousescroll) sc->mousescroll(e, mscroll);
                         }
                     }
                 }
@@ -237,8 +237,8 @@ void RunApplication() {
                         if (scripts) {
                             for (size_t k = 0; k < scripts->size; k++) {
                                 Entity e = (Entity){ scripts->data[k], scene->worlds.data[j] };
-                                ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                                if (sc->key) {
+                                Script* sc = EntityScript(e);
+                                if (sc && sc->key) {
                                     sc->key(e, g_application.keylist.data[i], INPUTDOWN);
                                     if (IsKeyPressed(g_application.keylist.data[i]))
                                         sc->key(e, g_application.keylist.data[i], INPUTPRESS);
@@ -259,8 +259,8 @@ void RunApplication() {
                         if (scripts) {
                             for (size_t k = 0; k < scripts->size; k++) {
                                 Entity e = (Entity){ scripts->data[k], scene->worlds.data[j] };
-                                ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                                if (sc->key) sc->key(e, g_application.keylist.data[i], INPUTRELEASE);
+                                Script* sc = EntityScript(e);
+                                if (sc && sc->key) sc->key(e, g_application.keylist.data[i], INPUTRELEASE);
                             }
                         }
                     }
@@ -276,9 +276,9 @@ void RunApplication() {
                 if (scripts) {
                     for (size_t j = 0; j < scripts->size; j++) {
                         Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
-                        ScriptComponent* sc = GetComponent(e, ScriptComponent);
-                        if (!sc->initialized && sc->init) { sc->init(e); sc->initialized = TRUE; }
-                        if (sc->update) sc->update(e, GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
+                        Script* sc = EntityScript(e);
+                        if (sc && !sc->initialized && sc->init) { sc->init(e); sc->initialized = TRUE; }
+                        if (sc && sc->update) sc->update(e, GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
                     }
                 }
             }
