@@ -33,7 +33,7 @@ struct AssetPack {
     ARRLIST_StaticString soundnames;
     ARRLIST_Sound sounds;
     ARRLIST_StaticString musicnames;
-    // ARRLIST
+    ARRLIST_Music musics;
 };
 
 struct Scene {

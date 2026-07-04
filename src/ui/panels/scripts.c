@@ -6,6 +6,7 @@
 #include "ui/ui.h"
 
 static size_t g_selected = (size_t)-1;
+static float g_scrolldiff = 0.0f;
 
 static void DrawScriptsPanel(float width, float height) {
     Scene* scene = GetActiveScene();
@@ -14,8 +15,20 @@ static void DrawScriptsPanel(float width, float height) {
         UIDrawText("No Scripts Loaded");
         return;
     }
-    UIDrawText("Loaded Scripts");
-    UIDivider(width - 20);
+    if (HoveredPanel() && strcmp(HoveredPanel(), "Scripts") == 0) {
+        if (InputKeyPressed(IK_ENTER)) g_scrolldiff = 0.0f;
+        g_scrolldiff -= 18.0f * GetMouseWheelMove();
+    }
+    int numlines = scene->scripts.names.size;
+    if (g_selected < (size_t)numlines) {
+        const char* descriptor = scene->scripts.descriptions.data[g_selected];
+        numlines += 1 + (UITextWidth(descriptor) / (width - 33));
+        for (size_t i = 0; descriptor[i] != '\0'; i++)
+            if (descriptor[i] == '\n') numlines++;
+    }
+    if (g_scrolldiff > numlines * LINE_HEIGHT - height + 85) g_scrolldiff = numlines * LINE_HEIGHT - height + 85;
+    if (g_scrolldiff < 0) g_scrolldiff = 0.0f;
+    UIMoveCursor(0, 45 - g_scrolldiff);
     for (size_t i = 0; i < scene->scripts.names.size; i++) {
         if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){UIGetCursor().x - 2 + UIGetPosition().x, UIGetCursor().y + UIGetPosition().y, width - UIGetCursor().x - 10, 20})) {
             DrawRectangle(UIGetCursor().x - 2, UIGetCursor().y, width - UIGetCursor().x - 10, 20, MappedColor(UI_HIGHLIGHT_COLOR));
@@ -35,6 +48,10 @@ static void DrawScriptsPanel(float width, float height) {
             UIDrawTextWrapped(width - 33, "%s", scene->scripts.descriptions.data[i]);
         }
     }
+    UISetCursor(10, 10);
+    DrawRectangle(0, 0, width, 45, MappedColor(PANEL_BG_COLOR));
+    UIDrawText("Loaded Scripts");
+    UIDivider(width - 20);
  }
 
 Panel GenerateScriptsPanel() {

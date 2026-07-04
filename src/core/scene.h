@@ -25,4 +25,8 @@ size_t PackSound(Scene* scene, Sound sound, const char* name);
 
 size_t FindSound(Scene* scene, const char* name);
 
+size_t PackMusic(Scene* scene, Music music, const char* name);
+
+size_t FindMusic(Scene* scene, const char* name);
+
 #endif

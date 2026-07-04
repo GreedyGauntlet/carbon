@@ -26,8 +26,13 @@ void WipeScene(Scene* scene) {
         StopSound(scene->assets.sounds.data[i]);
         UnloadSound(scene->assets.sounds.data[i]);
     }
+    for (size_t i = 0; i < scene->assets.musics.size; i++) {
+        StopMusicStream(scene->assets.musics.data[i]);
+        UnloadMusicStream(scene->assets.musics.data[i]);
+    }
     ARRLIST_Texture2D_clear(&(scene->assets.textures));
     ARRLIST_Sound_clear(&(scene->assets.sounds));
+    ARRLIST_Music_clear(&(scene->assets.musics));
 }
 
 void DestroyScene(Scene* scene) {
@@ -84,5 +89,18 @@ size_t PackSound(Scene* scene, Sound sound, const char* name) {
 size_t FindSound(Scene* scene, const char* name) {
     for (size_t i = 0; i < scene->assets.soundnames.size; i++)
         if (strcmp(scene->assets.soundnames.data[i], name) == 0) return i;
+    return (size_t)-1;
+}
+
+size_t PackMusic(Scene* scene, Music music, const char* name) {
+    EZ_ASSERT(FindMusic(scene, name) == (size_t)-1, "A stream with this name has already been packed into this scene");
+    ARRLIST_StaticString_add(&(scene->assets.musicnames), name);
+    ARRLIST_Music_add(&(scene->assets.musics), music);
+    return scene->assets.musics.size - 1;
+}
+
+size_t FindMusic(Scene* scene, const char* name) {
+    for (size_t i = 0; i < scene->assets.musicnames.size; i++)
+        if (strcmp(scene->assets.musicnames.data[i], name) == 0) return i;
     return (size_t)-1;
 }

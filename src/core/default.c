@@ -28,7 +28,7 @@ static void Move(const Entity e, float dt) {
 }
 static void Fart(const Entity e, float dt) {
     if (IsKeyPressed(KEY_SPACE)) {
-        GetComponent(e, SoundComponent)->command = AUDIO_PLAY;
+        GetComponent(e, MusicComponent)->command = AUDIO_PLAY;
         logwarn("FARTING!!!");
     }
 }
@@ -42,7 +42,7 @@ static void InitDev(Scene* scene) {
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
     AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){255,0,0,255});
-    AddComponent(e, SoundComponent, PackSound(scene, LoadSound("assets/audio/fart.mp3"), "Fart Noise"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
+    AddComponent(e, MusicComponent, PackMusic(scene, LoadMusicStream("assets/audio/sea_shanties.mp3"), "Fart Noise"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
     AddComponent(e, ScriptComponent, PackScript(scene, (Script){NULL, Fart, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE}, "Fart Script", "Triggers a fart on spacebar"));
     for (size_t i = 0; i < 50; i++) {
         e = CreateEntityP(world, 75 + i * 50, 25 + i * 50, 1);
