@@ -21,4 +21,8 @@ size_t PackTexture(Scene* scene, Texture2D texture, const char* name);
 
 size_t FindTexture(Scene* scene, const char* name);
 
+size_t PackSound(Scene* scene, Sound sound, const char* name);
+
+size_t FindSound(Scene* scene, const char* name);
+
 #endif

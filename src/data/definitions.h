@@ -30,8 +30,10 @@ struct AssetPack {
     ARRLIST_Texture2D textures;
     ARRLIST_StaticString animnames;
 //    ARRLIST_Animation animations;
-    ARRLIST_StaticString audionames;
-//    ARRLIST_Animation audios;
+    ARRLIST_StaticString soundnames;
+    ARRLIST_Sound sounds;
+    ARRLIST_StaticString musicnames;
+    // ARRLIST
 };
 
 struct Scene {

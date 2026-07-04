@@ -83,6 +83,7 @@ DECLARE_ARRLIST(Panel);
 DECLARE_ARRLIST(Notification);
 DECLARE_ARRLIST(Script);
 DECLARE_ARRLIST(Texture2D);
+DECLARE_ARRLIST(Sound);
 DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);

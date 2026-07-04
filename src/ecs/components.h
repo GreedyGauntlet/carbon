@@ -8,13 +8,13 @@
 START_COMPONENT_DEFINITIONS();
 
 typedef enum {
-    TEXT_ALIGN_CENTER,
+    TEXT_ALIGN_CENTER = 0,
     TEXT_ALIGN_LEFT,
     TEXT_ALIGN_RIGHT
 } TextAlignment;
 
 typedef enum {
-    CENTER_ANCHOR,
+    CENTER_ANCHOR = 0,
     ML_ANCHOR,
     MR_ANCHOR,
     TL_ANCHOR,
@@ -29,6 +29,14 @@ typedef enum {
     RECTANGLE_SHAPE,
     CIRCLE_SHAPE
 } ShapeType;
+
+typedef enum {
+    AUDIO_NOTHING = 0,
+    AUDIO_PLAY,
+    AUDIO_PAUSE,
+    AUDIO_RESUME,
+    AUDIO_STOP
+} AudioCommand;
 
 EXPOSE_COMPONENT(TagComponent) {
     const char* tag;
@@ -74,6 +82,28 @@ EXPOSE_COMPONENT(AnchorComponent) {
 
 EXPOSE_COMPONENT(ParentComponent) {
     EntityID parentid;
+};
+
+EXPOSE_COMPONENT(ListenerComponent) {
+    BOOL enabled;
+    float volume;
+    float decay;
+};
+
+EXPOSE_COMPONENT(SoundComponent) {
+    size_t id;
+    float volume;
+    float pitch;
+    float decay;
+    AudioCommand command;
+};
+
+EXPOSE_COMPONENT(MusicComponent) {
+    size_t id;
+    float volume;
+    float pitch;
+    float decay;
+    AudioCommand command;
 };
 
 #endif

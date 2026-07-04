@@ -5,6 +5,7 @@
 #include "ecs/registry.h"
 #include "systems/system.h"
 #include "systems/draw.h"
+#include "systems/audio.h"
 #include "core/application.h"
 #include <raymath.h>
 
@@ -28,6 +29,7 @@ World* GenerateWorld(
     world->clean = clean;
     world->registry = GenerateRegistry();
     AddSystem(world, GenerateDrawSystem());
+    AddSystem(world, GenerateAudioSystem());
     return world;
 }
 
