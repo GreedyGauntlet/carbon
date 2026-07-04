@@ -21,6 +21,7 @@ void WipeScene(Scene* scene) {
     ARRLIST_StaticString_clear(&(scene->assets.animnames));
     ARRLIST_StaticString_clear(&(scene->assets.soundnames));
     ARRLIST_StaticString_clear(&(scene->assets.musicnames));
+    ARRLIST_StaticString_clear(&(scene->assets.animnames));
     for (size_t i = 0; i < scene->assets.textures.size; i++) UnloadTexture(scene->assets.textures.data[i]);
     for (size_t i = 0; i < scene->assets.sounds.size; i++) {
         StopSound(scene->assets.sounds.data[i]);
@@ -33,6 +34,7 @@ void WipeScene(Scene* scene) {
     ARRLIST_Texture2D_clear(&(scene->assets.textures));
     ARRLIST_Sound_clear(&(scene->assets.sounds));
     ARRLIST_Music_clear(&(scene->assets.musics));
+    ARRLIST_Animation_clear(&(scene->assets.animations));
 }
 
 void DestroyScene(Scene* scene) {
@@ -102,5 +104,18 @@ size_t PackMusic(Scene* scene, Music music, const char* name) {
 size_t FindMusic(Scene* scene, const char* name) {
     for (size_t i = 0; i < scene->assets.musicnames.size; i++)
         if (strcmp(scene->assets.musicnames.data[i], name) == 0) return i;
+    return (size_t)-1;
+}
+
+size_t PackAnimation(Scene* scene, Animation animation, const char* name) {
+    EZ_ASSERT(FindAnimation(scene, name) == (size_t)-1, "An animation with this name has already been packed into this scene");
+    ARRLIST_StaticString_add(&(scene->assets.animnames), name);
+    ARRLIST_Animation_add(&(scene->assets.animations), animation);
+    return scene->assets.animations.size - 1;
+}
+
+size_t FindAnimation(Scene* scene, const char* name) {
+    for (size_t i = 0; i < scene->assets.animnames.size; i++)
+        if (strcmp(scene->assets.animnames.data[i], name) == 0) return i;
     return (size_t)-1;
 }

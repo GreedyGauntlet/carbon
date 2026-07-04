@@ -12,6 +12,7 @@
 #include "ecs/components.h"
 #include "util/logger.h"
 #include <easylogger.h>
+#include <math.h>
 static void Move(const Entity e, float dt) {
     if (IsKeyDown(KEY_A)) {
         EntityPosition(e)->x -= dt * 500.0f;
@@ -38,16 +39,18 @@ static void InitDev(Scene* scene) {
     Script ms = (Script){NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE};
     size_t movescript = PackScript(scene, ms, "Move", "Test Description:\n\n1. This is a test description for a script that moves an entity in like uh a direction\n2.Yeah thats like it");
     PackTexture(scene, LoadTexture("assets/textures/default.png"), "Default Square");
+    PackTexture(scene, LoadTexture("assets/textures/SHEET_explosion.png"), "Explosion Animation Sheet");
+    PackAnimation(scene, (Animation){FindTexture(scene, "Explosion Animation Sheet"), 17, 631, 418, (Vector2){0, 0}, 10.0f}, "Explosion");
     Entity e = CreateEntity(world);
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
-    AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){255,0,0,255});
+    AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
     AddComponent(e, MusicComponent, PackMusic(scene, LoadMusicStream("assets/audio/sea_shanties.mp3"), "Fart Noise"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
     AddComponent(e, ScriptComponent, PackScript(scene, (Script){NULL, Fart, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE}, "Fart Script", "Triggers a fart on spacebar"));
     for (size_t i = 0; i < 50; i++) {
-        e = CreateEntityP(world, 75 + i * 50, 25 + i * 50, 1);
-        EntityScale(e)->x = 100;
-        EntityScale(e)->y = 100;
+        e = CreateEntityP(world, 75 + sin((float)i) * 90, 25 + cos((float)i) * 90, 1);
+        EntityScale(e)->x = 10;
+        EntityScale(e)->y = 10;
         AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){0,0,255,255});
     }
     e = CreateEntityP(world, 0, 0, 0.5f);

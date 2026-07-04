@@ -29,7 +29,7 @@ struct AssetPack {
     ARRLIST_StaticString texnames;
     ARRLIST_Texture2D textures;
     ARRLIST_StaticString animnames;
-//    ARRLIST_Animation animations;
+    ARRLIST_Animation animations;
     ARRLIST_StaticString soundnames;
     ARRLIST_Sound sounds;
     ARRLIST_StaticString musicnames;

@@ -7,6 +7,7 @@
 #include "core/application.h"
 #include "core/world.h"
 #include "core/config.h"
+#include "util/logger.h"
 #include <easysort.h>
 #include <raymath.h>
 #include <float.h>
@@ -22,6 +23,61 @@ static BOOL g_viewcam_locked = FALSE;
 static float ExtractZValue(EntityID e) {
     Entity entity = (Entity){ e, g_current_world };
     return GetWorldPosition(entity).z; 
+}
+
+static void DrawAnimationComponent(Entity e, Vector2 origin) {
+    AnimationComponent* ac = GetComponent(e, AnimationComponent);
+    Vector3 translation = GetWorldPosition(e);
+    Vector2 scale = GetWorldScale(e);
+    if (ac->id != (size_t)-1) {
+        EZ_ASSERT(ac->id < e.context->parent->assets.animations.size, "Invalid Animation ID [%d] detected", (int)ac->id);
+        Animation anim = e.context->parent->assets.animations.data[ac->id];
+        if (anim.frames == 0) {
+            logwarn("Cannot animate an animation with 0 frames");
+            return;
+        }
+        if (anim.fps == 0) {
+            logwarn("Cannot animate an animation with 0 fps");
+            return;
+        }
+        Texture2D sheet;
+        if (anim.sheet != (size_t)-1) {
+            EZ_ASSERT(anim.sheet < e.context->parent->assets.textures.size, "Invalid Texture ID [%d] detected", (int)anim.sheet);
+            sheet = e.context->parent->assets.textures.data[anim.sheet];
+        } else if (HasComponent(e, TextureComponent)) {
+            TextureComponent* tc = GetComponent(e, TextureComponent);
+            if (tc->id != (size_t)-1) {
+                EZ_ASSERT(tc->id < e.context->parent->assets.textures.size, "Invalid Texture ID [%d] detected", (int)tc->id);
+                sheet = e.context->parent->assets.textures.data[tc->id];
+            } else {
+                logwarn("Entity with AnimationComponent does not have an animation sheet");
+                return;
+            }
+        } else {
+            logwarn("Entity with AnimationComponent does not have an animation sheet");
+            return;
+        }
+        float frametime = 1.0f / anim.fps;
+        frametime = ac->time / frametime;
+        size_t frame = (size_t)frametime;
+        frame = !ac->loop && frame >= anim.frames ? anim.frames - 1 : frame % anim.frames;
+        DrawTexturePro(
+            sheet,
+            (Rectangle){
+                anim.origin.x + (ac->flipped ? anim.width : 0) + (frame * anim.width),
+                anim.origin.y + (ac->flopped ? anim.height : 0),
+                ((float)anim.width) * (ac->flipped ? -1.0f : 1.0f),
+                ((float)anim.height) * (ac->flopped ? -1.0f : 1.0f)
+            },
+            (Rectangle){
+                translation.x - (scale.x / 2.0f) + origin.x,
+                translation.y - (scale.y / 2.0f) + origin.y,
+                scale.x, scale.y
+            },
+            (Vector2){ 0, 0 }, 0.0f, WHITE
+        );
+        if (!ac->paused) ac->time += ac->speed * GetFrameTime() * (IsFast() ? Config()->ffspeed : 1.0f);
+    }
 }
 
 static void DrawTextureComponent(Entity e, Vector2 origin) {
@@ -117,13 +173,14 @@ static void DrawDrawSystem(System* system) {
     ARRLIST_EntityID* images = GetEntities(system->context, TextureComponent);
     ARRLIST_EntityID* shapes = GetEntities(system->context, ShapeComponent);
     ARRLIST_EntityID* texts = GetEntities(system->context, TextComponent);
+    ARRLIST_EntityID* animations = GetEntities(system->context, AnimationComponent);
     ARRLIST_EntityID* cameras = GetEntities(system->context, CameraComponent);
     ARRLIST_EntityID anchors = { 0 };
     ARRLIST_int anchorfuncs = { 0 };
-    #define DRAWTYPES 3
-    ARRLIST_EntityID* lists[DRAWTYPES] = { images, shapes, texts };
-    DrawComponentFunc funcs[DRAWTYPES] = { DrawTextureComponent, DrawShapeComponent, DrawTextComponent };
-    size_t indices[DRAWTYPES] = { 0, 0, 0 };
+    #define DRAWTYPES 4
+    ARRLIST_EntityID* lists[DRAWTYPES] = { images, shapes, texts, animations };
+    DrawComponentFunc funcs[DRAWTYPES] = { DrawTextureComponent, DrawShapeComponent, DrawTextComponent, DrawAnimationComponent };
+    size_t indices[DRAWTYPES] = { 0 };
     Config()->camera.offset = (Vector2){ GetViewportSlice().x / 2.0f, GetViewportSlice().y / 2.0f };
     Camera2D camera = Config()->camera;
     g_viewcam_locked = FALSE;
@@ -142,7 +199,7 @@ static void DrawDrawSystem(System* system) {
     }
     BeginMode2D(camera);
     while (TRUE) {
-        float zs[DRAWTYPES] = { FLT_MAX, FLT_MAX, FLT_MAX };
+        float zs[DRAWTYPES] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
         BOOL done = TRUE;
         for (int i = 0; i < DRAWTYPES; i++) {
             if (lists[i] && indices[i] < lists[i]->size) {

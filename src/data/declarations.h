@@ -42,6 +42,7 @@ DECLARE(Notification);
 DECLARE(AssetPack);
 DECLARE(ScriptPack);
 DECLARE(Script);
+DECLARE(Animation);
 
 typedef void (*SceneInitializeFunction)(Scene* scene);
 typedef void (*SceneCleanFunction)(Scene* scene);
@@ -85,6 +86,7 @@ DECLARE_ARRLIST(Script);
 DECLARE_ARRLIST(Texture2D);
 DECLARE_ARRLIST(Sound);
 DECLARE_ARRLIST(Music);
+DECLARE_ARRLIST(Animation);
 DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);
 DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);
@@ -109,6 +111,15 @@ struct Script {
     ScriptComponentMouseScrollEventFunction mousescroll;
     void* arbitrary;
     BOOL initialized;
+};
+
+struct Animation {
+    size_t sheet; // if -1, fall back to texture component
+    size_t frames;
+    size_t width;
+    size_t height;
+    Vector2 origin;
+    float fps;
 };
 
 #endif

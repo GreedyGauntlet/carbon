@@ -106,4 +106,14 @@ EXPOSE_COMPONENT(MusicComponent) {
     AudioCommand command;
 };
 
+EXPOSE_COMPONENT(AnimationComponent) {
+    size_t id;
+    float time;
+    float speed;
+    BOOL paused;
+    BOOL loop;
+    BOOL flipped;
+    BOOL flopped;
+};
+
 #endif

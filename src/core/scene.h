@@ -29,4 +29,8 @@ size_t PackMusic(Scene* scene, Music music, const char* name);
 
 size_t FindMusic(Scene* scene, const char* name);
 
+size_t PackAnimation(Scene* scene, Animation animation, const char* name);
+
+size_t FindAnimation(Scene* scene, const char* name);
+
 #endif

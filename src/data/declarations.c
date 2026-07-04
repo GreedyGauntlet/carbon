@@ -9,6 +9,7 @@ IMPL_ARRLIST(Script);
 IMPL_ARRLIST(Texture2D);
 IMPL_ARRLIST(Sound);
 IMPL_ARRLIST(Music);
+IMPL_ARRLIST(Animation);
 IMPL_ARRLIST_NAMED(ScenePtr, Scene*);
 IMPL_ARRLIST_NAMED(WorldPtr, World*);
 IMPL_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);
