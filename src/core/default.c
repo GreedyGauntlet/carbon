@@ -20,6 +20,7 @@ static void InitDev(Scene* scene) {
     World* world = GenerateWorld("Test World", NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     Script ms = (Script){NULL, Move, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE};
     size_t movescript = PackScript(scene, ms, "Move", "Test Description:\n\n1. This is a test description for a script that moves an entity in like uh a direction\n2.Yeah thats like it");
+    PackTexture(scene, LoadTexture("assets/textures/default.png"), "Default Square");
     AddWorld(scene, world);
     Entity e = CreateEntity(world);
     EntityScale(e)->x = 100;
@@ -37,7 +38,7 @@ static void InitDev(Scene* scene) {
     e = CreateEntityP(world, 0, 50, -1);
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
-    AddComponent(e, ShapeComponent, RECTANGLE_SHAPE, (Color){0,255,0,255});
+    AddComponent(e, TextureComponent, FindTexture(scene, "Default Square"));
     AddComponent(e, ScriptComponent, movescript);
     Entity c = CreateEntityNP(world, "I have a parent", 0, 0, 100);
     AddComponent(c, CameraComponent, TRUE, (Vector2){ 0, 0 }, 45, 1.0f);

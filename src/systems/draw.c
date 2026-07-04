@@ -24,18 +24,22 @@ static float ExtractZValue(EntityID e) {
     return GetWorldPosition(entity).z; 
 }
 
-static void DrawImageComponent(Entity e, Vector2 origin) {
-    ImageComponent* ic = GetComponent(e, ImageComponent);
-    Vector3 translation = GetWorldPosition(e);
-    Vector2 scale = GetWorldScale(e);
-    DrawTexturePro(
-        ic->texture,
-        (Rectangle){0, 0, ic->texture.width, ic->texture.height},
-        (Rectangle){
-            translation.x - scale.x/2.0f + origin.x,
-            translation.y - scale.y/2.0f + origin.y,
-            scale.x, scale.y},
-        (Vector2){0, 0}, 0, WHITE);
+static void DrawTextureComponent(Entity e, Vector2 origin) {
+    TextureComponent* tc = GetComponent(e, TextureComponent);
+    if (tc->id != (size_t)-1) {
+        EZ_ASSERT(tc->id < e.context->parent->assets.textures.size, "Invalid Texture ID [%d] detected", (int)tc->id);
+        Texture2D tex = e.context->parent->assets.textures.data[tc->id];
+        Vector3 translation = GetWorldPosition(e);
+        Vector2 scale = GetWorldScale(e);
+        DrawTexturePro(
+            tex,
+            (Rectangle){0, 0, tex.width, tex.height},
+            (Rectangle){
+                translation.x - scale.x/2.0f + origin.x,
+                translation.y - scale.y/2.0f + origin.y,
+                scale.x, scale.y},
+            (Vector2){0, 0}, 0, WHITE);
+    }
 }
 
 static void DrawTextComponent(Entity e, Vector2 origin) {
@@ -110,7 +114,7 @@ static Vector2 AnchorCoordinate(Entity e) {
 
 static void DrawDrawSystem(System* system) {
     g_current_world = system->context;
-    ARRLIST_EntityID* images = GetEntities(system->context, ImageComponent);
+    ARRLIST_EntityID* images = GetEntities(system->context, TextureComponent);
     ARRLIST_EntityID* shapes = GetEntities(system->context, ShapeComponent);
     ARRLIST_EntityID* texts = GetEntities(system->context, TextComponent);
     ARRLIST_EntityID* cameras = GetEntities(system->context, CameraComponent);
@@ -118,7 +122,7 @@ static void DrawDrawSystem(System* system) {
     ARRLIST_int anchorfuncs = { 0 };
     #define DRAWTYPES 3
     ARRLIST_EntityID* lists[DRAWTYPES] = { images, shapes, texts };
-    DrawComponentFunc funcs[DRAWTYPES] = { DrawImageComponent, DrawShapeComponent, DrawTextComponent };
+    DrawComponentFunc funcs[DRAWTYPES] = { DrawTextureComponent, DrawShapeComponent, DrawTextComponent };
     size_t indices[DRAWTYPES] = { 0, 0, 0 };
     Config()->camera.offset = (Vector2){ GetViewportSlice().x / 2.0f, GetViewportSlice().y / 2.0f };
     Camera2D camera = Config()->camera;
@@ -174,7 +178,7 @@ static void DrawDrawSystem(System* system) {
 
 static void UpdateDrawSystem(System* system, float dt) {
     g_current_world = system->context;
-    ARRLIST_EntityID* eids = GetEntities(system->context, ImageComponent);
+    ARRLIST_EntityID* eids = GetEntities(system->context, TextureComponent);
     if (eids) EasySort_EntityID(eids, ExtractZValue);
     eids = GetEntities(system->context, ShapeComponent);
     if (eids) EasySort_EntityID(eids, ExtractZValue);

@@ -17,6 +17,11 @@ void WipeScene(Scene* scene) {
     ARRLIST_StaticString_clear(&(scene->scripts.names));
     ARRLIST_StaticString_clear(&(scene->scripts.descriptions));
     ARRLIST_Script_clear(&(scene->scripts.scripts));
+    ARRLIST_StaticString_clear(&(scene->assets.texnames));
+    ARRLIST_StaticString_clear(&(scene->assets.animnames));
+    ARRLIST_StaticString_clear(&(scene->assets.audionames));
+    for (size_t i = 0; i < scene->assets.textures.size; i++) UnloadTexture(scene->assets.textures.data[i]);
+    ARRLIST_Texture2D_clear(&(scene->assets.textures));
 }
 
 void DestroyScene(Scene* scene) {
@@ -47,5 +52,18 @@ size_t PackScript(Scene* scene, Script script, const char* name, const char* des
 size_t FindScript(Scene* scene, const char* name) {
     for (size_t i = 0; i < scene->scripts.names.size; i++)
         if (strcmp(scene->scripts.names.data[i], name) == 0) return i;
+    return (size_t)-1;
+}
+
+size_t PackTexture(Scene* scene, Texture2D texture, const char* name) {
+    EZ_ASSERT(FindTexture(scene, name) == (size_t)-1, "A texture with this name has already been packed into this scene");
+    ARRLIST_StaticString_add(&(scene->assets.texnames), name);
+    ARRLIST_Texture2D_add(&(scene->assets.textures), texture);
+    return scene->assets.textures.size - 1;
+}
+
+size_t FindTexture(Scene* scene, const char* name) {
+    for (size_t i = 0; i < scene->assets.texnames.size; i++)
+        if (strcmp(scene->assets.texnames.data[i], name) == 0) return i;
     return (size_t)-1;
 }

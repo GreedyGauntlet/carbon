@@ -25,12 +25,22 @@ struct ScriptPack {
     ARRLIST_Script scripts;
 };
 
+struct AssetPack {
+    ARRLIST_StaticString texnames;
+    ARRLIST_Texture2D textures;
+    ARRLIST_StaticString animnames;
+//    ARRLIST_Animation animations;
+    ARRLIST_StaticString audionames;
+//    ARRLIST_Animation audios;
+};
+
 struct Scene {
     const char* name;
     ARRLIST_WorldPtr worlds;
     SceneInitializeFunction init;
     SceneCleanFunction clean;
     ScriptPack scripts;
+    AssetPack assets;
 };
 
 struct World {
@@ -105,15 +115,6 @@ struct Popup {
 struct Notification {
     char message[MAX_NOTIFICATION_SIZE];
     MessageLevel level;
-};
-
-struct AssetPack {
-    ARRLIST_StaticString texnames;
-//    ARRLIST_Texture2D textures;
-    ARRLIST_StaticString animnames;
-//    ARRLIST_Animation animations;
-    ARRLIST_StaticString audionames;
-//    ARRLIST_Animation audios;
 };
 
 #endif

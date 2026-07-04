@@ -35,8 +35,8 @@ EXPOSE_COMPONENT(TagComponent) {
     BOOL metacollapsed;
 };
 
-EXPOSE_COMPONENT(ImageComponent) {
-    Texture2D texture;
+EXPOSE_COMPONENT(TextureComponent) {
+    size_t id;
 };
 
 EXPOSE_COMPONENT(TransformComponent) {
