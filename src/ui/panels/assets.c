@@ -330,6 +330,88 @@ static void DrawAssetsPanel(float width, float height) {
                     (Vector2){ 0, 0 }, 0, WHITE
                 );
             }
+        } else if (g_selected_asset_type == 1 && g_selected_asset < scene->assets.animations.size) {
+        } else if (g_selected_asset_type == 2 && g_selected_asset < scene->assets.sounds.size) {
+            Sound sound = scene->assets.sounds.data[g_selected_asset];
+            if (IsSoundPlaying(sound)) {
+                DrawRectangle(10 + 3*(width - 20)/4.0f - 25, 55 + g_canvas_height/2.0f - 25, 50, 50, MappedColor(PANEL_ASSET_BORDER_COLOR));
+                DrawRectangle(10 + 1*(width - 20)/4.0f - 25 + 8, 55 + g_canvas_height/2.0f - 25, 15, 50, MappedColor(PANEL_ASSET_BORDER_COLOR));
+                DrawRectangle(10 + 1*(width - 20)/4.0f - 25 + 32, 55 + g_canvas_height/2.0f - 25, 15, 50, MappedColor(PANEL_ASSET_BORDER_COLOR));
+                if (CheckCollisionPointRec(
+                    Vector2Subtract(GetMousePosition(), UIGetPosition()),
+                    (Rectangle){10, 55, (width - 20) / 2.0f, g_canvas_height})) {
+                    DrawRectangle(10, 55, (width - 20) / 2.0f, g_canvas_height, (Color){255, 255, 255, 30});
+                    if (InputButtonReleased(IK_MOUSELEFT)) {
+                        PauseSound(sound);
+                    }
+                }
+                if (CheckCollisionPointRec(
+                    Vector2Subtract(GetMousePosition(), UIGetPosition()),
+                    (Rectangle){10 + (width - 20) / 2.0f, 55, (width - 20) / 2.0f, g_canvas_height})) {
+                    DrawRectangle(10 + (width - 20) / 2.0f, 55, (width - 20) / 2.0f, g_canvas_height, (Color){255, 255, 255, 30});
+                    if (InputButtonReleased(IK_MOUSELEFT)) {
+                        StopSound(sound);
+                    }
+                }
+            } else {
+                if (CheckCollisionPointRec(
+                    Vector2Subtract(GetMousePosition(), UIGetPosition()),
+                    (Rectangle){10, 55, width - 20, g_canvas_height})) {
+                    DrawRectangle(10, 55, width - 20, g_canvas_height, (Color){255, 255, 255, 30});
+                    if (InputButtonReleased(IK_MOUSELEFT)) {
+                        PlaySound(sound);
+                        SetSoundVolume(sound, 0.5f);
+                        SetSoundPitch(sound, 1.0f);
+                        SetSoundPan(sound, 0.0f);
+                    }
+                }
+                DrawTriangle(
+                    (Vector2){ width / 2.0f - 25, g_canvas_height / 2.0f + 50 - 25 },
+                    (Vector2){ width / 2.0f - 25, g_canvas_height / 2.0f + 50 + 25 },
+                    (Vector2){ width / 2.0f + 25, g_canvas_height / 2.0f + 50 },
+                MappedColor(PANEL_ASSET_BORDER_COLOR));
+            }
+        } else if (g_selected_asset_type == 3 && g_selected_asset < scene->assets.musics.size) {
+            Music music = scene->assets.musics.data[g_selected_asset];
+            if (IsMusicStreamPlaying(music)) {
+                DrawRectangle(10 + 3*(width - 20)/4.0f - 25, 55 + g_canvas_height/2.0f - 25, 50, 50, MappedColor(PANEL_ASSET_BORDER_COLOR));
+                DrawRectangle(10 + 1*(width - 20)/4.0f - 25 + 8, 55 + g_canvas_height/2.0f - 25, 15, 50, MappedColor(PANEL_ASSET_BORDER_COLOR));
+                DrawRectangle(10 + 1*(width - 20)/4.0f - 25 + 32, 55 + g_canvas_height/2.0f - 25, 15, 50, MappedColor(PANEL_ASSET_BORDER_COLOR));
+                if (CheckCollisionPointRec(
+                    Vector2Subtract(GetMousePosition(), UIGetPosition()),
+                    (Rectangle){10, 55, (width - 20) / 2.0f, g_canvas_height})) {
+                    DrawRectangle(10, 55, (width - 20) / 2.0f, g_canvas_height, (Color){255, 255, 255, 30});
+                    if (InputButtonReleased(IK_MOUSELEFT)) {
+                        PauseMusicStream(music);
+                    }
+                }
+                if (CheckCollisionPointRec(
+                    Vector2Subtract(GetMousePosition(), UIGetPosition()),
+                    (Rectangle){10 + (width - 20) / 2.0f, 55, (width - 20) / 2.0f, g_canvas_height})) {
+                    DrawRectangle(10 + (width - 20) / 2.0f, 55, (width - 20) / 2.0f, g_canvas_height, (Color){255, 255, 255, 30});
+                    if (InputButtonReleased(IK_MOUSELEFT)) {
+                        StopMusicStream(music);
+                    }
+                }
+                UpdateMusicStream(music);
+            } else {
+                if (CheckCollisionPointRec(
+                    Vector2Subtract(GetMousePosition(), UIGetPosition()),
+                    (Rectangle){10, 55, width - 20, g_canvas_height})) {
+                    DrawRectangle(10, 55, width - 20, g_canvas_height, (Color){255, 255, 255, 30});
+                    if (InputButtonReleased(IK_MOUSELEFT)) {
+                        PlayMusicStream(music);
+                        SetMusicVolume(music, 0.5f);
+                        SetMusicPitch(music, 1.0f);
+                        SetMusicPan(music, 0.0f);
+                    }
+                }
+                DrawTriangle(
+                    (Vector2){ width / 2.0f - 25, g_canvas_height / 2.0f + 50 - 25 },
+                    (Vector2){ width / 2.0f - 25, g_canvas_height / 2.0f + 50 + 25 },
+                    (Vector2){ width / 2.0f + 25, g_canvas_height / 2.0f + 50 },
+                MappedColor(PANEL_ASSET_BORDER_COLOR));
+            }
         } else {
             UISetCursor((width / 2.0f) - (UITextWidth("No Asset Selected!") / 2.0f), 40 + g_canvas_height / 2.0f);
             UIDrawText("No Asset Selected!");
