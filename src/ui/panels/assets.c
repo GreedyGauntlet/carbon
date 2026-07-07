@@ -15,6 +15,7 @@ static size_t g_selected_asset = (size_t)-1;
 static int g_selected_asset_type = 0;
 static float g_scrolldiff = 0.0f;
 static BOOL g_resize_canvas = FALSE;
+static float g_animationtime = 0.0f;
 
 static void DrawAssetsPanel(float width, float height) {
     if (HoveredPanel() && strcmp(HoveredPanel(), "Assets") == 0) {
@@ -284,24 +285,7 @@ static void DrawAssetsPanel(float width, float height) {
     UIDrawText("Loaded Assets");
     UIDivider(width - 20);
     DrawRectangle(UIGetCursor().x, UIGetCursor().y, width - 20, g_canvas_height, MappedColor(PANEL_ASSET_BORDER_COLOR));
-    DrawRectangle(UIGetCursor().x + 2, UIGetCursor().y + 2, width - 20 - 4, g_canvas_height - 4, MappedColor(PANEL_ASSET_BG_COLOR));
-    DrawTriangle(
-        (Vector2){ UIGetCursor().x + width - 20, UIGetCursor().y + g_canvas_height - 15 },
-        (Vector2){ UIGetCursor().x + width - 35, UIGetCursor().y + g_canvas_height },
-        (Vector2){ UIGetCursor().x + width - 20, UIGetCursor().y + g_canvas_height },
-        MappedColor(PANEL_ASSET_BORDER_COLOR));
-    if (CheckCollisionPointTriangle(
-        Vector2Subtract(GetMousePosition(), UIGetPosition()),
-        (Vector2){ UIGetCursor().x + width - 20, UIGetCursor().y + g_canvas_height - 15 },
-        (Vector2){ UIGetCursor().x + width - 35, UIGetCursor().y + g_canvas_height },
-        (Vector2){ UIGetCursor().x + width - 20, UIGetCursor().y + g_canvas_height })) {
-        if (InputButtonPressed(IK_MOUSELEFT)) g_resize_canvas = TRUE;
-    }
-    if (InputButtonReleased(IK_MOUSELEFT)) g_resize_canvas = FALSE;
-    if (g_resize_canvas) {
-        g_canvas_height += GetMouseDelta().y;
-        if (g_canvas_height < 30.0f) g_canvas_height = 30.0f;
-    }
+    DrawRectangle(UIGetCursor().x + 2, UIGetCursor().y + 2, width - 20 - 4, g_canvas_height - 4, MappedColor(PANEL_ASSET_BG_COLOR)); 
     if (g_selected_asset != (size_t)-1) {
         if (g_selected_asset_type == 0 && g_selected_asset < scene->assets.textures.size) {
             Texture2D texture = scene->assets.textures.data[g_selected_asset];
@@ -330,7 +314,46 @@ static void DrawAssetsPanel(float width, float height) {
                     (Vector2){ 0, 0 }, 0, WHITE
                 );
             }
-        } else if (g_selected_asset_type == 1 && g_selected_asset < scene->assets.animations.size) {
+        } else if (
+            g_selected_asset_type == 1 &&
+            g_selected_asset < scene->assets.animations.size &&
+            scene->assets.animations.data[g_selected_asset].sheet != (size_t)-1) {
+            Animation anim = scene->assets.animations.data[g_selected_asset];
+            Texture2D texture = scene->assets.textures.data[anim.sheet];
+            float wratio = anim.width / (width - 20 - 4);
+            float hratio = anim.height / (g_canvas_height - 4);
+            float frametime = 1.0f / anim.fps;
+            frametime = g_animationtime / frametime;
+            size_t frame = (size_t)frametime;
+            frame = frame % anim.frames;
+            if (wratio > hratio) {
+                DrawTexturePro(
+                    texture,
+                    (Rectangle){
+                        anim.origin.x + (frame * anim.width), anim.origin.y,
+                        ((float)anim.width), ((float)anim.height) },
+                    (Rectangle){ 
+                        UIGetCursor().x + 2,
+                        UIGetCursor().y + 2 + ((g_canvas_height - 4) / 2.0f) - ((anim.height / wratio) / 2.0f),
+                        width - 20 - 4,
+                        anim.height / wratio },
+                    (Vector2){ 0, 0 }, 0, WHITE
+                );
+            } else {
+                DrawTexturePro(
+                    texture,
+                    (Rectangle){
+                        anim.origin.x + (frame * anim.width), anim.origin.y,
+                        ((float)anim.width), ((float)anim.height) },
+                    (Rectangle){ 
+                        UIGetCursor().x + 2 + ((width - 20 - 4) / 2.0f) - ((anim.width / hratio) / 2.0f),
+                        UIGetCursor().y + 2,
+                        anim.width / hratio,
+                        g_canvas_height - 4 },
+                    (Vector2){ 0, 0 }, 0, WHITE
+                );
+            }
+            g_animationtime += GetFrameTime();
         } else if (g_selected_asset_type == 2 && g_selected_asset < scene->assets.sounds.size) {
             Sound sound = scene->assets.sounds.data[g_selected_asset];
             if (IsSoundPlaying(sound)) {
@@ -413,12 +436,29 @@ static void DrawAssetsPanel(float width, float height) {
                 MappedColor(PANEL_ASSET_BORDER_COLOR));
             }
         } else {
-            UISetCursor((width / 2.0f) - (UITextWidth("No Asset Selected!") / 2.0f), 40 + g_canvas_height / 2.0f);
-            UIDrawText("No Asset Selected!");
+            UISetCursor((width / 2.0f) - (UITextWidth("No Preview Available") / 2.0f), 40 + g_canvas_height / 2.0f);
+            UIDrawText("No Preview Available");
         }
     } else {
-        UISetCursor((width / 2.0f) - (UITextWidth("No Asset Selected!") / 2.0f), 40 + g_canvas_height / 2.0f);
-        UIDrawText("No Asset Selected!");
+        UISetCursor((width / 2.0f) - (UITextWidth("No Preview Available") / 2.0f), 40 + g_canvas_height / 2.0f);
+        UIDrawText("No Preview Available");
+    }
+    DrawTriangle(
+        (Vector2){ width - 10, g_canvas_height + 35 },
+        (Vector2){ width - 25, g_canvas_height + 50 },
+        (Vector2){ width - 10, g_canvas_height + 50},
+        MappedColor(PANEL_ASSET_BORDER_COLOR));
+    if (CheckCollisionPointTriangle(
+        Vector2Subtract(GetMousePosition(), UIGetPosition()),
+        (Vector2){ width - 10, g_canvas_height + 35 },
+        (Vector2){ width - 25, g_canvas_height + 50 },
+        (Vector2){ width - 10, g_canvas_height + 50})) {
+        if (InputButtonPressed(IK_MOUSELEFT)) g_resize_canvas = TRUE;
+    }
+    if (InputButtonReleased(IK_MOUSELEFT)) g_resize_canvas = FALSE;
+    if (g_resize_canvas) {
+        g_canvas_height += GetMouseDelta().y;
+        if (g_canvas_height < 30.0f) g_canvas_height = 30.0f;
     }
 }
 
