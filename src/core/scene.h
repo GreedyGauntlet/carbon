@@ -33,4 +33,6 @@ size_t PackAnimation(Scene* scene, Animation animation, const char* name);
 
 size_t FindAnimation(Scene* scene, const char* name);
 
+void RefreshAssets(Scene* scene);
+
 #endif

@@ -125,3 +125,21 @@ size_t FindAnimation(Scene* scene, const char* name) {
         if (strcmp(scene->assets.animnames.data[i], name) == 0) return i;
     return (size_t)-1;
 }
+
+void RefreshAssets(Scene* scene) {
+    for (size_t i = 0; i < scene->assets.textures.size; i++) {
+        UnloadTexture(scene->assets.textures.data[i]);
+        scene->assets.textures.data[i] = LoadTexture(scene->assets.texpaths.data[i]);
+        while (!IsTextureValid(scene->assets.textures.data[i])) {}
+    }
+    for (size_t i = 0; i < scene->assets.sounds.size; i++) {
+        UnloadSound(scene->assets.sounds.data[i]);
+        scene->assets.sounds.data[i] = LoadSound(scene->assets.soundpaths.data[i]);
+        while (!IsSoundValid(scene->assets.sounds.data[i])) {}
+    }
+    for (size_t i = 0; i < scene->assets.musics.size; i++) {
+        UnloadMusicStream(scene->assets.musics.data[i]);
+        scene->assets.musics.data[i] = LoadMusicStream(scene->assets.musicpaths.data[i]);
+        while (!IsMusicValid(scene->assets.musics.data[i])) {}
+    }
+}

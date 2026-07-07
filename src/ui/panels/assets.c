@@ -1,8 +1,10 @@
 #include "assets.h"
 #include "core/application.h"
+#include "core/scene.h"
 #include "data/definitions.h"
 #include "data/colors.h"
 #include "data/input.h"
+#include "util/logger.h"
 #include "ui/ui.h"
 #include <raymath.h>
 
@@ -459,6 +461,28 @@ static void DrawAssetsPanel(float width, float height) {
     if (g_resize_canvas) {
         g_canvas_height += GetMouseDelta().y;
         if (g_canvas_height < 30.0f) g_canvas_height = 30.0f;
+    }
+    const float outer = 9.0f;
+    const float inner = 6.0f;
+    const float tri = 9.0f;
+    float x = width - 35;
+    float y = 10;
+    DrawCircle(x + 12.5f, y + 12.5f, outer, MappedColor(UI_BTN_COLOR));
+    DrawRectangle(x + 12.5f, y, 12.5f, 12.5f, MappedColor(PANEL_BG_COLOR));
+    DrawCircle(x + 12.5f, y + 12.5f, inner, MappedColor(PANEL_BG_COLOR));
+    DrawTriangle(
+        (Vector2){ x + 18.75f, y + 12.5f - (tri / 2.0f) },
+        (Vector2){ x + 18.75f - (tri / 2.0f), y + 12.5f },
+        (Vector2){ x + 18.75f + (tri / 2.0f), y + 12.5f },
+        MappedColor(UI_BTN_COLOR));
+    if (InputButtonPressed(IK_MOUSELEFT) &&
+        GetMouseX() > x + UIGetPosition().x &&
+        GetMouseX() < x + UIGetPosition().x + 25 &&
+        GetMouseY() > y + UIGetPosition().y &&
+        GetMouseY() < y + UIGetPosition().y + 25) {
+        logwarn("refreshing assets...");
+        RefreshAssets(scene);
+        loginfo("successfully refreshed assets!");
     }
 }
 
