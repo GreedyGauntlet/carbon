@@ -27,12 +27,15 @@ struct ScriptPack {
 
 struct AssetPack {
     ARRLIST_StaticString texnames;
+    ARRLIST_StaticString texpaths;
     ARRLIST_Texture2D textures;
     ARRLIST_StaticString animnames;
     ARRLIST_Animation animations;
     ARRLIST_StaticString soundnames;
+    ARRLIST_StaticString soundpaths;
     ARRLIST_Sound sounds;
     ARRLIST_StaticString musicnames;
+    ARRLIST_StaticString musicpaths;
     ARRLIST_Music musics;
 };
 

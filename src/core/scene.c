@@ -22,6 +22,9 @@ void WipeScene(Scene* scene) {
     ARRLIST_StaticString_clear(&(scene->assets.soundnames));
     ARRLIST_StaticString_clear(&(scene->assets.musicnames));
     ARRLIST_StaticString_clear(&(scene->assets.animnames));
+    ARRLIST_StaticString_clear(&(scene->assets.texpaths));
+    ARRLIST_StaticString_clear(&(scene->assets.soundpaths));
+    ARRLIST_StaticString_clear(&(scene->assets.musicpaths));
     for (size_t i = 0; i < scene->assets.textures.size; i++) UnloadTexture(scene->assets.textures.data[i]);
     for (size_t i = 0; i < scene->assets.sounds.size; i++) {
         StopSound(scene->assets.sounds.data[i]);
@@ -68,10 +71,11 @@ size_t FindScript(Scene* scene, const char* name) {
     return (size_t)-1;
 }
 
-size_t PackTexture(Scene* scene, Texture2D texture, const char* name) {
+size_t PackTexture(Scene* scene, const char* path, const char* name) {
     EZ_ASSERT(FindTexture(scene, name) == (size_t)-1, "A texture with this name has already been packed into this scene");
     ARRLIST_StaticString_add(&(scene->assets.texnames), name);
-    ARRLIST_Texture2D_add(&(scene->assets.textures), texture);
+    ARRLIST_StaticString_add(&(scene->assets.texpaths), path);
+    ARRLIST_Texture2D_add(&(scene->assets.textures), LoadTexture(path));
     return scene->assets.textures.size - 1;
 }
 
@@ -81,10 +85,11 @@ size_t FindTexture(Scene* scene, const char* name) {
     return (size_t)-1;
 }
 
-size_t PackSound(Scene* scene, Sound sound, const char* name) {
+size_t PackSound(Scene* scene, const char* path, const char* name) {
     EZ_ASSERT(FindSound(scene, name) == (size_t)-1, "A sound with this name has already been packed into this scene");
     ARRLIST_StaticString_add(&(scene->assets.soundnames), name);
-    ARRLIST_Sound_add(&(scene->assets.sounds), sound);
+    ARRLIST_StaticString_add(&(scene->assets.soundpaths), path);
+    ARRLIST_Sound_add(&(scene->assets.sounds), LoadSound(path));
     return scene->assets.sounds.size - 1;
 }
 
@@ -94,10 +99,11 @@ size_t FindSound(Scene* scene, const char* name) {
     return (size_t)-1;
 }
 
-size_t PackMusic(Scene* scene, Music music, const char* name) {
+size_t PackMusic(Scene* scene, const char* path, const char* name) {
     EZ_ASSERT(FindMusic(scene, name) == (size_t)-1, "A stream with this name has already been packed into this scene");
     ARRLIST_StaticString_add(&(scene->assets.musicnames), name);
-    ARRLIST_Music_add(&(scene->assets.musics), music);
+    ARRLIST_StaticString_add(&(scene->assets.musicpaths), path);
+    ARRLIST_Music_add(&(scene->assets.musics), LoadMusicStream(path));
     return scene->assets.musics.size - 1;
 }
 
