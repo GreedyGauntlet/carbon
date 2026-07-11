@@ -41,12 +41,13 @@ static void InitDev(Scene* scene) {
     PackTexture(scene, "assets/textures/default.png", "Default Square");
     PackTexture(scene, "assets/textures/SHEET_explosion.png", "Explosion Animation Sheet");
     PackSound(scene, "assets/audio/fart.mp3", "Fart Noise");
+    PackMusic(scene, "assets/audio/sea_shanties.mp3", "Sea Shanty");
     PackAnimation(scene, (Animation){FindTexture(scene, "Explosion Animation Sheet"), 17, 631, 418, (Vector2){0, 0}, 10.0f}, "Explosion");
     Entity e = CreateEntity(world);
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
     AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
-    AddComponent(e, MusicComponent, PackMusic(scene, "assets/audio/sea_shanties.mp3", "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
+    AddComponent(e, MusicComponent, FindMusic(scene, "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
     AddComponent(e, ScriptComponent, PackScript(scene, (Script){NULL, Fart, NULL, NULL, NULL, NULL, NULL, NULL, NULL, FALSE}, "Fart Script", "Triggers a fart on spacebar"));
     for (size_t i = 0; i < 50; i++) {
         e = CreateEntityP(world, 75 + sin((float)i) * 90, 25 + cos((float)i) * 90, 1);
@@ -54,9 +55,14 @@ static void InitDev(Scene* scene) {
         EntityScale(e)->y = 10;
         AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){0,0,255,255});
     }
-    e = CreateEntityP(world, 0, 0, 0.5f);
+    e = CreateEntityNP(world, "Text Test Entity", 0, 0, 0.5f);
     AddComponent(e, TextComponent, "TEST TEST TEST", TEXT_ALIGN_CENTER, (Color){255,255,255,255}, 20.0f);
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
+    AddComponent(e, TextureComponent, FindTexture(scene, "Default Square"));
+    AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
+    AddComponent(e, ListenerComponent, FALSE, 1.0, 0.5);
+    AddComponent(e, SoundComponent, FindSound(scene, "Fart Noise"), 1.0, 1.0, 0.5, AUDIO_NOTHING);
+    AddComponent(e, MusicComponent, FindMusic(scene, "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
     e = CreateEntityP(world, 0, 50, -1);
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;

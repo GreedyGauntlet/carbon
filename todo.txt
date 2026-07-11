@@ -16,4 +16,5 @@
 --- finish sprint ---
 1. release mode
 2. test with empty everything to ensure engine can run blank
+3. clear notifications command
 --- done!!! ---

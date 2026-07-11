@@ -469,6 +469,15 @@ void UIDrawSubtleText(const char* text, ...) {
     g_ui_cursor.x = 10;
 }
 
+void UIDrawItalicText(const char* text, ...) {
+    va_list args;
+    va_start(args, text);
+    vsnprintf(g_ui_text_buffer, MAX_LINE_WIDTH - 1, text, args);
+    DrawTextEx(FontAssetItalic(), g_ui_text_buffer, g_ui_cursor, LINE_HEIGHT, 0, MappedColor(UI_DIVIDER_COLOR));
+    g_ui_cursor.y += LINE_HEIGHT;
+    g_ui_cursor.x = 10;
+}
+
 BOOL UIDragFloat_(PersistantUIData* data, float* value, float min, float max, float speed, size_t w) {
     BOOL ret = FALSE;
     if (!g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) &&

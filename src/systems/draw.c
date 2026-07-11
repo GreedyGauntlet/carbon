@@ -74,7 +74,7 @@ static void DrawAnimationComponent(Entity e, Vector2 origin) {
                 translation.y - (scale.y / 2.0f) + origin.y,
                 scale.x, scale.y
             },
-            (Vector2){ 0, 0 }, 0.0f, WHITE
+            (Vector2){ 0, 0 }, GetWorldRotation(e), WHITE
         );
         if (!ac->paused) ac->time += ac->speed * GetFrameTime() * (IsFast() ? Config()->ffspeed : 1.0f);
     }
@@ -94,7 +94,7 @@ static void DrawTextureComponent(Entity e, Vector2 origin) {
                 translation.x - scale.x/2.0f + origin.x,
                 translation.y - scale.y/2.0f + origin.y,
                 scale.x, scale.y},
-            (Vector2){0, 0}, 0, WHITE);
+            (Vector2){0, 0}, GetWorldRotation(e), WHITE);
     }
 }
 
@@ -170,6 +170,12 @@ static Vector2 AnchorCoordinate(Entity e) {
 
 static void DrawDrawSystem(System* system) {
     g_current_world = system->context;
+    ARRLIST_EntityID* eids = GetEntities(system->context, TextureComponent);
+    if (eids) EasySort_EntityID(eids, ExtractZValue);
+    eids = GetEntities(system->context, ShapeComponent);
+    if (eids) EasySort_EntityID(eids, ExtractZValue);
+    eids = GetEntities(system->context, TextComponent);
+    if (eids) EasySort_EntityID(eids, ExtractZValue);
     ARRLIST_EntityID* images = GetEntities(system->context, TextureComponent);
     ARRLIST_EntityID* shapes = GetEntities(system->context, ShapeComponent);
     ARRLIST_EntityID* texts = GetEntities(system->context, TextComponent);
@@ -233,18 +239,8 @@ static void DrawDrawSystem(System* system) {
     #undef DRAWTYPES
 }
 
-static void UpdateDrawSystem(System* system, float dt) {
-    g_current_world = system->context;
-    ARRLIST_EntityID* eids = GetEntities(system->context, TextureComponent);
-    if (eids) EasySort_EntityID(eids, ExtractZValue);
-    eids = GetEntities(system->context, ShapeComponent);
-    if (eids) EasySort_EntityID(eids, ExtractZValue);
-    eids = GetEntities(system->context, TextComponent);
-    if (eids) EasySort_EntityID(eids, ExtractZValue);
-}
-
 System* GenerateDrawSystem() {
-    return GenerateSystem(DrawDrawSystem, UpdateDrawSystem, NULL, NULL, NULL, NULL, NULL);
+    return GenerateSystem(DrawDrawSystem, NULL, NULL, NULL, NULL, NULL, NULL);
 }
 
 BOOL ViewCameraLocked() {

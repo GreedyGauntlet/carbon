@@ -54,6 +54,8 @@ void UIDrawTextWrapped(float width, const char* text, ...);
 
 void UIDrawSubtleText(const char* text, ...);
 
+void UIDrawItalicText(const char* text, ...);
+
 BOOL UIDragFloat_(PersistantUIData* data, float* value, float min, float max, float speed, size_t w);
 #define UIDragFloat(value, min, max, speed, w) \
     PERSISTANT_UI(UIDragFloat_, value, min, max, speed, w)

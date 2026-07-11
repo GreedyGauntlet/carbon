@@ -9,6 +9,8 @@ void InitializeFonts();
 
 Font FontAsset();
 
+Font FontAssetItalic();
+
 void DestroyFonts();
 
 #endif

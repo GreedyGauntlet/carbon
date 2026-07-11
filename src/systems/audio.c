@@ -7,7 +7,7 @@
 #include "core/world.h"
 #include <raymath.h>
 
-void UpdateAudioSystem(System* system, float dt) {
+static void UpdateAudioSystem(System* system, float dt) {
     ARRLIST_EntityID* sounds = GetEntities(system->context, SoundComponent);
     ARRLIST_EntityID* musics = GetEntities(system->context, MusicComponent);
     ARRLIST_EntityID* listeners = GetEntities(system->context, ListenerComponent);
@@ -102,7 +102,7 @@ void UpdateAudioSystem(System* system, float dt) {
     }
 }
 
-void CleanAudioSystem(System* system) {
+static void CleanAudioSystem(System* system) {
     ARRLIST_EntityID* sounds = GetEntities(system->context, SoundComponent);
     ARRLIST_EntityID* musics = GetEntities(system->context, MusicComponent);
     if (sounds) {
