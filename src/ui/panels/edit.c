@@ -33,12 +33,6 @@ static void DrawTagComponentUI(float width, float height) {
     UIMoveCursor(0, 5);
     DrawRectangleGradientH(UIGetCursor().x - 3, UIGetCursor().y - 3, width - 14, 26, (Color){ 255, 255, 255, 190 }, (Color){ 0 });
     UIDrawText(tc->tag);
-    UISetCursor(width - 38, 10);
-    if (UIButton("+", 0)) {
-        // TODO:
-        logerror("Adding components dynamically have not been implemented yet!");
-    }
-    UIMoveCursor(0, 5);
 }
 
 static BOOL DrawTransformComponentUI(float width, float height) {
