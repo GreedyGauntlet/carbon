@@ -397,6 +397,7 @@ static BOOL DrawTextComponentUI(float width, float height) {
 static BOOL DrawCameraComponentUI(float width, float height) {
     if (!HasComponent(g_selected, CameraComponent)) return FALSE;
     CameraComponent* cc = GetComponent(g_selected, CameraComponent);
+    float component_width = (width - LEFT_COLUMN_WIDTH - 20 - (2 * 16) - (1 * 10)) / 2.0f;
     DrawComponentTitle(width, "Camera");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
@@ -404,6 +405,35 @@ static BOOL DrawCameraComponentUI(float width, float height) {
     UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
     DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
     UICheckbox(&(cc->enabled));
+    UIDrawText("Offset");
+    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    DrawRectangle(UIGetCursor().x + 3, UIGetCursor().y + 1, 16, 18, RED);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x + 3, UIGetCursor().y + 1, 16, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        cc->offset.x = 0.0f;;
+    }
+    UIMoveCursor(7, 0);
+    UIDrawText("x");
+    UIMoveCursor(17 + LEFT_COLUMN_WIDTH, -20);
+    edited |= UIDragFloat(&(cc->offset.x), -FLT_MAX, FLT_MAX, 0.1f, component_width);
+    UIMoveCursor(component_width + 31 + LEFT_COLUMN_WIDTH, -20);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, BLUE);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        cc->offset.y = 0.0f;;
+    }
+    UIDrawText("y");
+    UIMoveCursor(component_width + 42 + LEFT_COLUMN_WIDTH, -20);
+    edited |= UIDragFloat(&(cc->offset.y), -FLT_MAX, FLT_MAX, 0.1f, component_width);
+    UIDrawText("Rotation");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIDragFloat(&(cc->rotation), -FLT_MAX, FLT_MAX, 0.1f, width - LEFT_COLUMN_WIDTH - 20.0f);
+    UIDrawText("Zoom");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIDragFloat(&(cc->zoom), 0.0001f, FLT_MAX, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
     return edited;
 }
 
