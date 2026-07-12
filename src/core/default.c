@@ -58,11 +58,11 @@ static void InitDev(Scene* scene) {
     e = CreateEntityNP(world, "Text Test Entity", 0, 0, 0.5f);
     AddComponent(e, TextComponent, "TEST TEST TEST", 0, TEXT_ALIGN_CENTER, (Color){255,255,255,255}, 20.0f);
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
-    //AddComponent(e, TextureComponent, FindTexture(scene, "Default Square"));
-    //AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
-    //AddComponent(e, ListenerComponent, FALSE, 1.0, 0.5);
-    //AddComponent(e, SoundComponent, FindSound(scene, "Fart Noise"), 1.0, 1.0, 0.5, AUDIO_NOTHING);
-    //AddComponent(e, MusicComponent, FindMusic(scene, "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
+    AddComponent(e, TextureComponent, FindTexture(scene, "Default Square"));
+    AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
+    AddComponent(e, ListenerComponent, FALSE, 1.0, 0.5);
+    AddComponent(e, SoundComponent, FindSound(scene, "Fart Noise"), 1.0, 1.0, 0.5, AUDIO_NOTHING);
+    AddComponent(e, MusicComponent, FindMusic(scene, "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
     AddComponent(e, CameraComponent, FALSE, (Vector2){ 0, 0 }, 0, 1.0f);
     AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){0,0,255,255});
     AddComponent(e, ScriptComponent, movescript);

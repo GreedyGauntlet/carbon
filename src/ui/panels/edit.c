@@ -16,6 +16,7 @@
 static Entity g_selected = { 0 };
 static const char* g_audio_command_labels[] = { "Send Command", "Play", "Pause", "Resume", "Stop" };
 static const char* g_shape_labels[] = { "Rectangle", "Circle" };
+static float g_scrolldiff = 0.0f;
 
 static void DrawComponentTitle(float width, const char* title) {
     float tratio = 2.0f * UITextWidth(title) / (width - 20.0f);
@@ -526,7 +527,26 @@ static void DrawEditPanel(float width, float height) {
         UIDrawText("No Selected Entity");
         return;
     }
-    DrawTagComponentUI(width, height);
+    float panel_heights = 0;
+    panel_heights += HasComponent(g_selected, TransformComponent) ? 95 : 0;
+    panel_heights += HasComponent(g_selected, AnchorComponent) ? 85 : 0;
+    panel_heights += HasComponent(g_selected, TextureComponent) ? 45 : 0;
+    panel_heights += HasComponent(g_selected, AnimationComponent) ? 160 : 0;
+    panel_heights += HasComponent(g_selected, ListenerComponent) ? 83 : 0;
+    panel_heights += HasComponent(g_selected, SoundComponent) ? 123 : 0;
+    panel_heights += HasComponent(g_selected, MusicComponent) ? 123 : 0;
+    panel_heights += HasComponent(g_selected, TextComponent) ? 128 : 0;
+    panel_heights += HasComponent(g_selected, CameraComponent) ? 105 : 0;
+    panel_heights += HasComponent(g_selected, ShapeComponent) ? 90 : 0;
+    panel_heights += HasComponent(g_selected, ScriptComponent) ? 45 : 0;
+    UIMoveCursor(0, 35);
+    if (HoveredPanel() && strcmp(HoveredPanel(), "Edit") == 0) {
+        if (InputKeyPressed(IK_ENTER)) g_scrolldiff = 0.0f;
+        g_scrolldiff -= 18.0f * GetMouseWheelMove();
+    }
+    if (g_scrolldiff > panel_heights - height + 45) g_scrolldiff = panel_heights - height + 45;
+    if (g_scrolldiff < 0) g_scrolldiff = 0.0f;
+    UIMoveCursor(0, -g_scrolldiff);
     DrawTransformComponentUI(width, height);
     DrawAnchorComponentUI(width, height);
     DrawTextureComponentUI(width, height);
@@ -538,11 +558,9 @@ static void DrawEditPanel(float width, float height) {
     DrawCameraComponentUI(width, height);
     DrawShapeComponentUI(width, height);
     DrawScriptComponentUI(width, height);
-    // -- camera ------------------------------------
-    // enabled: []
-    // [ x] [ y]
-    // [ rotatopnm] ( dial with line that rotates!)
-    // zoom : [ zoom ]
+    UISetCursor(10, 10);
+    DrawRectangle(0, 0, width, 45, MappedColor(PANEL_BG_COLOR));
+    DrawTagComponentUI(width, height);
 }
 
 Panel GenerateEditPanel() {
