@@ -17,4 +17,6 @@
 1. release mode
 2. test with empty everything to ensure engine can run blank
 3. clear notifications command
+4. reload assets command
+5. reload scripts command
 --- done!!! ---

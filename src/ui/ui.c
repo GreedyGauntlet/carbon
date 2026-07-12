@@ -817,9 +817,12 @@ void UIDropdownMenu_(PersistantUIData* data, size_t width, size_t num_items, cha
 BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_t size, size_t width, BOOL noclear) {
     BOOL retval = FALSE;
     const float s_cursor_limit = 0.5f;
-    DrawTextEx(FontAsset(), label, g_ui_cursor, LINE_HEIGHT, 0, MappedColor(UI_TEXT_COLOR));
-    Vector2 text_size = MeasureTextEx(FontAsset(), label, LINE_HEIGHT, 0);
-    float box_width = width - text_size.x - 10;
+    if (label) {
+        DrawTextEx(FontAsset(), label, g_ui_cursor, LINE_HEIGHT, 0, MappedColor(UI_TEXT_COLOR));
+    }
+    Vector2 text_size = label ? MeasureTextEx(FontAsset(), label, LINE_HEIGHT, 0) : (Vector2){ 0, LINE_HEIGHT };
+    float labeloffset = label ? 10.0f : 0;
+    float box_width = width - text_size.x - labeloffset;
     if (g_textinput_data.submitted && g_textinput_data.data == data) {
         if (noclear) {
             g_textinput_data = (TextInputData){
@@ -831,7 +834,7 @@ BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_
         retval = TRUE;
     }
     if (box_width < 0) return retval;
-    g_ui_cursor.x += text_size.x + 10;
+    g_ui_cursor.x += text_size.x + labeloffset;
     if (!g_scratch_target_in_use) {
         g_ui_scratch_target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
         g_scratch_target_in_use = TRUE;
@@ -854,14 +857,16 @@ BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_
     }
     EndTextureMode();
     if (g_current_ui_target.id != 0) BeginTextureMode(g_current_ui_target);
+    BOOL g_ui_disabled_bak = g_ui_disabled;
+    if (size == 0) DisableUI();
     DrawTexturePro(
         g_ui_scratch_target.texture,
         (Rectangle){ 0, g_current_ui_target.texture.height - LINE_HEIGHT + 2, box_width, -(LINE_HEIGHT - 2) },
         (Rectangle){ g_ui_cursor.x, g_ui_cursor.y, box_width, LINE_HEIGHT - 2 },
         (Vector2){ 0, 0 },
         0.0f,
-        (Color){ 255, 255, 255, 255 });
-    if (CheckCollisionPointRec(
+        (Color){ 255, 255, 255, g_ui_disabled ? 180 : 255 });
+    if (!g_ui_disabled && CheckCollisionPointRec(
             GetMousePosition(),
             (Rectangle){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y, box_width, LINE_HEIGHT - 2})) {
         if (InputButtonPressed(IK_MOUSELEFT)) {
@@ -873,6 +878,7 @@ BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_
     }
     g_ui_cursor.x = 10;
     g_ui_cursor.y += LINE_HEIGHT;
+    g_ui_disabled = g_ui_disabled_bak;
     return retval;
 }
 

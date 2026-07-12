@@ -15,6 +15,7 @@
 
 static Entity g_selected = { 0 };
 static const char* g_audio_command_labels[] = { "Send Command", "Play", "Pause", "Resume", "Stop" };
+static const char* g_shape_labels[] = { "Rectangle", "Circle" };
 
 static void DrawComponentTitle(float width, const char* title) {
     float tratio = 2.0f * UITextWidth(title) / (width - 20.0f);
@@ -106,12 +107,15 @@ static BOOL DrawAnchorComponentUI(float width, float height) {
     if (!HasComponent(g_selected, AnchorComponent)) return FALSE;
     DrawComponentTitle(width, "Anchor");
     AnchorComponent* ac = GetComponent(g_selected, AnchorComponent);
+    UIMoveCursor(0, 25);
+    UIDrawText("Anchor Alignment");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y - 25, 2, 65, (Color){ 255, 255, 255, 130 });
+    UIMoveCursor(0, -25);
     BOOL edited = FALSE;
     float boxw = 20.0f;
     float gapw = 2.0f;
     ViewportAnchor anchors[] = { TL_ANCHOR, ML_ANCHOR, BL_ANCHOR, TM_ANCHOR, CENTER_ANCHOR, BM_ANCHOR, TR_ANCHOR, MR_ANCHOR, BR_ANCHOR };
-    const char* labels[] = { "TOP LEFT", "MIDDLE LEFT", "BOTTOM LEFT", "TOP MIDDLE", "CENTER", "BOTTOM MIDDLE", "TOP RIGHT", "MIDDLE RIGHT", "BOTTOM RIGHT" };
-    size_t selected = 0;
     for (size_t i = 0; i < 3; i++) {
         for (size_t j = 0; j < 3; j++) {
             DrawRectangle(UIGetCursor().x + (i * (boxw + gapw)), UIGetCursor().y + (j * (boxw + gapw)), boxw, boxw, (Color){ 255, 255, 255, 150 });
@@ -122,17 +126,11 @@ static BOOL DrawAnchorComponentUI(float width, float height) {
                     edited = TRUE;
                 }
             }
-            if (ac->anchor == anchors[i * 3 + j]) {
-                selected = i * 3 + j;
+            if (ac->anchor == anchors[i * 3 + j])
                 DrawCircle(UIGetCursor().x + (i * (boxw + gapw)) + (boxw/2.0f), UIGetCursor().y + (j * (boxw + gapw)) + (boxw/2.0f), 5, RED);
-            }
         }
     }
-    UIMoveCursor((boxw + gapw) * 3 - gapw + (width - (boxw + gapw) * 3 - gapw)/2.0f - (UITextWidth("Current Entity Anchor:")) / 2.0f, 10);
-    UIDrawText("Current Entity Anchor:");
-    UIMoveCursor((boxw + gapw) * 3 - gapw + (width - (boxw + gapw) * 3 - gapw)/2.0f - (UITextWidth(labels[selected])) / 2.0f, 0);
-    UIDrawText(labels[selected]);
-    UIMoveCursor(0, 15);
+    UIMoveCursor(-UIGetCursor().x + 10, 65);
     return edited;
 }
 
@@ -319,6 +317,179 @@ static BOOL DrawMusicComponentUI(float width, float height) {
     return edited;
 }
 
+static BOOL DrawTextComponentUI(float width, float height) {
+    if (!HasComponent(g_selected, TextComponent)) return FALSE;
+    TextComponent* tc = GetComponent(g_selected, TextComponent);
+    DrawComponentTitle(width, "Text");
+    BOOL edited = FALSE;
+    float component_width = (width - 20 - (3 * 16) - (2 * 10)) / 3.0f;
+    UIMoveCursor(0, 2);
+    UIDrawText("Text Content");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    edited |= UITextInput(NULL, tc->text, tc->capacity, width - LEFT_COLUMN_WIDTH - 20.0f, FALSE);
+    UIDrawText("Alignment");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    float boxw = 16.0f;
+    float gapw = 2.0f;
+    TextAlignment alignments[] = { TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, TEXT_ALIGN_RIGHT };
+    UIMoveCursor(0, 2);
+    for (size_t i = 0; i < 3; i++) {
+        DrawRectangle(UIGetCursor().x + (i * (boxw + gapw)), UIGetCursor().y, boxw, boxw, (Color){ 255, 255, 255, 150 });
+        if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x + (i * (boxw + gapw)), UIGetCursor().y, boxw, boxw})) {
+            DrawRectangle(UIGetCursor().x + (i * (boxw + gapw)), UIGetCursor().y, boxw, boxw, (Color){ 255, 255, 255, 170 });
+            if (InputButtonPressed(IK_MOUSELEFT)) {
+                tc->alignment = alignments[i];
+                edited = TRUE;
+            }
+        }
+        if (tc->alignment == alignments[i])
+            DrawCircle(UIGetCursor().x + (i * (boxw + gapw)) + (boxw/2.0f), UIGetCursor().y + (boxw/2.0f), 5, RED);
+    }
+    UIMoveCursor(10 - UIGetCursor().x, 18);
+    UIDrawText("Opacity");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    size_t alpha = tc->color.a;
+    edited |= UIDragSize(&alpha, 0, 255, 1, width - LEFT_COLUMN_WIDTH - 20.0f);
+    tc->color.a = (unsigned char)alpha;
+    UIDrawText("Size");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    edited |= UIDragFloat(&(tc->size), 0.0f, FLT_MAX, 0.05f, width - LEFT_COLUMN_WIDTH - 20.0f);
+    size_t r = tc->color.r;
+    size_t g = tc->color.g;
+    size_t b = tc->color.b;
+    UIMoveCursor(5, 10);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, RED);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        r = 255;
+    }
+    UIDrawText("r");
+    UIMoveCursor(17, -20);
+    edited |= UIDragSize(&r, 0, 255, 1, component_width);
+    UIMoveCursor(component_width + 31, -20);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, GREEN);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        g = 255;
+    }
+    UIDrawText("g");
+    UIMoveCursor(component_width + 42, -20);
+    edited |= UIDragSize(&g, 0, 255, 1, component_width);
+    UIMoveCursor((2*component_width) + 56, -20);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, BLUE);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        b = 255;
+    }
+    UIDrawText("b");
+    UIMoveCursor((2*component_width) + 67, -20);
+    edited |= UIDragSize(&b, 0, 255, 1, component_width);
+    tc->color.r = (unsigned char)r;
+    tc->color.g = (unsigned char)g;
+    tc->color.b = (unsigned char)b;
+    return edited;
+}
+
+static BOOL DrawCameraComponentUI(float width, float height) {
+    if (!HasComponent(g_selected, CameraComponent)) return FALSE;
+    CameraComponent* cc = GetComponent(g_selected, CameraComponent);
+    DrawComponentTitle(width, "Camera");
+    BOOL edited = FALSE;
+    UIMoveCursor(0, 2);
+    UIDrawText("Enabled");
+    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UICheckbox(&(cc->enabled));
+    return edited;
+}
+
+static size_t DropdownSetShape(void* data, size_t index) {
+    ShapeComponent* sc = GetComponent(g_selected, ShapeComponent);
+    if (index != (size_t)-1) {
+        sc->type = (ShapeType)index;
+    }
+    return (size_t)(sc->type);
+}
+
+static BOOL DrawShapeComponentUI(float width, float height) {
+    if (!HasComponent(g_selected, ShapeComponent)) return FALSE;
+    ShapeComponent* sc = GetComponent(g_selected, ShapeComponent);
+    DrawComponentTitle(width, "Shape");
+    BOOL edited = FALSE;
+    float component_width = (width - 20 - (3 * 16) - (2 * 10)) / 3.0f;
+    UIMoveCursor(0, 2);
+    UIDrawText("Shape Type");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, 2, (char**)g_shape_labels, DropdownSetShape, NULL);
+    UIDrawText("Opacity");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    size_t alpha = sc->color.a;
+    edited |= UIDragSize(&alpha, 0, 255, 1, width - LEFT_COLUMN_WIDTH - 20.0f);
+    sc->color.a = (unsigned char)alpha;
+    size_t r = sc->color.r;
+    size_t g = sc->color.g;
+    size_t b = sc->color.b;
+    UIMoveCursor(5, 10);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, RED);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        r = 255;
+    }
+    UIDrawText("r");
+    UIMoveCursor(17, -20);
+    edited |= UIDragSize(&r, 0, 255, 1, component_width);
+    UIMoveCursor(component_width + 31, -20);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, GREEN);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        g = 255;
+    }
+    UIDrawText("g");
+    UIMoveCursor(component_width + 42, -20);
+    edited |= UIDragSize(&g, 0, 255, 1, component_width);
+    UIMoveCursor((2*component_width) + 56, -20);
+    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, BLUE);
+    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
+        InputButtonPressed(IK_MOUSELEFT)) {
+        b = 255;
+    }
+    UIDrawText("b");
+    UIMoveCursor((2*component_width) + 67, -20);
+    edited |= UIDragSize(&b, 0, 255, 1, component_width);
+    sc->color.r = (unsigned char)r;
+    sc->color.g = (unsigned char)g;
+    sc->color.b = (unsigned char)b;
+    return edited;
+}
+
+static size_t DropdownSelectScript(void* data, size_t index) {
+    ScriptComponent* sc = GetComponent(g_selected, ScriptComponent);
+    if (index != (size_t)-1) {
+        sc->id = index;
+    }
+    return sc->id;
+}
+
+static BOOL DrawScriptComponentUI(float width, float height) {
+    if (!HasComponent(g_selected, ScriptComponent)) return FALSE;
+    ScriptComponent* sc = GetComponent(g_selected, ScriptComponent);
+    if (sc->id == (size_t)-1) return FALSE;
+    DrawComponentTitle(width, "Script");
+    BOOL edited = FALSE;
+    UIMoveCursor(0, 2);
+    UIDrawText("Script Asset");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->scripts.names.size, (char**)g_selected.context->parent->scripts.names.data, DropdownSelectScript, NULL);
+    return edited;
+}
+
 static void DrawEditPanel(float width, float height) {
     if (g_selected.id == INVALID_ENTITY || !IsActiveWorld(g_selected.context) || !HasComponent(g_selected, TagComponent)) {
         UISetCursor(width / 2.0f - (UITextWidth("No Selected Entity") / 2.0f), height / 2.0f - 10.0f);
@@ -333,21 +504,15 @@ static void DrawEditPanel(float width, float height) {
     DrawListenerComponentUI(width, height);
     DrawSoundComponentUI(width, height);
     DrawMusicComponentUI(width, height);
-    // -- text --------------------------------------
-    // text: [    text     ]
-    // alightnment [ alightnment]
-    // size: [ size ]
-    // [ r ] [ g ] [b ] [a] 
+    DrawTextComponentUI(width, height);
+    DrawCameraComponentUI(width, height);
+    DrawShapeComponentUI(width, height);
+    DrawScriptComponentUI(width, height);
     // -- camera ------------------------------------
     // enabled: []
     // [ x] [ y]
     // [ rotatopnm] ( dial with line that rotates!)
     // zoom : [ zoom ]
-    // -- shape ------------------------------------- 
-    // type [ type] 
-    // [ r ] [ g ] [b ] [a] 
-    // -- script ------------------------------------
-    // script [    asset      ] [reload]
 }
 
 Panel GenerateEditPanel() {

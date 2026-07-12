@@ -26,7 +26,7 @@ typedef enum {
 } ViewportAnchor;
 
 typedef enum {
-    RECTANGLE_SHAPE,
+    RECTANGLE_SHAPE = 0,
     CIRCLE_SHAPE
 } ShapeType;
 
@@ -55,6 +55,7 @@ EXPOSE_COMPONENT(TransformComponent) {
 
 EXPOSE_COMPONENT(TextComponent) {
     char* text;
+    size_t capacity;
     TextAlignment alignment;
     Color color;
     float size;

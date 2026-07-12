@@ -75,11 +75,19 @@ void DestroyWorld(World* world) {
     HASHMAP_Children_clear(&(world->children));
     HASHMAP_Parents_clear(&(world->parents));
     ARRLIST_EntityID* scripts = GetEntities(world, ScriptComponent);
+    ARRLIST_EntityID* texts = GetEntities(world, TextComponent);
     if (scripts) {
         for (size_t i = 0; i < scripts->size; i++) {
             Entity e = (Entity){ scripts->data[i], world };
             Script* sc = EntityScript(e);
             if (sc && sc->clean) sc->clean(e);
+        }
+    }
+    if (texts) {
+        for (size_t i = 0; i < texts->size; i++) {
+            Entity e = (Entity){ texts->data[i], world };
+            TextComponent* tc = GetComponent(e, TextComponent);
+            if (tc->capacity > 0) EZ_FREE(tc->text);
         }
     }
     if (world->clean) world->clean(world);
