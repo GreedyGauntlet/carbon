@@ -117,4 +117,8 @@ EXPOSE_COMPONENT(AnimationComponent) {
     BOOL flopped;
 };
 
+EXPOSE_COMPONENT(EditUIComponent) {
+    PanelFunction draw;
+};
+
 #endif

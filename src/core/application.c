@@ -29,6 +29,8 @@ static BOOL g_playing = FALSE;
 static BOOL g_fastforward = FALSE;
 static size_t g_steps = 0;
 static BOOL g_vsync = TRUE;
+static ARRLIST_Panel g_shared_panels = { 0 };
+static ARRLIST_UIConfig g_ui_config = { 0 };
 
 static void ApplicationResized() {
     if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
@@ -39,18 +41,8 @@ static void ApplicationResized() {
     }
 }
 
-void InitializeApplication() {
-    #ifndef PROD_BUILD
-    g_application.memory = EZ_ALLOCATED();
-    #endif
-    InitConfig();
-	SetTraceLogLevel(LOG_NONE);
-    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
-    InitWindow(g_resolution_width, g_resolution_height, g_application.name == NULL ? "Carbon Engine" : g_application.name);
-    InitAudioDevice();
-    InitializeInput();
-    InitializeColors();
-    InitializeFonts();
+void LoadUIConfig() {
+    
     g_application.ui = GenerateUI();
     g_application.ui->left = GenerateUI();
     g_application.ui->right = GenerateUI();
@@ -65,15 +57,48 @@ void InitializeApplication() {
     ((UI*)((UI*)g_application.ui->left)->left)->divide = GetScreenHeight() - 420;
     ((UI*)((UI*)g_application.ui->left)->left)->vertical = TRUE;
     ((UI*)g_application.ui->left)->divide = 350;
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), GenerateEditPanel());
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), GenerateConsolePanel());
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), GenerateViewportPanel());
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateScenesPanel());
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateAssetsPanel());
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateScriptsPanel());
-    ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), GenerateGraphPanel());
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), g_shared_panels.data[0]);
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), g_shared_panels.data[1]);
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), g_shared_panels.data[2]);
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[3]);
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[4]);
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[5]);
+    ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[6]);
     g_application.ui->divide = 1250;
     SetPrimaryUI(g_application.ui);
+}
+
+void InitializeApplication() {
+    #ifndef PROD_BUILD
+    g_application.memory = EZ_ALLOCATED();
+    #endif
+    InitConfig();
+	SetTraceLogLevel(LOG_NONE);
+    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
+    InitWindow(g_resolution_width, g_resolution_height, g_application.name == NULL ? "Carbon Engine" : g_application.name);
+    InitAudioDevice();
+    InitializeInput();
+    InitializeColors();
+    InitializeFonts();
+    ARRLIST_Panel_add(&g_shared_panels, GenerateEditPanel());
+    ARRLIST_Panel_add(&g_shared_panels, GenerateConsolePanel());
+    ARRLIST_Panel_add(&g_shared_panels, GenerateViewportPanel());
+    ARRLIST_Panel_add(&g_shared_panels, GenerateScenesPanel());
+    ARRLIST_Panel_add(&g_shared_panels, GenerateAssetsPanel());
+    ARRLIST_Panel_add(&g_shared_panels, GenerateScriptsPanel());
+    ARRLIST_Panel_add(&g_shared_panels, GenerateGraphPanel());
+    LoadUIConfig();
+    /*
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), g_shared_panels.data[0]);
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), g_shared_panels.data[1]);
+    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), g_shared_panels.data[2]);
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[3]);
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[4]);
+    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[5]);
+    ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[6]);
+    g_application.ui->divide = 1250;
+    SetPrimaryUI(g_application.ui);
+    */
 }
 
 void SetApplicationName(const char* name) {
@@ -310,6 +335,7 @@ void DestroyApplication() {
     ARRLIST_int_clear(&g_application.keylist);
     for (size_t i = 0; i < g_application.scenes.size; i++) DestroyScene(g_application.scenes.data[i]);
     ARRLIST_ScenePtr_clear(&g_application.scenes);
+    ARRLIST_Panel_clear(&g_shared_panels);
     CleanNotifications();
     CleanupExtensions();
     #ifndef PROD_BUILD

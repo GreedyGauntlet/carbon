@@ -122,4 +122,12 @@ struct Notification {
     MessageLevel level;
 };
 
+struct UIConfig {
+    char name[MAX_NAME_LEN];
+    float divide;
+    BOOL vertical;
+    BOOL left;
+    BOOL right;
+};
+
 #endif

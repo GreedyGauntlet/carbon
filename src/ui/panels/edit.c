@@ -521,6 +521,13 @@ static void DrawEditPanel(float width, float height) {
         UIDrawText("No Selected Entity");
         return;
     }
+    if (HasComponent(g_selected, EditUIComponent)) {
+        EditUIComponent* euic = GetComponent(g_selected, EditUIComponent);
+        if (euic->draw) {
+            euic->draw(width, height);
+            return;
+        }
+    }
     float panel_heights = 0;
     panel_heights += HasComponent(g_selected, TransformComponent) ? 95 : 0;
     panel_heights += HasComponent(g_selected, AnchorComponent) ? 85 : 0;
