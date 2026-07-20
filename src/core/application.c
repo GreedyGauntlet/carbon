@@ -41,8 +41,56 @@ static void ApplicationResized() {
     }
 }
 
+void ResetDefaultConfig() {
+	ARRLIST_UIConfig_clear(&g_ui_config);
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 1250.0f, FALSE, TRUE, TRUE, FALSE}); // root
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scenes", 0.0f, FALSE, FALSE, FALSE, TRUE}); // scenes +
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Assets", 0.0f, FALSE, FALSE, FALSE, TRUE}; // + assets +
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scripts", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + scripts
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Profiling", 0.0f, FALSE, FALSE, FALSE, FALSE}); // graph
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE}); // viewport
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 360.0f, TRUE, TRUE, TRUE, FALSE}); // edit | console container
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Edit", 0.0f, FALSE, FALSE, FALSE, FALSE}); // edit
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Console", 0.0f, FALSE, FALSE, FALSE, FALSE}); // console
+}
+
+void LoadUIConfigHelper(UI** current, size_t* index) {
+	UIConfig conf = g_ui_config.data[*index];
+	*current = GenerateUI();
+	if (conf.left || conf.right) {
+		(*current)->divide = conf.divide;
+		(*current)->vertical = conf.vertical;
+		if (conf.left) {
+			*index++;
+			LoadUIConfigHelper(&(*current->left), index);
+		}
+		if (conf.right) {
+			*index++;
+			LoadUIConfigHelper(&(*current->right), index);
+		}
+	} else {
+		for (size_t i = 0; i < g_shared_panels.size; i++) {
+			if (strcmp(g_shared_panels.data[i].name, conf.name) == 0) {
+				ARRLIST_Panel_add(&((*current)->panels), g_shared_panels.data[i]);
+				if (conf.vine) {
+					*index++;
+					LoadUIConfigHelper(current, index);
+				}
+				return;
+			}	
+		}
+		logwarn("Unable to find and set up matching panel \"%s\"", conf.name);
+	}
+}
+
 void LoadUIConfig() {
-    
+	ResetDefaultConfig();
+	size_t i = 0;
+    LoadUIConfigHelper(&(g_application.ui), &i);
+    SetPrimaryUI(g_application.ui);
+	
     g_application.ui = GenerateUI();
     g_application.ui->left = GenerateUI();
     g_application.ui->right = GenerateUI();
@@ -65,7 +113,6 @@ void LoadUIConfig() {
     ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[5]);
     ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[6]);
     g_application.ui->divide = 1250;
-    SetPrimaryUI(g_application.ui);
 }
 
 void InitializeApplication() {
@@ -88,17 +135,6 @@ void InitializeApplication() {
     ARRLIST_Panel_add(&g_shared_panels, GenerateScriptsPanel());
     ARRLIST_Panel_add(&g_shared_panels, GenerateGraphPanel());
     LoadUIConfig();
-    /*
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), g_shared_panels.data[0]);
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), g_shared_panels.data[1]);
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), g_shared_panels.data[2]);
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[3]);
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[4]);
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[5]);
-    ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[6]);
-    g_application.ui->divide = 1250;
-    SetPrimaryUI(g_application.ui);
-    */
 }
 
 void SetApplicationName(const char* name) {
@@ -336,6 +372,7 @@ void DestroyApplication() {
     for (size_t i = 0; i < g_application.scenes.size; i++) DestroyScene(g_application.scenes.data[i]);
     ARRLIST_ScenePtr_clear(&g_application.scenes);
     ARRLIST_Panel_clear(&g_shared_panels);
+	ARRLIST_UIConfig_clear(&g_ui_config);
     CleanNotifications();
     CleanupExtensions();
     #ifndef PROD_BUILD
