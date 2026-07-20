@@ -128,6 +128,7 @@ struct UIConfig {
     BOOL vertical;
     BOOL left;
     BOOL right;
+	BOOL vine;
 };
 
 #endif
