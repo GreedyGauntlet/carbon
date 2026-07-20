@@ -47,7 +47,7 @@ void ResetDefaultConfig() {
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scenes", 0.0f, FALSE, FALSE, FALSE, TRUE}); // scenes +
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Assets", 0.0f, FALSE, FALSE, FALSE, TRUE}; // + assets +
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Assets", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + assets +
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scripts", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + scripts
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Profiling", 0.0f, FALSE, FALSE, FALSE, FALSE}); // graph
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE}); // viewport
@@ -90,29 +90,6 @@ void LoadUIConfig() {
 	size_t i = 0;
     LoadUIConfigHelper(&(g_application.ui), &i);
     SetPrimaryUI(g_application.ui);
-	
-    g_application.ui = GenerateUI();
-    g_application.ui->left = GenerateUI();
-    g_application.ui->right = GenerateUI();
-    ((UI*)g_application.ui->right)->right = GenerateUI();
-    ((UI*)g_application.ui->right)->left = GenerateUI();
-    ((UI*)g_application.ui->right)->divide = GetScreenHeight() - 360;
-    ((UI*)g_application.ui->right)->vertical = TRUE;
-    ((UI*)g_application.ui->left)->right = GenerateUI();
-    ((UI*)g_application.ui->left)->left = GenerateUI();
-    ((UI*)((UI*)g_application.ui->left)->left)->left = GenerateUI();
-    ((UI*)((UI*)g_application.ui->left)->left)->right = GenerateUI();
-    ((UI*)((UI*)g_application.ui->left)->left)->divide = GetScreenHeight() - 420;
-    ((UI*)((UI*)g_application.ui->left)->left)->vertical = TRUE;
-    ((UI*)g_application.ui->left)->divide = 350;
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->left))->panels), g_shared_panels.data[0]);
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->right)->right))->panels), g_shared_panels.data[1]);
-    ARRLIST_Panel_add(&(((UI*)(((UI*)g_application.ui->left)->right))->panels), g_shared_panels.data[2]);
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[3]);
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[4]);
-    ARRLIST_Panel_add(&(GetLeftUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[5]);
-    ARRLIST_Panel_add(&(GetRightUI(GetLeftUI(GetLeftUI(g_application.ui)))->panels), g_shared_panels.data[6]);
-    g_application.ui->divide = 1250;
 }
 
 void InitializeApplication() {
