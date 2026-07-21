@@ -41,14 +41,14 @@ static void ApplicationResized() {
     }
 }
 
-void ResetDefaultConfig() {
+static void ResetDefaultConfig() {
 	ARRLIST_UIConfig_clear(&g_ui_config);
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 1250.0f, FALSE, TRUE, TRUE, FALSE}); // root
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scenes", 0.0f, FALSE, FALSE, FALSE, TRUE}); // scenes +
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Assets", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + assets +
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scripts", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + scripts
+	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scripts", 0.0f, FALSE, FALSE, FALSE, FALSE}); // + scripts
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Profiling", 0.0f, FALSE, FALSE, FALSE, FALSE}); // graph
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE}); // viewport
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 360.0f, TRUE, TRUE, TRUE, FALSE}); // edit | console container
@@ -56,26 +56,26 @@ void ResetDefaultConfig() {
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Console", 0.0f, FALSE, FALSE, FALSE, FALSE}); // console
 }
 
-void LoadUIConfigHelper(UI** current, size_t* index) {
+static void LoadUIConfigHelper(UI** current, size_t* index) {
 	UIConfig conf = g_ui_config.data[*index];
-	*current = GenerateUI();
+	if (*current == NULL) *current = GenerateUI();
 	if (conf.left || conf.right) {
 		(*current)->divide = conf.divide;
 		(*current)->vertical = conf.vertical;
 		if (conf.left) {
-			*index++;
-			LoadUIConfigHelper(&(*current->left), index);
+			*index += 1;
+			LoadUIConfigHelper((UI**)&((*current)->left), index);
 		}
 		if (conf.right) {
-			*index++;
-			LoadUIConfigHelper(&(*current->right), index);
+			*index += 1;
+			LoadUIConfigHelper((UI**)&((*current)->right), index);
 		}
 	} else {
 		for (size_t i = 0; i < g_shared_panels.size; i++) {
 			if (strcmp(g_shared_panels.data[i].name, conf.name) == 0) {
 				ARRLIST_Panel_add(&((*current)->panels), g_shared_panels.data[i]);
 				if (conf.vine) {
-					*index++;
+					*index += 1;
 					LoadUIConfigHelper(current, index);
 				}
 				return;
@@ -85,7 +85,7 @@ void LoadUIConfigHelper(UI** current, size_t* index) {
 	}
 }
 
-void LoadUIConfig() {
+static void LoadUIConfig() {
 	ResetDefaultConfig();
 	size_t i = 0;
     LoadUIConfigHelper(&(g_application.ui), &i);
@@ -433,4 +433,8 @@ void Step(size_t steps) {
 
 ARRLIST_StaticString* SceneNames() {
     return &g_scene_names;
+}
+
+ARRLIST_UIConfig* GetUIConfig() {
+    return &g_ui_config;
 }

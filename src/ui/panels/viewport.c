@@ -166,7 +166,7 @@ static void DrawViewportPanel(float width, float height) {
     DrawRectangle(0, 0, width, 25, MappedColor(PANEL_NB_COLOR));
     DrawRectangle(0, 25, width, 1, MappedColor(PANEL_DIVIDER_COLOR));
     if (DrawFullscreenButton(0, 0)) ToggleFullScreen();
-    if (DrawSettingsButton(width - 25, 0)) UIPopup(GenerateViewportConfigPopup());
+    if (DrawSettingsButton(width - 25, 0)) UIPopup(GenerateEditorConfigPopup());
     if (DrawResetButton(width / 2.0f - 50, 0) && GetActiveScene()) ResetScene(GetActiveScene());
     if (Playing()) {
         if (DrawPauseButton(width / 2.0f - 25, 0)) Pause();

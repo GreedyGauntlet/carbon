@@ -113,6 +113,7 @@ struct UI {
 
 struct Popup {
     PopupFunction behavior;
+    CleanFunction clean;
     size_t options;
     void* results;
 };

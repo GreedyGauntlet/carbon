@@ -37,4 +37,6 @@ void Step(size_t steps);
 
 ARRLIST_StaticString* SceneNames();
 
+ARRLIST_UIConfig* GetUIConfig();
+
 #endif

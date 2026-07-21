@@ -7,6 +7,6 @@ Popup* GenerateEmptyPopup();
 
 void CleanPopup(Popup* popup);
 
-Popup* GenerateViewportConfigPopup();
+Popup* GenerateEditorConfigPopup();
 
 #endif

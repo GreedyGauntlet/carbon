@@ -24,6 +24,8 @@ UI* GetRightUI(UI* ui);
 
 void SetPrimaryUI(UI* ui);
 
+UI* GetPrimaryUI();
+
 void ResizeUI(UI* ui);
 
 UI* GenerateUI();

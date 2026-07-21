@@ -1,28 +1,51 @@
 #include "popup.h"
+#include "core/application.h"
+#include "core/config.h"
 #include "data/definitions.h"
 #include "data/colors.h"
-#include "core/config.h"
 #include "ui/ui.h"
 #include <float.h>
 
 static float g_ff_speed = 1.0f;
 static size_t g_step_count = 0;
+static int g_edit_ui_state = 0; // 0 = uninitialized, 1 = reflected config, 2 = editing config
+static ARRLIST_UIConfig g_ui_config_state = { 0 };
 
-static int edit_viewport_config(size_t x, size_t y, size_t w, size_t h) {
+static void poll_dividers_helper(UI* ui, size_t* index) {
+    g_ui_config_state.data[*index].divide = ui->divide;
+    if (ui->left) {
+        *index += 1;
+        poll_dividers_helper(GetLeftUI(ui), index);
+    }
+    if (ui->right) {
+        *index += 1;
+        poll_dividers_helper(GetRightUI(ui), index);
+    }
+}
+
+static void poll_dividers() {
+    UI* root = GetPrimaryUI();
+    size_t i = 0;
+    poll_dividers_helper(root, &i);
+}
+
+static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
     float width = 365;
-    float height = 250;
+    float height = 580;
     float xpos = x + ((w - width) / 2.0f);
     float ypos = y + ((h - height) / 2.0f);
     float button_width = 200;
     UISetPosition(0, 0);
     UISetCursor(0, ypos + 10);
     DrawRectangle(xpos, ypos, width, height, MappedColor(PANEL_BG_COLOR));
-    UIMoveCursor(xpos + (width / 2) - (UITextWidth("Configure Viewport Toolbar") / 2), 0);
-    UIDrawText("Configure Viewport Toolbar");
+    UIMoveCursor(xpos + (width / 2) - (UITextWidth("Editor Settings") / 2), 0);
+    UIDrawText("Editor Settings");
 
     UIMoveCursor(xpos, 25);
     UIDivider(width - 20);
-    UIMoveCursor(xpos, 5);
+    UIMoveCursor(xpos + (width / 2) - (UITextWidth("Viewport Toolbar") / 2) - 10, 5);
+    UIDrawText("Viewport Toolbar");
+    UIMoveCursor(xpos, 15);
     UIDrawText("Fast-Forward Speed");
     UIMoveCursor(xpos + ((width - 20) / 2.0f), -20);
     UIDragFloat(&g_ff_speed, 0.0f, FLT_MAX, 0.001f, (width - 20.0f)/2.0f);
@@ -30,6 +53,37 @@ static int edit_viewport_config(size_t x, size_t y, size_t w, size_t h) {
     UIDrawText("Step Count");
     UIMoveCursor(xpos + ((width - 20) / 2.0f), -20);
     UIDragSize(&g_step_count, 1, 9999999999, 1, (width - 20.0f)/2.0f);
+    UIMoveCursor(xpos, 5);
+    UIDivider(width - 20);
+
+    if (g_edit_ui_state == 0) {
+        for (size_t i = 0; i < GetUIConfig()->size; i++)
+            ARRLIST_UIConfig_add(&g_ui_config_state, GetUIConfig()->data[i]); 
+        g_edit_ui_state = 1;
+    }
+    if (g_edit_ui_state == 1) poll_dividers();
+
+    UIMoveCursor(xpos + (width / 2) - (UITextWidth("UI Layout") / 2) - 10, 5);
+    UIDrawText("UI Layout");
+    UIMoveCursor(xpos, 15);
+    DrawRectangle(UIGetCursor().x, UIGetCursor().y, width - 20, 200, (Color){ 0, 0, 0, 90 });
+    UIMoveCursor(0, 210);
+    if (UIButton("Reset", 80)) {
+        ARRLIST_UIConfig_clear(&g_ui_config_state);
+        g_edit_ui_state = 2;
+    }
+    UIMoveCursor(xpos + width - 10 - 160 - 20, -LINE_HEIGHT);
+    if (g_edit_ui_state != 2) DisableUI();
+    if (UIButton("Save", 80)) {
+        // TODO:
+        g_edit_ui_state = 1;
+    }
+    UIMoveCursor(xpos + width - 10 - 80 - 10, -LINE_HEIGHT);
+    if (UIButton("Cancel", 80)) {
+        ARRLIST_UIConfig_clear(&g_ui_config_state);
+        g_edit_ui_state = 0;
+    }
+    EnableUI();
     UIMoveCursor(xpos, 5);
     UIDivider(width - 20);
 
@@ -44,11 +98,16 @@ static int edit_viewport_config(size_t x, size_t y, size_t w, size_t h) {
     return -1;
 }
 
+static void clean_editor_config_popup() {
+    ARRLIST_UIConfig_clear(&g_ui_config_state);
+}
+
 Popup* GenerateEmptyPopup() {
     return EZ_ALLOC(1, sizeof(Popup));
 }
 
 void CleanPopup(Popup* popup) {
+    if (popup->clean) popup->clean();
     if (popup->options != 0)
         for (size_t i = 0; i < popup->options; i++)
             CleanPopup(((Popup**)popup->results)[i]);
@@ -56,9 +115,10 @@ void CleanPopup(Popup* popup) {
     EZ_FREE(popup);
 }
 
-Popup* GenerateViewportConfigPopup() {
+Popup* GenerateEditorConfigPopup() {
     Popup* popup = GenerateEmptyPopup();
-    popup->behavior = edit_viewport_config;
+    popup->behavior = edit_editor_config_popup;
+    popup->clean = clean_editor_config_popup;
     g_ff_speed = Config()->ffspeed;
     g_step_count = Config()->stepsize;
     return popup;

@@ -62,6 +62,10 @@ void SetPrimaryUI(UI* ui) {
     g_primary_ui = ui;
 }
 
+UI* GetPrimaryUI() {
+    return g_primary_ui;
+}
+
 void ResizeUI(UI* ui) {
     for (size_t i = 0; i < ui->panels.size; i++) {
         UnloadRenderTexture(ui->panels.data[i].texture);
