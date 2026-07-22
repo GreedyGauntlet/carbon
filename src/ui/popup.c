@@ -12,7 +12,6 @@ static int g_edit_ui_state = 0; // 0 = uninitialized, 1 = reflected config, 2 = 
 static ARRLIST_UIConfig g_ui_config_state = { 0 };
 
 static void poll_dividers_helper(UI* ui, size_t* index) {
-    EZ_ASSERT(*index < g_ui_config_state.size, "uhoh1");
     g_ui_config_state.data[*index].divide = ui->divide;
     if (ui->left) {
         *index += 1;
@@ -22,7 +21,7 @@ static void poll_dividers_helper(UI* ui, size_t* index) {
         *index += 1;
         poll_dividers_helper(GetRightUI(ui), index);
     }
-    *index += ui->panels.size;
+    if (ui->panels.size > 0 ) *index += ui->panels.size - 1;
 }
 
 static void poll_dividers() {
@@ -32,7 +31,6 @@ static void poll_dividers() {
 }
 
 static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t* current, float wratio, float hratio) {
-    EZ_ASSERT(*current < g_ui_config_state.size, "uhoh2");
     UIConfig conf = g_ui_config_state.data[*current];
     if ((conf.left || conf.right) && !conf.vine) {
         float _x, _y;
@@ -135,6 +133,7 @@ static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
 
 static void clean_editor_config_popup() {
     ARRLIST_UIConfig_clear(&g_ui_config_state);
+    g_edit_ui_state = 0;
 }
 
 Popup* GenerateEmptyPopup() {
