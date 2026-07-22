@@ -12,6 +12,7 @@ static int g_edit_ui_state = 0; // 0 = uninitialized, 1 = reflected config, 2 = 
 static ARRLIST_UIConfig g_ui_config_state = { 0 };
 
 static void poll_dividers_helper(UI* ui, size_t* index) {
+    EZ_ASSERT(*index < g_ui_config_state.size, "uhoh1");
     g_ui_config_state.data[*index].divide = ui->divide;
     if (ui->left) {
         *index += 1;
@@ -21,12 +22,43 @@ static void poll_dividers_helper(UI* ui, size_t* index) {
         *index += 1;
         poll_dividers_helper(GetRightUI(ui), index);
     }
+    *index += ui->panels.size;
 }
 
 static void poll_dividers() {
     UI* root = GetPrimaryUI();
     size_t i = 0;
     poll_dividers_helper(root, &i);
+}
+
+static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t* current, float wratio, float hratio) {
+    EZ_ASSERT(*current < g_ui_config_state.size, "uhoh2");
+    UIConfig conf = g_ui_config_state.data[*current];
+    if ((conf.left || conf.right) && !conf.vine) {
+        float _x, _y;
+        if (conf.vertical) {
+            float pct = conf.divide / (((float)h) * hratio);
+            _x = x;
+            _y = y + (pct * h) - 1;
+        } else {
+            float pct = conf.divide / (((float)w) * wratio);
+            _x = x + (pct * w) - 1;
+            _y = y;
+        }
+        DrawRectangle(_x, _y, conf.vertical ? w : 2, conf.vertical ? 2 : h, MappedColor(UI_DIVIDER_COLOR));
+        if (conf.left) {
+            *current += 1;
+            draw_ui_config_helper(x, y, conf.vertical ? w : _x - x, conf.vertical ? _y - y : h, current, wratio, hratio);
+        }
+        if (conf.right) {
+            *current += 1;
+            draw_ui_config_helper(_x, _y, conf.vertical ? w : w - (_x - x), conf.vertical ? h - (_y - y) : h, current, wratio, hratio);
+        }
+    }
+    if (conf.vine) {
+        *current += 1;
+        draw_ui_config_helper(x, y, w, h, current, wratio, hratio);
+    }
 }
 
 static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
@@ -57,6 +89,7 @@ static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
     UIDivider(width - 20);
 
     if (g_edit_ui_state == 0) {
+        ARRLIST_UIConfig_clear(&g_ui_config_state);
         for (size_t i = 0; i < GetUIConfig()->size; i++)
             ARRLIST_UIConfig_add(&g_ui_config_state, GetUIConfig()->data[i]); 
         g_edit_ui_state = 1;
@@ -67,6 +100,8 @@ static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
     UIDrawText("UI Layout");
     UIMoveCursor(xpos, 15);
     DrawRectangle(UIGetCursor().x, UIGetCursor().y, width - 20, 200, (Color){ 0, 0, 0, 90 });
+    size_t ind = 0;
+    draw_ui_config_helper(UIGetCursor().x, UIGetCursor().y, width - 20, 200, &ind, (float)GetScreenWidth() / (float)(width - 20), (float)GetScreenHeight() / 200.0f);
     UIMoveCursor(0, 210);
     if (UIButton("Reset", 80)) {
         ARRLIST_UIConfig_clear(&g_ui_config_state);
