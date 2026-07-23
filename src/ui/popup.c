@@ -3,8 +3,10 @@
 #include "core/config.h"
 #include "data/definitions.h"
 #include "data/colors.h"
+#include "data/input.h"
 #include "ui/ui.h"
 #include <float.h>
+#include <raymath.h>
 
 static float g_ff_speed = 1.0f;
 static size_t g_step_count = 0;
@@ -31,19 +33,31 @@ static void poll_dividers() {
 }
 
 static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t* current, float wratio, float hratio) {
+    static int s_held_current = -1;
+    if (*current >= g_ui_config_state.size) return;
     UIConfig conf = g_ui_config_state.data[*current];
     if ((conf.left || conf.right) && !conf.vine) {
-        float _x, _y;
+        float _x, _y, _d;
         if (conf.vertical) {
             float pct = conf.divide / (((float)h) * hratio);
+            _d = (pct * h);
             _x = x;
-            _y = y + (pct * h) - 1;
+            _y = y + _d - 1;
         } else {
             float pct = conf.divide / (((float)w) * wratio);
-            _x = x + (pct * w) - 1;
+            _d = (pct * w);
+            _x = x + _d - 1;
             _y = y;
         }
-        DrawRectangle(_x, _y, conf.vertical ? w : 2, conf.vertical ? 2 : h, MappedColor(UI_DIVIDER_COLOR));
+        BOOL mhovered = CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){_x - 1, _y - 1, (conf.vertical ? w : 2) + 2, (conf.vertical ? 2 : h) + 2});
+        DrawRectangle(_x, _y, conf.vertical ? w : 2, conf.vertical ? 2 : h, mhovered || s_held_current == (int)(*current) ? MappedColor(PANEL_DIVIDER_HOVER_COLOR) : MappedColor(UI_DIVIDER_COLOR));
+        if (mhovered && InputButtonDown(IK_MOUSELEFT)) {
+            g_edit_ui_state = 2;
+            s_held_current = *current;
+        }
+        if (InputButtonUp(IK_MOUSELEFT)) s_held_current = -1;
+        if (s_held_current == (int)(*current))
+            g_ui_config_state.data[*current].divide = conf.vertical ? ((_d + GetMouseDelta().y) / (float)h) *  (((float)h) * hratio) : ((_d + GetMouseDelta().x) / (float)w) *  (((float)w) * wratio);
         if (conf.left) {
             *current += 1;
             draw_ui_config_helper(x, y, conf.vertical ? w : _x - x, conf.vertical ? _y - y : h, current, wratio, hratio);
