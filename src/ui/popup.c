@@ -4,6 +4,8 @@
 #include "data/definitions.h"
 #include "data/colors.h"
 #include "data/input.h"
+#include "data/fonts.h"
+#include "ui/popup.h"
 #include "ui/ui.h"
 #include <float.h>
 #include <raymath.h>
@@ -12,6 +14,7 @@ static float g_ff_speed = 1.0f;
 static size_t g_step_count = 0;
 static int g_edit_ui_state = 0; // 0 = uninitialized, 1 = reflected config, 2 = editing config
 static ARRLIST_UIConfig g_ui_config_state = { 0 };
+static BOOL g_prompt_ui_add = FALSE;
 
 static void poll_dividers_helper(UI* ui, size_t* index) {
     g_ui_config_state.data[*index].divide = ui->divide;
@@ -32,8 +35,9 @@ static void poll_dividers() {
     poll_dividers_helper(root, &i);
 }
 
-static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t* current, float wratio, float hratio) {
+static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t* current, float wratio, float hratio, int vinesize) {
     static int s_held_current = -1;
+    size_t bak_current = *current;
     if (*current >= g_ui_config_state.size) return;
     UIConfig conf = g_ui_config_state.data[*current];
     if ((conf.left || conf.right) && !conf.vine) {
@@ -49,7 +53,7 @@ static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t
             _x = x + _d - 1;
             _y = y;
         }
-        BOOL mhovered = CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){_x - 1, _y - 1, (conf.vertical ? w : 2) + 2, (conf.vertical ? 2 : h) + 2});
+        BOOL mhovered = !g_prompt_ui_add && CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){_x - 1, _y - 1, (conf.vertical ? w : 2) + 2, (conf.vertical ? 2 : h) + 2});
         DrawRectangle(_x, _y, conf.vertical ? w : 2, conf.vertical ? 2 : h, mhovered || s_held_current == (int)(*current) ? MappedColor(PANEL_DIVIDER_HOVER_COLOR) : MappedColor(UI_DIVIDER_COLOR));
         if (mhovered && InputButtonDown(IK_MOUSELEFT)) {
             g_edit_ui_state = 2;
@@ -60,16 +64,42 @@ static void draw_ui_config_helper(size_t x, size_t y, size_t w, size_t h, size_t
             g_ui_config_state.data[*current].divide = conf.vertical ? ((_d + GetMouseDelta().y) / (float)h) *  (((float)h) * hratio) : ((_d + GetMouseDelta().x) / (float)w) *  (((float)w) * wratio);
         if (conf.left) {
             *current += 1;
-            draw_ui_config_helper(x, y, conf.vertical ? w : _x - x, conf.vertical ? _y - y : h, current, wratio, hratio);
+            draw_ui_config_helper(x, y, conf.vertical ? w : _x - x, conf.vertical ? _y - y : h, current, wratio, hratio, vinesize);
         }
         if (conf.right) {
             *current += 1;
-            draw_ui_config_helper(_x, _y, conf.vertical ? w : w - (_x - x), conf.vertical ? h - (_y - y) : h, current, wratio, hratio);
+            draw_ui_config_helper(_x, _y, conf.vertical ? w : w - (_x - x), conf.vertical ? h - (_y - y) : h, current, wratio, hratio, vinesize);
         }
     }
     if (conf.vine) {
+        if (vinesize == 0) {
+            vinesize++;
+            size_t cc = bak_current;
+            while(g_ui_config_state.data[cc].vine) { cc++; vinesize++; }
+        }
         *current += 1;
-        draw_ui_config_helper(x, y, w, h, current, wratio, hratio);
+        draw_ui_config_helper(x, y, w, h, current, wratio, hratio, vinesize);
+    }
+    if (!conf.left && !conf.right) {
+        BOOL mhovered = !g_prompt_ui_add && !conf.vine && s_held_current == -1 && CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){x + 4, y + 4, w - 8, h - 8});
+        if (mhovered) DrawRectangle(x, y, w + 1, h + 1, (Color){ 255, 255, 255, 110 });
+        if (mhovered && InputButtonPressed(IK_MOUSELEFT)) {
+            g_prompt_ui_add = TRUE;
+        }
+        size_t cc = bak_current;
+        while (g_ui_config_state.data[cc].vine) { cc++; }
+        size_t linecount = (cc - bak_current);
+        float override_size = 18.0f;
+        Vector2 tsize = MeasureTextEx(FontAsset(), conf.name, override_size, 0);
+        DrawTextEx(
+            FontAsset(),
+            conf.name,
+            (Vector2){
+                x + (w/2.0f) - (tsize.x/2.0f),
+                y + (h/2.f) - (tsize.y/2.0f) + (vinesize > 0 ? ((float)vinesize * tsize.y / -2.0f) + (linecount * tsize.y) + (tsize.y / 2.0f): 0)},
+            override_size,
+            0,
+            MappedColor(UI_TEXT_COLOR));
     }
 }
 
@@ -113,7 +143,7 @@ static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
     UIMoveCursor(xpos, 15);
     DrawRectangle(UIGetCursor().x, UIGetCursor().y, width - 20, 200, (Color){ 0, 0, 0, 90 });
     size_t ind = 0;
-    draw_ui_config_helper(UIGetCursor().x, UIGetCursor().y, width - 20, 200, &ind, (float)GetScreenWidth() / (float)(width - 20), (float)GetScreenHeight() / 200.0f);
+    draw_ui_config_helper(UIGetCursor().x, UIGetCursor().y, width - 20, 200, &ind, (float)GetScreenWidth() / (float)(width - 20), (float)GetScreenHeight() / 200.0f, 0);
     UIMoveCursor(0, 210);
     if (UIButton("Reset", 80)) {
         ARRLIST_UIConfig_clear(&g_ui_config_state);
