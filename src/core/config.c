@@ -43,7 +43,7 @@ void InitConfig() {
         if (filesize == sizeof(AppConfig)) {
             rewind(file);
             fread(Config(), 1, sizeof(AppConfig), file);
-            logtrace("Successfully loaded existing config");
+            logtrace("Successfully loaded engine config");
         } else {
             logwarn("Existing config is invalid - falling back to default config");
         }

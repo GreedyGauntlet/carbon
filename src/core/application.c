@@ -43,7 +43,7 @@ static void ApplicationResized() {
 }
 
 static void ResetDefaultConfig() {
-ARRLIST_UIConfig_clear(&g_ui_config);
+    ARRLIST_UIConfig_clear(&g_ui_config);
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 1250.0f, FALSE, TRUE, TRUE, FALSE}); // root
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
@@ -87,10 +87,68 @@ static void LoadUIConfigHelper(UI** current, size_t* index) {
 }
 
 static void LoadUIConfig() {
-	ResetDefaultConfig();
+    ResetDefaultConfig();
+    FILE* file = fopen(".uiconf", "rb");
+    if (file) {
+        fseek(file, 0, SEEK_END);
+        long filesize = ftell(file);
+        if ((filesize - sizeof(size_t)) % sizeof(UIConfig) == 0) {
+            rewind(file);
+            size_t count = 0;
+            fread(&count, 1, sizeof(size_t), file);
+            if (count > 0) {
+                if ((size_t)filesize == sizeof(size_t) + count * sizeof(UIConfig)) {
+                    ARRLIST_UIConfig_clear(&g_ui_config);
+                    for (size_t i = 0; i < count; i++) {
+                        UIConfig conf = { 0 };
+                        fread(&conf, 1, sizeof(UIConfig), file);
+                        ARRLIST_UIConfig_add(&g_ui_config, conf);
+                    }
+                    logtrace("Successfully loaded ui config");
+                } else {
+                    logwarn("Desynced panel count detected - falling back to default config");
+                }
+            } else {
+                logwarn("No configured panels detected - falling back to default config");
+            }
+        } else {
+            logwarn("Existing ui config is invalid - falling back to default config");
+        }
+        fclose(file);
+    } else {
+        logtrace("Unable to detect existing ui config - using default config");
+    }
 	size_t i = 0;
     LoadUIConfigHelper(&(g_application.ui), &i);
     SetPrimaryUI(g_application.ui);
+}
+
+static void CopyUIDividersToConfigHelper(UI* ui, size_t* index) {
+    g_ui_config.data[*index].divide = ui->divide;
+    if (ui->left) {
+        *index += 1;
+        CopyUIDividersToConfigHelper(GetLeftUI(ui), index);
+    }
+    if (ui->right) {
+        *index += 1;
+        CopyUIDividersToConfigHelper(GetRightUI(ui), index);
+    }
+    if (ui->panels.size > 0 ) *index += ui->panels.size - 1;
+}
+
+static void CopyUIDividersToConfig() {
+    size_t i = 0;
+    CopyUIDividersToConfigHelper(g_application.ui, &i);
+}
+
+static void SaveUIConfig() {
+    FILE *file = fopen(".uiconf", "wb");
+    if (file) {
+        fwrite(&g_ui_config.size, 1, sizeof(size_t), file);
+        for (size_t i = 0; i < g_ui_config.size; i++)
+            fwrite(&(g_ui_config.data[i]), 1, sizeof(UIConfig), file);
+        fclose(file);
+    }
 }
 
 void InitializeApplication() {
@@ -347,6 +405,8 @@ void RunApplication() {
 }
 
 void DestroyApplication() {
+    CopyUIDividersToConfig();
+    SaveUIConfig();
     CleanConfig();
     ARRLIST_StaticString_clear(&g_scene_names);
     CleanBinds();
