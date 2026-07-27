@@ -55,6 +55,8 @@ void BlockInputs();
 
 void UnblockInputs();
 
+BOOL InputsBlocked();
+
 const char* InputKeyRepresentation(const int key);
 
 const char* InputButtonRepresentation(const int button);

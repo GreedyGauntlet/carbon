@@ -325,6 +325,7 @@ void DrawUI(UI* ui, size_t x, size_t y, size_t w, size_t h) {
     DrawUI_helper(g_fullscreen_ui ? g_fullscreen_ui : ui, x, y, w, h);
     if (g_popup != NULL) {
         UnblockInputs();
+        if (g_dropdownmenu_data.active) BlockInputs();
         DrawPopup(x, y, w, h);
     }
     if (g_dropdownmenu_data.active) {
@@ -492,7 +493,7 @@ void UIDrawItalicText(const char* text, ...) {
 
 BOOL UIDragFloat_(PersistantUIData* data, float* value, float min, float max, float speed, size_t w) {
     BOOL ret = FALSE;
-    if (!g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) &&
+    if (!InputsBlocked() && !g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) &&
         CheckCollisionPointRec(
             GetMousePosition(),
             (Rectangle){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y + 2, w, LINE_HEIGHT - 4})) {
@@ -655,19 +656,19 @@ BOOL UIDragSize_(PersistantUIData* data, size_t* value, size_t min, size_t max, 
             (Vector2){g_ui_cursor.x + 10 + w, g_ui_cursor.y + 2},
             (Vector2){g_ui_cursor.x + 5 + w, g_ui_cursor.y + LINE_HEIGHT/2.0f - 2},
             g_ui_disabled ? MappedColor(UI_TEXT_DISABLED) : MappedColor(UI_TEXT_COLOR));
-        if (!g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) && CheckCollisionPointRec(
+        if (!InputsBlocked() && !g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) && CheckCollisionPointRec(
             GetMousePosition(),
             (Rectangle){ g_ui_cursor.x + g_ui_position.x + w, g_ui_position.y + g_ui_cursor.y, 20, LINE_HEIGHT/2.0f })) {
             if (*value < max) *value += 1;
             ret = TRUE;
-        } else if (!g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) && CheckCollisionPointRec(
+        } else if (!InputsBlocked() && !g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) && CheckCollisionPointRec(
             GetMousePosition(),
             (Rectangle){ g_ui_cursor.x + g_ui_position.x + w, g_ui_position.y + g_ui_cursor.y + LINE_HEIGHT/2.0f, 20, LINE_HEIGHT/2.0f })) {
             if (*value > min) *value -= 1;
             ret = TRUE;
         }
     }
-    if (!g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) &&
+    if (!InputsBlocked() && !g_ui_disabled && InputButtonPressed(IK_MOUSELEFT) &&
         CheckCollisionPointRec(
             GetMousePosition(),
             (Rectangle){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y + 2, w, LINE_HEIGHT - 4})) {
@@ -707,7 +708,7 @@ BOOL UIButton(const char* label, size_t w) {
     float button_width = w < text_size.x + 20 ? text_size.x + 20 : w;
     Color color = MappedColor(PANEL_BTN_BG_COLOR);
     BOOL clicked = FALSE;
-    if (!g_ui_disabled && CheckCollisionPointRec(
+    if (!InputsBlocked() && !g_ui_disabled && CheckCollisionPointRec(
             GetMousePosition(),
             (Rectangle){g_ui_cursor.x + g_ui_position.x, g_ui_cursor.y + g_ui_position.y + 1, button_width, LINE_HEIGHT - 2})) {
         color = MappedColor(PANEL_BTN_HVR_COLOR);

@@ -37,6 +37,10 @@ void UnblockInputs() {
     g_input_map.blocked = FALSE;
 }
 
+BOOL InputsBlocked() {
+    return g_input_map.blocked;
+}
+
 const char* InputKeyRepresentation(const int key) {
     EZ_ASSERT(key < NUM_KEY_INPUTS, "Invalid key code");
     return g_input_map.keynames[key];

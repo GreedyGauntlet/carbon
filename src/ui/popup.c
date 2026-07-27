@@ -267,13 +267,13 @@ static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
     UIDivider(width - 20);
 
     UISetCursor(xpos + (width / 2) - (button_width / 2), ypos + height - 70);
-    if (UIButton("Confirm", button_width)) {
+    if (UIButton("Confirm", button_width) && !g_prompt_ui_add) {
         Config()->ffspeed = g_ff_speed;
         Config()->stepsize = g_step_count;
         return 0;
     }
     UISetCursor(xpos + (width / 2) - (button_width / 2), ypos + height - 40);
-    if (UIButton("Cancel", button_width)) return 0;
+    if (UIButton("Cancel", button_width) && !g_prompt_ui_add) return 0;
     return -1;
 }
 
