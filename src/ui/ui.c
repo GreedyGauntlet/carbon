@@ -246,15 +246,17 @@ static void DrawDropdownMenu() {
         if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){cursor.x, cursor.y, w, LINE_HEIGHT})) {
             if (InputButtonDown(IK_MOUSELEFT)) color = MappedColor(UI_DROPDOWN_MENU_PRS_COLOR);
             else color = MappedColor(UI_DROPDOWN_MENU_HVR_COLOR);
-            if (InputButtonReleased(IK_MOUSELEFT)) g_dropdownmenu_data.data->arbitrary_counter = g_dropdownmenu_data.func(g_dropdownmenu_data.funcdata, i);
+            if (InputButtonReleased(IK_MOUSELEFT)) g_dropdownmenu_data.data->arbitrary_counter = g_dropdownmenu_data.func(g_dropdownmenu_data.funcdata, i, FALSE);
         }
         DrawRectangle(cursor.x, cursor.y, w, LINE_HEIGHT, color);
         DrawRectangle(cursor.x + 2, cursor.y + 2, 2, LINE_HEIGHT - 4, MappedColor(UI_DIVIDER_COLOR));
         DrawTextEx(FontAsset(), g_dropdownmenu_data.items[i], (Vector2){cursor.x + 8, cursor.y + 0}, LINE_HEIGHT, 0, MappedColor(UI_TEXT_COLOR));
         cursor.y += LINE_HEIGHT;
     }
-    if (InputButtonReleased(IK_MOUSELEFT) && g_dropdownmenu_data.active == 2) g_dropdownmenu_data.active = FALSE;
-    else if (InputButtonReleased(IK_MOUSELEFT)) g_dropdownmenu_data.active = 2;
+    if (InputButtonReleased(IK_MOUSELEFT) && g_dropdownmenu_data.active == 2) {
+        g_dropdownmenu_data.func(g_dropdownmenu_data.funcdata, (size_t)-1, TRUE);
+        g_dropdownmenu_data.active = FALSE;
+    } else if (InputButtonReleased(IK_MOUSELEFT)) g_dropdownmenu_data.active = 2;
 }
 
 static void HandleTextInput() {
@@ -372,7 +374,13 @@ void DestroyUI(UI* ui) {
     }
     if (ui->left) DestroyUI((UI*)ui->left);
     if (ui->right) DestroyUI((UI*)ui->right);
-	for (size_t i = 0; i < ui->panels.size; i++) DestroyPanel(&(ui->panels.data[i]));
+	ARRLIST_Panel_clear(&(ui->panels));
+    EZ_FREE(ui);
+}
+
+void WipeUI(UI* ui) {
+    if (ui->left) WipeUI((UI*)ui->left);
+    if (ui->right) WipeUI((UI*)ui->right);
 	ARRLIST_Panel_clear(&(ui->panels));
     EZ_FREE(ui);
 }
@@ -791,7 +799,7 @@ void UIDropList_(PersistantUIData* data, const char* label, size_t width, size_t
 }
 
 void UIDropdownMenu_(PersistantUIData* data, size_t width, size_t num_items, char** items, DropdownSelectFunction func, void* param) {
-    data->arbitrary_counter = func(param, (size_t)-1);
+    data->arbitrary_counter = func(param, (size_t)-1, FALSE);
     Vector2 text_size = MeasureTextEx(FontAsset(), items[data->arbitrary_counter], LINE_HEIGHT, 0);
     float button_width = width < text_size.x + 20 ? text_size.x + 20 : width;
     Color color = MappedColor(PANEL_BTN_BG_COLOR);
@@ -884,6 +892,11 @@ BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_
     g_ui_cursor.y += LINE_HEIGHT;
     g_ui_disabled = g_ui_disabled_bak;
     return retval;
+}
+
+void UIFloatingDropdown_(PersistantUIData* data, size_t width, Vector2 origin, size_t num_items, char** items, DropdownSelectFunction func, void* param) {
+    data->arbitrary_counter = -1;
+    g_dropdownmenu_data = (DropdownMenuData) { data, items, num_items, TRUE, width, param, func, origin };
 }
 
 void DisableUI() {

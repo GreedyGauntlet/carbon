@@ -31,6 +31,7 @@ static size_t g_steps = 0;
 static BOOL g_vsync = TRUE;
 static ARRLIST_Panel g_shared_panels = { 0 };
 static ARRLIST_UIConfig g_ui_config = { 0 };
+static BOOL g_reset_ui = FALSE;
 
 static void ApplicationResized() {
     if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
@@ -42,7 +43,7 @@ static void ApplicationResized() {
 }
 
 static void ResetDefaultConfig() {
-	ARRLIST_UIConfig_clear(&g_ui_config);
+ARRLIST_UIConfig_clear(&g_ui_config);
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 1250.0f, FALSE, TRUE, TRUE, FALSE}); // root
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
 	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
@@ -334,6 +335,14 @@ void RunApplication() {
                 FlushRemovalQueue(s->worlds.data[j]);
             }
         }
+        if (g_reset_ui){
+            g_reset_ui = FALSE;
+            WipeUI(g_application.ui);
+            g_application.ui = NULL;
+            size_t i = 0;
+            LoadUIConfigHelper(&(g_application.ui), &i);
+            SetPrimaryUI(g_application.ui);
+        }
     }
 }
 
@@ -342,6 +351,7 @@ void DestroyApplication() {
     ARRLIST_StaticString_clear(&g_scene_names);
     CleanBinds();
     DestroyUI(g_application.ui);
+	for (size_t i = 0; i < g_shared_panels.size; i++) DestroyPanel(&(g_shared_panels.data[i]));
     CloseAudioDevice();
     CloseWindow();
     HASHMAP_KeyMap_clear(&g_application.keymap);
@@ -437,4 +447,16 @@ ARRLIST_StaticString* SceneNames() {
 
 ARRLIST_UIConfig* GetUIConfig() {
     return &g_ui_config;
+}
+
+ARRLIST_Panel* EditorPanels() {
+    return &g_shared_panels;
+}
+
+void SetUIConfig(ARRLIST_UIConfig* config) {
+	ARRLIST_UIConfig_clear(&g_ui_config);
+    for (size_t i = 0; i < config->size; i++) {
+        ARRLIST_UIConfig_add(&g_ui_config, config->data[i]);
+    }
+    g_reset_ui = TRUE;
 }

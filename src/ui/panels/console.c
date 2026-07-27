@@ -21,7 +21,7 @@ static char* g_log_filter_labels[5] = { "none", "traces", "info", "warnings", "e
 static float g_scrolldiff = 0.0f;
 static ARRLIST_Command g_commands = { 0 };
 
-static size_t DropdownSelectLogFilter(void* data, size_t index) {
+static size_t DropdownSelectLogFilter(void* data, size_t index, BOOL cancel) {
     if (index != (size_t)-1) {
         Config()->logfilter = (MessageLevel)index;
     } else {

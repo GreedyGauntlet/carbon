@@ -76,7 +76,7 @@ typedef void (*ScriptComponentMouseMoveFunction)(const Entity e, Vector2 positio
 typedef void (*PanelFunction)(float width, float height);
 typedef void (*CleanFunction)(void);
 typedef void (*SelectFunction)(size_t index);
-typedef size_t (*DropdownSelectFunction)(void* data, size_t index);
+typedef size_t (*DropdownSelectFunction)(void* data, size_t index, BOOL cancel);
 
 typedef int (*PopupFunction)(size_t, size_t, size_t, size_t);
 
@@ -94,6 +94,7 @@ DECLARE_ARRLIST_NAMED(WorldPtr, World*);
 DECLARE_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);
 DECLARE_ARRLIST_NAMED(SystemPtr, System*);
 DECLARE_ARRLIST_NAMED(StaticString, const char*);
+DECLARE_ARRLIST_NAMED(DynamicString, char*);
 DECLARE_HASHMAP(int, BOOL, KeyMap);
 DECLARE_HASHMAP(EntityID, size_t, EntityMap);
 DECLARE_HASHMAP(size_t, ComponentStorage*, StorageMap);

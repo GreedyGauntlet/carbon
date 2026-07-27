@@ -129,7 +129,7 @@ static BOOL DrawAnchorComponentUI(float width, float height) {
     return edited;
 }
 
-static size_t DropdownSelectTexture(void* data, size_t index) {
+static size_t DropdownSelectTexture(void* data, size_t index, BOOL cancel) {
     TextureComponent* tc = GetComponent(g_selected, TextureComponent);
     if (index != (size_t)-1) {
         tc->id = index;
@@ -151,7 +151,7 @@ static BOOL DrawTextureComponentUI(float width, float height) {
     return edited;
 }
 
-static size_t DropdownSelectAnimation(void* data, size_t index) {
+static size_t DropdownSelectAnimation(void* data, size_t index, BOOL cancel) {
     AnimationComponent* tc = GetComponent(g_selected, AnimationComponent);
     if (index != (size_t)-1) {
         tc->id = index;
@@ -220,7 +220,7 @@ static BOOL DrawListenerComponentUI(float width, float height) {
     return edited;
 }
 
-static size_t DropdownSelectSound(void* data, size_t index) {
+static size_t DropdownSelectSound(void* data, size_t index, BOOL cancel) {
     SoundComponent* sc = GetComponent(g_selected, SoundComponent);
     if (index != (size_t)-1) {
         sc->id = index;
@@ -228,7 +228,7 @@ static size_t DropdownSelectSound(void* data, size_t index) {
     return sc->id;
 }
 
-static size_t DropdownSetSoundAudioCommand(void* data, size_t index) {
+static size_t DropdownSetSoundAudioCommand(void* data, size_t index, BOOL cancel) {
     SoundComponent* sc = GetComponent(g_selected, SoundComponent);
     if (index != (size_t)-1) {
         sc->command = (AudioCommand)index;
@@ -266,7 +266,7 @@ static BOOL DrawSoundComponentUI(float width, float height) {
     return edited;
 }
 
-static size_t DropdownSelectMusic(void* data, size_t index) {
+static size_t DropdownSelectMusic(void* data, size_t index, BOOL cancel) {
     MusicComponent* mc = GetComponent(g_selected, MusicComponent);
     if (index != (size_t)-1) {
         mc->id = index;
@@ -274,7 +274,7 @@ static size_t DropdownSelectMusic(void* data, size_t index) {
     return mc->id;
 }
 
-static size_t DropdownSetMusicAudioCommand(void* data, size_t index) {
+static size_t DropdownSetMusicAudioCommand(void* data, size_t index, BOOL cancel) {
     MusicComponent* mc = GetComponent(g_selected, MusicComponent);
     if (index != (size_t)-1) {
         mc->command = (AudioCommand)index;
@@ -432,7 +432,7 @@ static BOOL DrawCameraComponentUI(float width, float height) {
     return edited;
 }
 
-static size_t DropdownSetShape(void* data, size_t index) {
+static size_t DropdownSetShape(void* data, size_t index, BOOL cancel) {
     ShapeComponent* sc = GetComponent(g_selected, ShapeComponent);
     if (index != (size_t)-1) {
         sc->type = (ShapeType)index;
@@ -493,7 +493,7 @@ static BOOL DrawShapeComponentUI(float width, float height) {
     return edited;
 }
 
-static size_t DropdownSelectScript(void* data, size_t index) {
+static size_t DropdownSelectScript(void* data, size_t index, BOOL cancel) {
     ScriptComponent* sc = GetComponent(g_selected, ScriptComponent);
     if (index != (size_t)-1) {
         sc->id = index;

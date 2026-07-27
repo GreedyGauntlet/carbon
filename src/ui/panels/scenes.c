@@ -19,7 +19,7 @@ IMPL_HASHMAP(World*, BOOL, OpenedWorlds, HashWorldPointer);
 static HASHMAP_OpenedWorlds g_openedworlds = { 0 };
 static float g_scrolldiff = 0.0f;
 
-static size_t DropdownSelectActiveScene(void* data, size_t index) {
+static size_t DropdownSelectActiveScene(void* data, size_t index, BOOL cancel) {
     ARRLIST_StaticString* names = SceneNames();
     if (index != (size_t)-1) {
         SetScene(names->data[index]);

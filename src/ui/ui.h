@@ -42,6 +42,8 @@ void PreRenderUI(UI* ui);
 
 void DestroyUI(UI* ui);
 
+void WipeUI(UI* ui);
+
 void DestroyPanel(Panel* panel);
 
 const char* HoveredPanel();
@@ -117,6 +119,10 @@ void UIDropdownMenu_(PersistantUIData* data, size_t width, size_t num_items, cha
 BOOL UITextInput_(PersistantUIData* data, const char* label, char* buffer, size_t size, size_t width, BOOL noclear);
 #define UITextInput(label, buffer, size, width, noclear) \
     PERSISTANT_UI(UITextInput_, label, buffer, size, width, noclear)
+
+void UIFloatingDropdown_(PersistantUIData* data, size_t width, Vector2 origin, size_t num_items, char** items, DropdownSelectFunction func, void* param);
+#define UIFloatingDropdown(width, origin, num_items, items, func, param) \
+    PERSISTANT_UI(UIFloatingDropdown_, width, origin, num_items, items, func, param)
 
 void DisableUI();
 

@@ -39,4 +39,8 @@ ARRLIST_StaticString* SceneNames();
 
 ARRLIST_UIConfig* GetUIConfig();
 
+ARRLIST_Panel* EditorPanels();
+
+void SetUIConfig(ARRLIST_UIConfig* config);
+
 #endif
