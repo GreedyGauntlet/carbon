@@ -1,15 +1,10 @@
-1. panel extensions
-2. custom panel config
-3. ui state save
---- finish sprint ---
-1. anti aliasing
-2. highlight hovered entity
-3. click gameobject
-4. highlight selected entity
---- finish sprint ---
-1. release mode
-2. test with empty everything to ensure engine can run blank
-3. clear notifications command
-4. reload assets command
-5. reload scripts command
---- done!!! ---
+1. add shader asset pack
+2. add shaders to asset panel
+3. add shaders to edit panel
+4. add shaders to draw system
+5. add global shader to draw system
+6. add highlihgt selected Entity 
+7. add click to select entity
+8. make sure empty project works
+9. debug/publish mode
+10 modulo!

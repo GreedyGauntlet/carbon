@@ -46,13 +46,46 @@ static int Hours(float time) {
     return ((int)time / 3600);
 }
 
+static size_t CountWrappedLines(const char* output, float width) {
+    char buffer[MAX_OUTPUT_SIZE] = { 0 };
+    const char* phrase = output;
+    int i = 0;
+    const char* oldp = phrase;
+    int oldi = 0;
+    BOOL first = TRUE;
+    size_t lines = 0;
+    while (phrase[0] != '\0') {
+        buffer[i] = phrase[0];
+        if (buffer[i] == ' ') {
+            float twidth = UITextWidth(buffer);
+            if (twidth > width) {
+                if (first) { oldi = i; oldp = phrase; }
+                buffer[oldi] = '\0';
+                lines++;
+                memset(buffer, '\0', sizeof(buffer));
+                i = -1;
+                phrase = oldp;
+                first = TRUE;
+            } else {
+                oldp = phrase;
+                oldi = i;
+                first = FALSE;
+            }
+        }
+        phrase++;
+        i++;
+    }
+    lines++;
+    return lines;
+}
+
 static float CalculateLogHeight(float width) {
     float height = 0.0f;
     size_t index = g_history_pointer;
     do {
         if (g_outputbuffer[index][0] == '\0') break;
-        float fullwidth = UITextWidth(g_outputbuffer[index]);
-        height += (((int)(fullwidth / width)) + (fullwidth == width ? 0 : 1)) * LINE_HEIGHT;
+        size_t numlines = CountWrappedLines(g_outputbuffer[index], width);
+        height += numlines * LINE_HEIGHT;
         index = (index + 1) % CONSOLE_HISTORY;
     } while (index != g_history_pointer);
     return height;
@@ -70,8 +103,7 @@ static BOOL DrawLog(float* cursory, float width, size_t* index) {
         }
     }
     char* output = g_outputbuffer[*index];
-    float fullwidth = UITextWidth(output);
-    size_t numlines = ((int)(fullwidth / width)) + (fullwidth == width ? 0 : 1);
+    size_t numlines = CountWrappedLines(output, width);
     *cursory -= numlines * LINE_HEIGHT;
     char* phrase = output;
     char buffer[MAX_OUTPUT_SIZE] = { 0 };

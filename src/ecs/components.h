@@ -121,4 +121,8 @@ EXPOSE_COMPONENT(EditUIComponent) {
     PanelFunction draw;
 };
 
+EXPOSE_COMPONENT(ShaderComponent) {
+    size_t id;
+};
+
 #endif
