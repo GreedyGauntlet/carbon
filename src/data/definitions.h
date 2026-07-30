@@ -37,6 +37,10 @@ struct AssetPack {
     ARRLIST_StaticString musicnames;
     ARRLIST_StaticString musicpaths;
     ARRLIST_Music musics;
+    ARRLIST_Shader shaders;
+    ARRLIST_StaticString shadernames;
+    ARRLIST_StaticString vertexshaderpaths;
+    ARRLIST_StaticString fragmentshaderpaths;
 };
 
 struct Scene {

@@ -33,6 +33,12 @@ size_t PackAnimation(Scene* scene, Animation animation, const char* name);
 
 size_t FindAnimation(Scene* scene, const char* name);
 
+size_t PackShader(Scene* scene, const char* vpath, const char* fpath, const char* name);
+
+size_t FindShader(Scene* scene, const char* name);
+
+Shader GetShader(Scene* scene, size_t id);
+
 void RefreshAssets(Scene* scene);
 
 #endif

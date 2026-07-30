@@ -22,9 +22,12 @@ void WipeScene(Scene* scene) {
     ARRLIST_StaticString_clear(&(scene->assets.soundnames));
     ARRLIST_StaticString_clear(&(scene->assets.musicnames));
     ARRLIST_StaticString_clear(&(scene->assets.animnames));
+    ARRLIST_StaticString_clear(&(scene->assets.shadernames));
     ARRLIST_StaticString_clear(&(scene->assets.texpaths));
     ARRLIST_StaticString_clear(&(scene->assets.soundpaths));
     ARRLIST_StaticString_clear(&(scene->assets.musicpaths));
+    ARRLIST_StaticString_clear(&(scene->assets.vertexshaderpaths));
+    ARRLIST_StaticString_clear(&(scene->assets.fragmentshaderpaths));
     for (size_t i = 0; i < scene->assets.textures.size; i++) UnloadTexture(scene->assets.textures.data[i]);
     for (size_t i = 0; i < scene->assets.sounds.size; i++) {
         StopSound(scene->assets.sounds.data[i]);
@@ -34,10 +37,12 @@ void WipeScene(Scene* scene) {
         StopMusicStream(scene->assets.musics.data[i]);
         UnloadMusicStream(scene->assets.musics.data[i]);
     }
+    for (size_t i = 0; i < scene->assets.shaders.size; i++) UnloadShader(scene->assets.shaders.data[i]);
     ARRLIST_Texture2D_clear(&(scene->assets.textures));
     ARRLIST_Sound_clear(&(scene->assets.sounds));
     ARRLIST_Music_clear(&(scene->assets.musics));
     ARRLIST_Animation_clear(&(scene->assets.animations));
+    ARRLIST_Shader_clear(&(scene->assets.shaders));
 }
 
 void DestroyScene(Scene* scene) {
@@ -126,6 +131,26 @@ size_t FindAnimation(Scene* scene, const char* name) {
     return (size_t)-1;
 }
 
+size_t PackShader(Scene* scene, const char* vpath, const char* fpath, const char* name) {
+    EZ_ASSERT(FindShader(scene, name) == (size_t)-1, "An shader with this name has already been packed into this scene");
+    ARRLIST_Shader_add(&(scene->assets.shaders), LoadShader(vpath, fpath));
+    ARRLIST_StaticString_add(&(scene->assets.shadernames), name);
+    ARRLIST_StaticString_add(&(scene->assets.vertexshaderpaths), vpath);
+    ARRLIST_StaticString_add(&(scene->assets.fragmentshaderpaths), fpath);
+    return scene->assets.animations.size - 1;
+}
+
+size_t FindShader(Scene* scene, const char* name) {
+    for (size_t i = 0; i < scene->assets.shadernames.size; i++)
+        if (strcmp(scene->assets.shadernames.data[i], name) == 0) return i;
+    return (size_t)-1;
+}
+
+Shader GetShader(Scene* scene, size_t id) {
+    EZ_ASSERT(id < scene->assets.shaders.size, "Shader ID does not exist");
+    return scene->assets.shaders.data[id];
+}
+
 void RefreshAssets(Scene* scene) {
     for (size_t i = 0; i < scene->assets.textures.size; i++) {
         UnloadTexture(scene->assets.textures.data[i]);
@@ -141,5 +166,10 @@ void RefreshAssets(Scene* scene) {
         UnloadMusicStream(scene->assets.musics.data[i]);
         scene->assets.musics.data[i] = LoadMusicStream(scene->assets.musicpaths.data[i]);
         while (!IsMusicValid(scene->assets.musics.data[i])) {}
+    }
+    for (size_t i = 0; i < scene->assets.shaders.size; i++) {
+        UnloadShader(scene->assets.shaders.data[i]);
+        scene->assets.shaders.data[i] = LoadShader(scene->assets.vertexshaderpaths.data[i], scene->assets.fragmentshaderpaths.data[i]);
+        while (!IsShaderValid(scene->assets.shaders.data[i])) {}
     }
 }

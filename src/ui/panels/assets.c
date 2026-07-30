@@ -13,6 +13,7 @@ static BOOL g_textures_opened = FALSE;
 static BOOL g_sounds_opened = FALSE;
 static BOOL g_music_opened = FALSE;
 static BOOL g_animations_opened = FALSE;
+static BOOL g_shaders_opened = FALSE;
 static size_t g_selected_asset = (size_t)-1;
 static int g_selected_asset_type = 0;
 static float g_scrolldiff = 0.0f;
@@ -26,11 +27,12 @@ static void DrawAssetsPanel(float width, float height) {
     }
     Scene* scene = GetActiveScene();
     UISetCursor(10, g_canvas_height + 50);
-    int numlines = 4;
+    int numlines = 5;
     if (g_textures_opened) numlines += scene->assets.textures.size;
     if (g_animations_opened) numlines += scene->assets.animations.size;
     if (g_sounds_opened) numlines += scene->assets.sounds.size;
     if (g_music_opened) numlines += scene->assets.musics.size;
+    if (g_shaders_opened) numlines += scene->assets.shaders.size;
     if (g_selected_asset != (size_t)-1) {
         if (g_selected_asset_type == 1) {
             numlines += 5;
@@ -279,6 +281,62 @@ static void DrawAssetsPanel(float width, float height) {
                 DrawRectangle(UIGetCursor().x + 10, UIGetCursor().y + 11, 10, 1, MappedColor(UI_TEXT_COLOR));
                 UIMoveCursor(25, 0);
                 UIDrawText("frames: %d", (int)scene->assets.musics.data[i].frameCount);
+            }
+        }
+    }
+    UIMoveCursor(20, 0);
+    if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){UIGetCursor().x - 20 + UIGetPosition().x, UIGetCursor().y + UIGetPosition().y, width - UIGetCursor().x + 10, 20})) {
+        DrawRectangle(UIGetCursor().x - 20, UIGetCursor().y, width - UIGetCursor().x + 10, 20, MappedColor(UI_HIGHLIGHT_COLOR));
+        if (InputButtonPressed(IK_MOUSELEFT)) g_shaders_opened = !g_shaders_opened;
+    }
+    if (g_shaders_opened) {
+        DrawTriangle(
+            (Vector2){ UIGetCursor().x - 10.0f + (10.0f / 2.0f), UIGetCursor().y + 10.0f - (10.0f / 2.0f) },
+            (Vector2){ UIGetCursor().x - 10.0f - (10.0f / 2.0f), UIGetCursor().y + 10.0f - (10.0f / 2.0f) },
+            (Vector2){ UIGetCursor().x - 10.0f, UIGetCursor().y + 10.0f + (10.0f / 2.0f) },
+            MappedColor(UI_TEXT_COLOR));
+    } else {
+        DrawTriangle(
+            (Vector2){ UIGetCursor().x - 10.0f - (10.0f / 2.0f), UIGetCursor().y + 10.0f - (10.0f / 2.0f) },
+            (Vector2){ UIGetCursor().x - 10.0f - (10.0f / 2.0f), UIGetCursor().y + 10.0f + (10.0f / 2.0f) },
+            (Vector2){ UIGetCursor().x - 10.0f + (10.0f / 2.0f), UIGetCursor().y + 10.0f },
+            MappedColor(UI_TEXT_COLOR));
+    }
+    UIDrawText("Shaders");
+    if (g_shaders_opened) {
+        float ystickorig = UIGetCursor().y + 3;
+        for (size_t i = 0; i < scene->assets.shaders.size; i++) {
+            DrawRectangle(UIGetCursor().x + 10, UIGetCursor().y + 11, 10, 1, MappedColor(UI_TEXT_COLOR));
+            UIMoveCursor(25, 0);
+            if (CheckCollisionPointRec(GetMousePosition(), (Rectangle){UIGetCursor().x - 2 + UIGetPosition().x, UIGetCursor().y + UIGetPosition().y, width - UIGetCursor().x - 10, 20})) {
+                DrawRectangle(UIGetCursor().x - 2, UIGetCursor().y, width - UIGetCursor().x - 10, 20, MappedColor(UI_HIGHLIGHT_COLOR));
+                if (InputButtonPressed(IK_MOUSELEFT)) {
+                    if (g_selected_asset_type == 0 && g_selected_asset == i) {
+                        g_selected_asset = (size_t)-1;
+                    } else {
+                        g_selected_asset = i;
+                        g_selected_asset_type = 4;
+                    }
+                }
+            }
+            if (g_selected_asset == i && g_selected_asset_type == 4) {
+                DrawRectangle(UIGetCursor().x - 2, UIGetCursor().y, width - UIGetCursor().x - 10, 20, MappedColor(UI_SELECTED_COLOR));
+            }
+            UIDrawText("%s", scene->assets.shadernames.data[i]);
+            if (i == scene->assets.shaders.size - 1) {
+                DrawRectangle(UIGetCursor().x + 10, ystickorig, 1, UIGetCursor().y - ystickorig - 8, MappedColor(UI_TEXT_COLOR));
+            }
+            if (g_selected_asset == i && g_selected_asset_type == 4) {
+                UIMoveCursor(20, 0);
+                DrawRectangle(UIGetCursor().x + 10, UIGetCursor().y + 3, 1, 8, MappedColor(UI_TEXT_COLOR));
+                DrawRectangle(UIGetCursor().x + 10, UIGetCursor().y + 11, 10, 1, MappedColor(UI_TEXT_COLOR));
+                UIMoveCursor(25, 0);
+                UIDrawText("vertex path: \"%s\"", scene->assets.vertexshaderpaths.data[i] ? scene->assets.vertexshaderpaths.data[i] : "N/A");
+                UIMoveCursor(20, 0);
+                DrawRectangle(UIGetCursor().x + 10, UIGetCursor().y - 9, 1, 20, MappedColor(UI_TEXT_COLOR));
+                DrawRectangle(UIGetCursor().x + 10, UIGetCursor().y + 11, 10, 1, MappedColor(UI_TEXT_COLOR));
+                UIMoveCursor(25, 0);
+                UIDrawText("fragment path: \"%s\"", scene->assets.fragmentshaderpaths.data[i] ? scene->assets.fragmentshaderpaths.data[i] : "N/A");
             }
         }
     }
