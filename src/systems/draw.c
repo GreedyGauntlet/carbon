@@ -1,6 +1,8 @@
 #include "draw.h"
 #include "ui/panels/viewport.h"
+#include "ui/panels/edit.h"
 #include "data/definitions.h"
+#include "data/colors.h"
 #include "systems/system.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
@@ -9,6 +11,7 @@
 #include "core/config.h"
 #include "core/scene.h"
 #include "util/logger.h"
+#include "util/pick.h"
 #include <easysort.h>
 #include <raymath.h>
 #include <float.h>
@@ -20,6 +23,74 @@ typedef void (*DrawComponentFunc)(Entity, Vector2);
 
 static World* g_current_world = NULL;
 static BOOL g_viewcam_locked = FALSE;
+
+static void DrawPickGeometry(Entity e, Vector2 origin) {
+    Color id_color = PickColorFor(RegisterPickable(e));
+    Vector3 translation = GetWorldPosition(e);
+    Vector2 scale = GetWorldScale(e);
+    if (HasComponent(e, ShapeComponent) && GetComponent(e, ShapeComponent)->type == CIRCLE_SHAPE) {
+        float radius = (scale.x + scale.y) / 4.0f;
+        DrawCircle(translation.x + origin.x, translation.y + origin.y, radius, id_color);
+    }
+    if (HasComponent(e, TextComponent)) {
+        TextComponent* tc = GetComponent(e, TextComponent);
+        Vector2 size = MeasureTextEx(GetFontDefault(), tc->text, tc->size * scale.x, 2);
+        Vector2 tpos = { translation.x + origin.x, translation.y + origin.y - size.y / 2.0f };
+        switch (tc->alignment) {
+            case TEXT_ALIGN_CENTER: tpos.x -= size.x / 2.0f; break;
+            case TEXT_ALIGN_RIGHT:  tpos.x -= size.x; break;
+            default: break;
+        }
+        DrawRectangle(tpos.x, tpos.y, size.x, size.y, id_color);
+    }
+    float rotation =
+        (HasComponent(e, TextureComponent) ||
+         HasComponent(e, AnimationComponent) ||
+        (HasComponent(e, ShapeComponent) && GetComponent(e, ShapeComponent)->type == RECTANGLE_SHAPE))
+            ? GetWorldRotation(e) : 0.0f;
+    DrawRectanglePro(
+        (Rectangle){ translation.x - scale.x/2.0f + origin.x, translation.y - scale.y/2.0f + origin.y, scale.x, scale.y },
+        (Vector2){ 0, 0 }, rotation, id_color);
+}
+
+static void DrawEntityHighlight(Entity e, Vector2 origin) {
+    Entity sel = SelectedEntity(), hov = HoveredEntity();
+    BOOL is_selected = sel.id == e.id && sel.context == e.context;
+    BOOL is_hovered = !is_selected && hov.id == e.id && hov.context == e.context;
+    if (!is_selected && !is_hovered) return;
+    Color color = is_selected ? MappedColor(ENTITY_SELECTED_OUTLINE) : MappedColor(ENTITY_HOVERED_OUTLINE);
+
+    Vector3 translation = GetWorldPosition(e);
+    Vector2 scale = GetWorldScale(e);
+    if (HasComponent(e, ShapeComponent) && GetComponent(e, ShapeComponent)->type == CIRCLE_SHAPE) {
+        float radius = (scale.x + scale.y) / 4.0f;
+        DrawRing((Vector2){ translation.x + origin.x, translation.y + origin.y }, radius, radius + 2.0f, 0, 360, 36, color);
+    }
+    float rotation = (HasComponent(e, TextureComponent) || HasComponent(e, AnimationComponent))
+        ? GetWorldRotation(e) : 0.0f;
+    Vector2 pivot = { translation.x - scale.x/2.0f + origin.x, translation.y - scale.y/2.0f + origin.y };
+    float rad = rotation * DEG2RAD, c = cosf(rad), s = sinf(rad);
+    Vector2 local[4] = { {0, 0}, {scale.x, 0}, {scale.x, scale.y}, {0, scale.y} };
+    Vector2 corners[4];
+    if (HasComponent(e, TextComponent)) {
+        TextComponent* tc = GetComponent(e, TextComponent);
+        Vector2 size = MeasureTextEx(GetFontDefault(), tc->text, tc->size * scale.x, 2);
+        Vector2 tpos = { translation.x + origin.x, translation.y + origin.y - size.y / 2.0f };
+        switch (tc->alignment) {
+            case TEXT_ALIGN_CENTER: tpos.x -= size.x / 2.0f; break;
+            case TEXT_ALIGN_RIGHT:  tpos.x -= size.x; break;
+            default: break;
+        }
+        pivot = tpos;
+        local[1] = (Vector2){ size.x, 0 };
+        local[2] = (Vector2){ size.x, size.y };
+        local[3] = (Vector2){ 0, size.y };
+    }
+    for (int i = 0; i < 4; i++)
+        corners[i] = (Vector2){ pivot.x + local[i].x*c - local[i].y*s, pivot.y + local[i].x*s + local[i].y*c };
+    for (int i = 0; i < 4; i++)
+        DrawLineEx(corners[i], corners[(i+1)%4], 2.0f, color);
+}
 
 static float ExtractZValue(EntityID e) {
     Entity entity = (Entity){ e, g_current_world };
@@ -226,20 +297,30 @@ static void DrawDrawSystem(System* system) {
             ARRLIST_EntityID_add(&anchors, e.id);
             ARRLIST_int_add(&anchorfuncs, min);
         } else {
-            BOOL useshader = HasComponent(e, ShaderComponent);
-            if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
-            funcs[min](e, (Vector2){ 0, 0 });
-            if (useshader) EndShaderMode();
+            if (IsPicking()) {
+                DrawPickGeometry(e, (Vector2){ 0, 0 });
+            } else {
+                BOOL useshader = HasComponent(e, ShaderComponent);
+                if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
+                funcs[min](e, (Vector2){ 0, 0 });
+                if (useshader) EndShaderMode();
+                if (Config()->enableclickselection && !Playing()) DrawEntityHighlight(e, (Vector2){ 0, 0 });
+            }
         }
         indices[min]++;
     }
     EndMode2D();
     for (size_t i = 0; i < anchors.size; i++) {
         Entity e = (Entity){ anchors.data[i], system->context };
-        BOOL useshader = HasComponent(e, ShaderComponent);
-        if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
-        funcs[anchorfuncs.data[i]](e, AnchorCoordinate(e));
-        if (useshader) EndShaderMode();
+        if (IsPicking()) {
+            DrawPickGeometry(e, AnchorCoordinate(e));
+        } else {
+            BOOL useshader = HasComponent(e, ShaderComponent);
+            if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
+            funcs[anchorfuncs.data[i]](e, AnchorCoordinate(e));
+            if (useshader) EndShaderMode();
+            if (Config()->enableclickselection && !Playing()) DrawEntityHighlight(e, AnchorCoordinate(e));
+        }
     }
     ARRLIST_EntityID_clear(&anchors);
     ARRLIST_int_clear(&anchorfuncs);

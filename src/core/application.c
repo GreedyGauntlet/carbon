@@ -19,6 +19,7 @@
 #include "ecs/components.h"
 #include "ecs/entity.h"
 #include "util/logger.h"
+#include "util/pick.h"
 
 static Application g_application = { 0 };
 static ARRLIST_StaticString g_scene_names = { 0 };
@@ -39,6 +40,7 @@ static void ApplicationResized() {
         g_windowsize.x = GetScreenWidth();
         g_windowsize.y = GetScreenHeight();
         ResizeUI(g_application.ui);
+        ResizePickTarget();
     }
 }
 
@@ -405,6 +407,7 @@ void RunApplication() {
 }
 
 void DestroyApplication() {
+    CleanPicking();
     CopyUIDividersToConfig();
     SaveUIConfig();
     CleanConfig();

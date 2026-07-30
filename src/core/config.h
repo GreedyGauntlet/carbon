@@ -21,6 +21,7 @@ typedef struct {
     size_t selectedentity;
     size_t selectedworld;
     BOOL startupentity;
+    BOOL enableclickselection;
 } AppConfig;
 
 AppConfig* Config();

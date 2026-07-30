@@ -14,6 +14,7 @@
 #define LEFT_COLUMN_WIDTH 150
 
 static Entity g_selected = { 0 };
+static Entity g_hovered = { 0 };
 static const char* g_audio_command_labels[] = { "Send Command", "Play", "Pause", "Resume", "Stop" };
 static const char* g_shape_labels[] = { "Rectangle", "Circle" };
 static float g_scrolldiff = 0.0f;
@@ -601,4 +602,12 @@ void SelectEntity(Entity e) {
 
 Entity SelectedEntity() {
     return g_selected;
+}
+
+void SetHoveredEntity(Entity e) {
+    g_hovered = e;
+}
+
+Entity HoveredEntity() {
+    return g_hovered;
 }

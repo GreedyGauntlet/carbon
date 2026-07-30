@@ -1,5 +1,6 @@
 #include "declarations.h"
 #include "data/definitions.h"
+#include "ecs/entity.h"
 #include <easyhash.h>
 
 IMPL_ARRLIST(EntityID);
@@ -12,6 +13,7 @@ IMPL_ARRLIST(Music);
 IMPL_ARRLIST(Animation);
 IMPL_ARRLIST(UIConfig);
 IMPL_ARRLIST(Shader);
+IMPL_ARRLIST(Entity);
 IMPL_ARRLIST_NAMED(ScenePtr, Scene*);
 IMPL_ARRLIST_NAMED(WorldPtr, World*);
 IMPL_ARRLIST_NAMED(ComponentStoragePtr, ComponentStorage*);

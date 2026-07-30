@@ -1,4 +1,5 @@
 #include "viewport.h"
+#include "ecs/entity.h"
 #include "core/application.h"
 #include "core/scene.h"
 #include "core/binds.h"
@@ -6,6 +7,8 @@
 #include "data/definitions.h"
 #include "data/colors.h"
 #include "data/input.h"
+#include "util/pick.h"
+#include "ui/panels/edit.h"
 #include "ui/ui.h"
 #include "ui/popup.h"
 #include "systems/draw.h"
@@ -188,6 +191,17 @@ static void DrawViewportPanel(float width, float height) {
                     scene->worlds.data[i]->systems.data[j]->draw(scene->worlds.data[i]->systems.data[j]);
         }
         EndTextureMode();
+        if (!Playing() && Config()->enableclickselection) {
+            BeginPickPass();
+            for (size_t i = 0; i < scene->worlds.size; i++) {
+                if (scene->worlds.data[i]->draw)
+                    scene->worlds.data[i]->draw(scene->worlds.data[i]);
+                for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
+                    if (scene->worlds.data[i]->systems.data[j]->draw)
+                        scene->worlds.data[i]->systems.data[j]->draw(scene->worlds.data[i]->systems.data[j]);
+            }
+            EndPickPass();
+        }
         ResumePreRender();
     }
     DrawTexturePro(
@@ -199,6 +213,14 @@ static void DrawViewportPanel(float width, float height) {
         (Color){ 255, 255, 255, 255 });
     if (g_show_hints && HoveredPanel() && strcmp(HoveredPanel(), "Viewport") == 0) {
         DrawCurrentBinds(0, 26);
+    }
+    if (!Playing() && Config()->enableclickselection && GetActiveScene() && 
+        CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){0, 25, width, height - 25})) {
+        Entity picked = ResolvePick(InputMousePosition());
+        SetHoveredEntity(picked);
+        if (InputButtonPressed(IK_MOUSELEFT)) SelectEntity(picked);
+    } else {
+        SetHoveredEntity((Entity){ 0, 0 });
     }
 }
 

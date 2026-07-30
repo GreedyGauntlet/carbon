@@ -23,6 +23,7 @@ static AppConfig g_default_config = {
     TRUE,
     0,
     0,
+    TRUE,
     TRUE
 };
 
