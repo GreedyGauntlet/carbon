@@ -495,6 +495,52 @@ static void DrawAssetsPanel(float width, float height) {
                     (Vector2){ width / 2.0f + 25, g_canvas_height / 2.0f + 50 },
                 MappedColor(PANEL_ASSET_BORDER_COLOR));
             }
+        } else if (g_selected_asset_type == 4 && g_selected_asset < scene->assets.shaders.size) {
+            float fidelity = 1.0f;
+            float wratio = fidelity / (width - 20 - 4);
+            float hratio = fidelity / (g_canvas_height - 4);
+            Shader shader = GetShader(scene, g_selected_asset);
+            BeginShaderMode(shader);
+            if (wratio > hratio) {
+                DrawRectangle(
+                    UIGetCursor().x + 2,
+                    UIGetCursor().y + 2 + ((g_canvas_height - 4) / 2.0f) - ((fidelity / wratio) / 2.0f),
+                    (width - 20 - 4) / 3.0f,
+                    fidelity / wratio,
+                    RED);
+                DrawRectangle(
+                    UIGetCursor().x + 2 + ((width - 20 - 4) / 3.0f),
+                    UIGetCursor().y + 2 + ((g_canvas_height - 4) / 2.0f) - ((fidelity / wratio) / 2.0f),
+                    (width - 20 - 4) / 3.0f,
+                    fidelity / wratio,
+                    GREEN);
+                DrawRectangle(
+                    UIGetCursor().x + 2 + (2.0f * (width - 20 - 4) / 3.0f),
+                    UIGetCursor().y + 2 + ((g_canvas_height - 4) / 2.0f) - ((fidelity / wratio) / 2.0f),
+                    (width - 20 - 4) / 3.0f,
+                    fidelity / wratio,
+                    BLUE);
+            } else {
+                DrawRectangle(
+                    UIGetCursor().x + 2 + ((width - 20 - 4) / 2.0f) - ((fidelity / hratio) / 2.0f),
+                    UIGetCursor().y + 2,
+                    (fidelity / hratio) / 3.0f,
+                    g_canvas_height - 4,
+                    RED);
+                DrawRectangle(
+                    UIGetCursor().x + 2 + ((width - 20 - 4) / 2.0f) - ((fidelity / hratio) / 2.0f) + ((fidelity / hratio) / 3.0f),
+                    UIGetCursor().y + 2,
+                    (fidelity / hratio) / 3.0f,
+                    g_canvas_height - 4,
+                    GREEN);
+                DrawRectangle(
+                    UIGetCursor().x + 2 + ((width - 20 - 4) / 2.0f) - ((fidelity / hratio) / 2.0f) + (2.0f * (fidelity / hratio) / 3.0f),
+                    UIGetCursor().y + 2,
+                    (fidelity / hratio) / 3.0f,
+                    g_canvas_height - 4,
+                    BLUE);
+            }
+            EndShaderMode();
         } else {
             UISetCursor((width / 2.0f) - (UITextWidth("No Preview Available") / 2.0f), 40 + g_canvas_height / 2.0f);
             UIDrawText("No Preview Available");

@@ -7,6 +7,7 @@
 #include "core/application.h"
 #include "core/world.h"
 #include "core/config.h"
+#include "core/scene.h"
 #include "util/logger.h"
 #include <easysort.h>
 #include <raymath.h>
@@ -225,14 +226,20 @@ static void DrawDrawSystem(System* system) {
             ARRLIST_EntityID_add(&anchors, e.id);
             ARRLIST_int_add(&anchorfuncs, min);
         } else {
+            BOOL useshader = HasComponent(e, ShaderComponent);
+            if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
             funcs[min](e, (Vector2){ 0, 0 });
+            if (useshader) EndShaderMode();
         }
         indices[min]++;
     }
     EndMode2D();
     for (size_t i = 0; i < anchors.size; i++) {
         Entity e = (Entity){ anchors.data[i], system->context };
+        BOOL useshader = HasComponent(e, ShaderComponent);
+        if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
         funcs[anchorfuncs.data[i]](e, AnchorCoordinate(e));
+        if (useshader) EndShaderMode();
     }
     ARRLIST_EntityID_clear(&anchors);
     ARRLIST_int_clear(&anchorfuncs);

@@ -45,7 +45,8 @@ static void InitDev(Scene* scene) {
     PackMusic(scene, "assets/audio/sea_shanties.mp3", "Sea Shanty");
     PackShader(scene, NULL, "assets/shaders/cross_stitching.fs", "Cross Hatch");
     PackAnimation(scene, (Animation){FindTexture(scene, "Explosion Animation Sheet"), 17, 631, 418, (Vector2){0, 0}, 10.0f}, "Explosion");
-    Entity e = CreateEntity(world);
+    Entity e = CreateEntityN(world, "Explosionsssss");
+    AddComponent(e, ShaderComponent, FindShader(scene, "Cross Hatch"));
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
     AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
@@ -62,7 +63,6 @@ static void InitDev(Scene* scene) {
     AddComponent(e, AnchorComponent, CENTER_ANCHOR);
     AddComponent(e, TextureComponent, FindTexture(scene, "Default Square"));
     AddComponent(e, AnimationComponent, FindAnimation(scene, "Explosion"), 0.0f, 1.0f, FALSE, TRUE, FALSE, FALSE);
-    AddComponent(e, ShaderComponent, FindShader(scene, "Cross Hatch"));
     AddComponent(e, ListenerComponent, FALSE, 1.0, 0.5);
     AddComponent(e, SoundComponent, FindSound(scene, "Fart Noise"), 1.0, 1.0, 0.5, AUDIO_NOTHING);
     AddComponent(e, MusicComponent, FindMusic(scene, "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
