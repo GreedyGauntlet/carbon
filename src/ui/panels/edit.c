@@ -515,6 +515,28 @@ static BOOL DrawScriptComponentUI(float width, float height) {
     return edited;
 }
 
+static size_t DropdownSelectShader(void* data, size_t index, BOOL cancel) {
+    ShaderComponent* sc = GetComponent(g_selected, ShaderComponent);
+    if (index != (size_t)-1) {
+        sc->id = index;
+    }
+    return sc->id;
+}
+
+static BOOL DrawShaderComponentUI(float width, float height) {
+    if (!HasComponent(g_selected, ShaderComponent)) return FALSE;
+    ShaderComponent* sc = GetComponent(g_selected, ShaderComponent);
+    if (sc->id == (size_t)-1) return FALSE;
+    DrawComponentTitle(width, "Shader");
+    BOOL edited = FALSE;
+    UIMoveCursor(0, 2);
+    UIDrawText("Shader Asset");
+    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.shadernames.size, (char**)g_selected.context->parent->assets.shadernames.data, DropdownSelectShader, NULL);
+    return edited;
+}
+
 static void DrawEditPanel(float width, float height) {
     if (g_selected.id == INVALID_ENTITY || !IsActiveWorld(g_selected.context) || !HasComponent(g_selected, TagComponent)) {
         UISetCursor(width / 2.0f - (UITextWidth("No Selected Entity") / 2.0f), height / 2.0f - 10.0f);
@@ -540,6 +562,7 @@ static void DrawEditPanel(float width, float height) {
     panel_heights += HasComponent(g_selected, CameraComponent) ? 105 : 0;
     panel_heights += HasComponent(g_selected, ShapeComponent) ? 90 : 0;
     panel_heights += HasComponent(g_selected, ScriptComponent) ? 45 : 0;
+    panel_heights += HasComponent(g_selected, ShaderComponent) ? 45 : 0;
     UIMoveCursor(0, 35);
     if (HoveredPanel() && strcmp(HoveredPanel(), "Edit") == 0) {
         if (InputKeyPressed(IK_ENTER)) g_scrolldiff = 0.0f;
@@ -559,6 +582,7 @@ static void DrawEditPanel(float width, float height) {
     DrawCameraComponentUI(width, height);
     DrawShapeComponentUI(width, height);
     DrawScriptComponentUI(width, height);
+    DrawShaderComponentUI(width, height);
     UISetCursor(10, 10);
     DrawRectangle(0, 0, width, 45, MappedColor(PANEL_BG_COLOR));
     DrawTagComponentUI(width, height);
