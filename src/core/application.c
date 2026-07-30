@@ -477,7 +477,7 @@ void Resume() {
             ARRLIST_EntityID* cameras = GetEntities(scene->worlds.data[i], CameraComponent);
             int numc = 0;
             for (size_t j = 0; cameras && j < cameras->size; j++) {
-                Entity e = (Entity){ cameras->data[i], scene->worlds.data[i] };
+                Entity e = (Entity){ cameras->data[j], scene->worlds.data[i] };
                 if (GetComponent(e, CameraComponent)->enabled) numc++;
             }
             if (numc == 0) {

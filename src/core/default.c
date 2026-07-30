@@ -68,7 +68,7 @@ static void InitDev(Scene* scene) {
     AddComponent(e, MusicComponent, FindMusic(scene, "Sea Shanty"), 1.0f, 1.0f, 0.0, AUDIO_NOTHING);
     AddComponent(e, CameraComponent, FALSE, (Vector2){ 0, 0 }, 0, 1.0f);
     AddComponent(e, ShapeComponent, CIRCLE_SHAPE, (Color){0,0,255,255});
-    AddComponent(e, ScriptComponent, movescript);
+    //AddComponent(e, ScriptComponent, movescript);
     e = CreateEntityP(world, 0, 50, -1);
     EntityScale(e)->x = 100;
     EntityScale(e)->y = 100;
