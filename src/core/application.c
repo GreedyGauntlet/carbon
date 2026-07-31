@@ -195,7 +195,7 @@ void RunApplication() {
         logwarn("Unable to override startup scene");
     }
     if (Config()->startupentity) {
-        if (Config()->selectedworld < GetActiveScene()->worlds.size) {
+        if (GetActiveScene() && Config()->selectedworld < GetActiveScene()->worlds.size) {
             SelectEntity((Entity){ Config()->selectedentity, GetActiveScene()->worlds.data[Config()->selectedworld] });
         } else {
             logwarn("Unable to find previously selected entity");

@@ -4,6 +4,7 @@
 #include "commands/help.h"
 #include "commands/notify.h"
 #include "commands/clear.h"
+#include "commands/refresh.h"
 
 // TODO: delete this!!!
 #include "core/scene.h"
@@ -101,6 +102,7 @@ void DefaultPostload() {
     RegisterCommand((Command){ "timeevent", TimeEventCommand, "timeevent {<seconds>} ...", "Set a command to execute in a given amount of time" });
     RegisterCommand((Command){ "notify", NotifyCommand, "notify <level> ...", "Send a notification of a given level and with the given text" });
     RegisterCommand((Command){ "clear", ClearCommand, "clear {notifications}", "Clear a given data subject" });
+    RegisterCommand((Command){ "refresh", RefreshCommand, "refresh {assets}", "Refresh a given data subject" });
 }
 
 void DefaultPreupdate() { }
