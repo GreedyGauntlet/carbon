@@ -7,20 +7,20 @@ typedef void (*EntryPoint)(void);
 #define CONCAT(a, b) CONCAT_IMPL(a, b)
 
 #define REGISTER_PRELOAD(func) \
-    __attribute__((section("preloads"))) \
-    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+    __attribute__((section("preloads"), used)) \
+    static EntryPoint CONCAT(ext_, __COUNTER__) = func;
 
 #define REGISTER_POSTLOAD(func) \
-    __attribute__((section("postloads"))) \
-    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+    __attribute__((section("postloads"), used)) \
+    static EntryPoint CONCAT(ext_, __COUNTER__) = func;
 
 #define REGISTER_PREUPDATE(func) \
-    __attribute__((section("preupdates"))) \
-    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+    __attribute__((section("preupdates"), used)) \
+    static EntryPoint CONCAT(ext_, __COUNTER__) = func;
 
 #define REGISTER_CLEANUP(func) \
-    __attribute__((section("cleanups"))) \
-    EntryPoint CONCAT(ext_, __COUNTER__) = func;
+    __attribute__((section("cleanups"), used)) \
+    static EntryPoint CONCAT(ext_, __COUNTER__) = func;
 
 void PreloadExtensions();
 
