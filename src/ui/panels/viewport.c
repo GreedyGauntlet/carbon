@@ -19,6 +19,9 @@ static Vector2 g_viewport_position = { 0 };
 static RenderTexture2D g_viewport_target = { 0 };
 static BOOL g_rfocused = FALSE;
 static BOOL g_zfocused = FALSE;
+
+#ifndef CARBON_RELEASE
+
 static BOOL g_show_hints = FALSE;
 
 static BOOL DrawFullscreenButton(float x, float y) {
@@ -157,6 +160,30 @@ static BOOL DrawStepButton(float x, float y) {
     return FALSE;
 }
 
+static void PanCamera() {
+    if (g_rfocused && !ViewCameraLocked()) {
+        Vector2 delta = GetMouseDelta();
+        Config()->camera.target = Vector2Add(Vector2Scale(delta, -1.0f / Config()->camera.zoom), Config()->camera.target);
+    }
+}
+
+static void ZoomCamera() {
+    if (g_zfocused && !ViewCameraLocked()) {
+        Vector2 delta = GetMouseDelta();
+        Vector2 focus = Vector2Add(GetViewportPosition(), Vector2Scale(GetViewportSlice(), 0.5f));
+        Vector2 prev = Vector2Subtract(Vector2Subtract(GetMousePosition(), delta), focus);
+        Vector2 current = Vector2Subtract(GetMousePosition(), focus);
+        Config()->camera.zoom += Vector2Length(delta) * 0.01f * (Vector2Length(prev) > Vector2Length(current) ? -1.0f : 1.0f);
+        if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
+    }
+}
+
+static void ResetCamera() {
+    Config()->camera = (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f };
+}
+
+#endif
+
 static void ResizeViewportTarget() {
     if (g_viewport_target.texture.width != GetScreenWidth() || g_viewport_target.texture.height != GetScreenHeight()) {
         UnloadRenderTexture(g_viewport_target);
@@ -166,18 +193,20 @@ static void ResizeViewportTarget() {
 
 static void DrawViewportPanel(float width, float height) {
     ClearBackground(BLACK);
-    DrawRectangle(0, 0, width, 25, MappedColor(PANEL_NB_COLOR));
-    DrawRectangle(0, 25, width, 1, MappedColor(PANEL_DIVIDER_COLOR));
-    if (DrawFullscreenButton(0, 0)) ToggleFullScreen();
-    if (DrawSettingsButton(width - 25, 0)) UIPopup(GenerateEditorConfigPopup());
-    if (DrawResetButton(width / 2.0f - 50, 0) && GetActiveScene()) ResetScene(GetActiveScene());
-    if (Playing()) {
-        if (DrawPauseButton(width / 2.0f - 25, 0)) Pause();
-    } else {
-        if (DrawPlayButton(width / 2.0f - 25, 0)) Resume();
-    }
-    if (DrawFastForwardButton(width / 2.0f + 0, 0)) ToggleFastForward();
-    if (DrawStepButton(width / 2.0f + 25, 0)) Step(Config()->stepsize);
+    #ifndef CARBON_RELEASE
+        DrawRectangle(0, 0, width, 25, MappedColor(PANEL_NB_COLOR));
+        DrawRectangle(0, 25, width, 1, MappedColor(PANEL_DIVIDER_COLOR));
+        if (DrawFullscreenButton(0, 0)) ToggleFullScreen();
+        if (DrawSettingsButton(width - 25, 0)) UIPopup(GenerateEditorConfigPopup());
+        if (DrawResetButton(width / 2.0f - 50, 0) && GetActiveScene()) ResetScene(GetActiveScene());
+        if (Playing()) {
+            if (DrawPauseButton(width / 2.0f - 25, 0)) Pause();
+        } else {
+            if (DrawPlayButton(width / 2.0f - 25, 0)) Resume();
+        }
+        if (DrawFastForwardButton(width / 2.0f + 0, 0)) ToggleFastForward();
+        if (DrawStepButton(width / 2.0f + 25, 0)) Step(Config()->stepsize);
+    #endif
     Scene* scene = GetActiveScene();
     if (scene) {
         PausePreRender();
@@ -204,46 +233,34 @@ static void DrawViewportPanel(float width, float height) {
         }
         ResumePreRender();
     }
-    DrawTexturePro(
-        g_viewport_target.texture,
-        (Rectangle){ 0, g_viewport_target.texture.height - height + 26, width, -1*((int)height - 26) },
-        (Rectangle){ 0, 26, width, height - 26 },
-        (Vector2){ 0, 0 },
-        0.0f,
-        (Color){ 255, 255, 255, 255 });
-    if (g_show_hints && HoveredPanel() && strcmp(HoveredPanel(), "Viewport") == 0) {
-        DrawCurrentBinds(0, 26);
-    }
-    if (!Playing() && Config()->enableclickselection && GetActiveScene() && 
-        CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){0, 25, width, height - 25})) {
-        Entity picked = ResolvePick(InputMousePosition());
-        SetHoveredEntity(picked);
-        if (InputButtonPressed(IK_MOUSELEFT)) SelectEntity(picked);
-    } else {
-        SetHoveredEntity((Entity){ 0, 0 });
-    }
-}
-
-static void PanCamera() {
-    if (g_rfocused && !ViewCameraLocked()) {
-        Vector2 delta = GetMouseDelta();
-        Config()->camera.target = Vector2Add(Vector2Scale(delta, -1.0f / Config()->camera.zoom), Config()->camera.target);
-    }
-}
-
-static void ZoomCamera() {
-    if (g_zfocused && !ViewCameraLocked()) {
-        Vector2 delta = GetMouseDelta();
-        Vector2 focus = Vector2Add(GetViewportPosition(), Vector2Scale(GetViewportSlice(), 0.5f));
-        Vector2 prev = Vector2Subtract(Vector2Subtract(GetMousePosition(), delta), focus);
-        Vector2 current = Vector2Subtract(GetMousePosition(), focus);
-        Config()->camera.zoom += Vector2Length(delta) * 0.01f * (Vector2Length(prev) > Vector2Length(current) ? -1.0f : 1.0f);
-        if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
-    }
-}
-
-static void ResetCamera() {
-    Config()->camera = (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f };
+    #ifdef CARBON_RELEASE
+        DrawTexturePro(
+            g_viewport_target.texture,
+            (Rectangle){ 0, g_viewport_target.texture.height - height, width, -1*((int)height) },
+            (Rectangle){ 0, 0, width, height },
+            (Vector2){ 0, 0 },
+            0.0f,
+            (Color){ 255, 255, 255, 255 });
+    #else
+        DrawTexturePro(
+            g_viewport_target.texture,
+            (Rectangle){ 0, g_viewport_target.texture.height - height + 26, width, -1*((int)height - 26) },
+            (Rectangle){ 0, 26, width, height - 26 },
+            (Vector2){ 0, 0 },
+            0.0f,
+            (Color){ 255, 255, 255, 255 });
+        if (g_show_hints && HoveredPanel() && strcmp(HoveredPanel(), "Viewport") == 0) {
+            DrawCurrentBinds(0, 26);
+        }
+        if (!Playing() && Config()->enableclickselection && GetActiveScene() && 
+            CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){0, 25, width, height - 25})) {
+            Entity picked = ResolvePick(InputMousePosition());
+            SetHoveredEntity(picked);
+            if (InputButtonPressed(IK_MOUSELEFT)) SelectEntity(picked);
+        } else {
+            SetHoveredEntity((Entity){ 0, 0 });
+        }
+    #endif
 }
 
 static void UpdateViewportPanel(float width, float height) {
@@ -272,10 +289,14 @@ Panel GenerateViewportPanel() {
     p.clean = CleanViewportPanel;
 	p.flush = TRUE;
     g_viewport_target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-    AddBind("pan viewport camera", PanCamera, (BindCommand){ IK_MOUSERIGHT, BIND_BUTTON_END });
-    AddBind("zoom viewport camera", ZoomCamera, (BindCommand){ IK_ZOOM, BIND_KEY_END });
-    AddBind("toggle input hints", ToggleHints, (BindCommand){ IK_TOGGLE_HINTS, BIND_KEY_PRESSED });
-    AddBind("reset viewport camera", ResetCamera, (BindCommand){ IK_RESET_CAMERA, BIND_KEY_PRESSED });
+
+    #ifndef CARBON_RELEASE
+        AddBind("pan viewport camera", PanCamera, (BindCommand){ IK_MOUSERIGHT, BIND_BUTTON_END });
+        AddBind("zoom viewport camera", ZoomCamera, (BindCommand){ IK_ZOOM, BIND_KEY_END });
+        AddBind("toggle input hints", ToggleHints, (BindCommand){ IK_TOGGLE_HINTS, BIND_KEY_PRESSED });
+        AddBind("reset viewport camera", ResetCamera, (BindCommand){ IK_RESET_CAMERA, BIND_KEY_PRESSED });
+    #endif
+
 	return p;
 }
 
