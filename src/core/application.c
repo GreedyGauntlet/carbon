@@ -165,14 +165,23 @@ void InitializeApplication() {
     InitializeInput();
     InitializeColors();
     InitializeFonts();
-    ARRLIST_Panel_add(&g_shared_panels, GenerateEditPanel());
-    ARRLIST_Panel_add(&g_shared_panels, GenerateConsolePanel());
-    ARRLIST_Panel_add(&g_shared_panels, GenerateViewportPanel());
-    ARRLIST_Panel_add(&g_shared_panels, GenerateScenesPanel());
-    ARRLIST_Panel_add(&g_shared_panels, GenerateAssetsPanel());
-    ARRLIST_Panel_add(&g_shared_panels, GenerateScriptsPanel());
-    ARRLIST_Panel_add(&g_shared_panels, GenerateGraphPanel());
-    LoadUIConfig();
+    #ifdef CARBON_RELEASE
+        ARRLIST_Panel_add(&g_shared_panels, GenerateViewportPanel());
+        ARRLIST_UIConfig_clear(&g_ui_config);
+	    ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE});
+	    size_t i = 0;
+        LoadUIConfigHelper(&(g_application.ui), &i);
+        SetPrimaryUI(g_application.ui);
+    #else
+        ARRLIST_Panel_add(&g_shared_panels, GenerateEditPanel());
+        ARRLIST_Panel_add(&g_shared_panels, GenerateConsolePanel());
+        ARRLIST_Panel_add(&g_shared_panels, GenerateViewportPanel());
+        ARRLIST_Panel_add(&g_shared_panels, GenerateScenesPanel());
+        ARRLIST_Panel_add(&g_shared_panels, GenerateAssetsPanel());
+        ARRLIST_Panel_add(&g_shared_panels, GenerateScriptsPanel());
+        ARRLIST_Panel_add(&g_shared_panels, GenerateGraphPanel());
+        LoadUIConfig();
+    #endif
 }
 
 void SetApplicationName(const char* name) {
@@ -415,6 +424,7 @@ void DestroyApplication() {
     CleanBinds();
     DestroyUI(g_application.ui);
 	for (size_t i = 0; i < g_shared_panels.size; i++) DestroyPanel(&(g_shared_panels.data[i]));
+    CleanConsoleLogs();
     CloseAudioDevice();
     CloseWindow();
     HASHMAP_KeyMap_clear(&g_application.keymap);

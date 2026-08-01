@@ -227,12 +227,12 @@ static void DrawConsolePanel(float width, float height) {
     }
 }
 
-static void CleanConsolePanel() {
-    ARRLIST_Command_clear(&g_commands);
-}
-
 ARRLIST_Command GetCommands() {
     return g_commands;
+}
+
+void CleanConsoleLogs() {
+    ARRLIST_Command_clear(&g_commands);
 }
 
 void RegisterCommand(Command command) {
@@ -308,6 +308,5 @@ Panel GenerateConsolePanel() {
 	Panel p = { 0 };
 	SetupPanel(&p, "Console");
 	p.draw = DrawConsolePanel;
-    p.clean = CleanConsolePanel;
 	return p;
 }

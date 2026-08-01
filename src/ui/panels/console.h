@@ -16,6 +16,8 @@ DECLARE_ARRLIST(Command);
 
 ARRLIST_Command GetCommands();
 
+void CleanConsoleLogs();
+
 void RegisterCommand(Command command);
 
 void SubmitConsoleOutput(MessageLevel level, const char* output, ...);
