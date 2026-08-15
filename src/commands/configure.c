@@ -1,7 +1,8 @@
 #include "configure.h"
 #include "util/logger.h"
-#include "util/parse.h"
+#include "util/extra.h"
 #include "core/config.h"
+#include <easyparse.h>
 
 #define REGISTER_CONFIG_READ(name, fmt) if (strcmp(#name, argv[1]) == 0) { loginfo(fmt, Config()->name); return TRUE; }
 #define REGISTER_CONFIG_READ_BOOL(name) if (strcmp(#name, argv[1]) == 0) { loginfo("%s", Config()->name ? "true" : "false"); return TRUE; }
@@ -11,7 +12,16 @@
             (Config()->name == LEVEL_INFO ? "INFO" : \
                 (Config()->name == LEVEL_WARN ? "WARN" : "ERROR"))))); return TRUE; }
 #define REGISTER_CONFIG_WRITE(name, type) if (strcmp(#name, argv[1]) == 0) { \
-    if (Parse##type(argv[2], &(Config()->name))) {  \
+    if (ez_parse_##type(argv[2], &(Config()->name))) {  \
+        logtrace("Successfully set \"%s\" to \"%s\"", #name, argv[2]); \
+        return TRUE; \
+    } else { \
+        logerror("Unable to parse \"%s\"", argv[2]); \
+        return FALSE; \
+    } \
+}
+#define REGISTER_CONFIG_WRITE_MESSAGELEVEL(name) if (strcmp(#name, argv[1]) == 0) { \
+    if (ParseMessageLevel(argv[2], &(Config()->name))) {  \
         logtrace("Successfully set \"%s\" to \"%s\"", #name, argv[2]); \
         return TRUE; \
     } else { \
@@ -48,18 +58,18 @@ BOOL ConfigureCommand(char** argv, int argc) {
             logerror("Exactly 3 arguments expected - ocnfig write <parameter> <value>");
             return FALSE;
         }
-        REGISTER_CONFIG_WRITE(ffspeed, Float);
-        REGISTER_CONFIG_WRITE(stepsize, Size);
-        REGISTER_CONFIG_WRITE(printlogs, Bool);
-        REGISTER_CONFIG_WRITE(echologs, Bool);
-        REGISTER_CONFIG_WRITE(notificationfilter, Filter);
-        REGISTER_CONFIG_WRITE(enablenotifications, Bool);
-        REGISTER_CONFIG_WRITE(logsnotify, Bool);
-        REGISTER_CONFIG_WRITE(flipnotifications, Bool);
-        REGISTER_CONFIG_WRITE(startupscene, Bool);
-        REGISTER_CONFIG_WRITE(vsync, Bool);
-        REGISTER_CONFIG_WRITE(startupentity, Bool);
-        REGISTER_CONFIG_WRITE(enableclickselection, Bool);
+        REGISTER_CONFIG_WRITE(ffspeed, float);
+        REGISTER_CONFIG_WRITE(stepsize, size);
+        REGISTER_CONFIG_WRITE(printlogs, bool);
+        REGISTER_CONFIG_WRITE(echologs, bool);
+        REGISTER_CONFIG_WRITE_MESSAGELEVEL(notificationfilter);
+        REGISTER_CONFIG_WRITE(enablenotifications, bool);
+        REGISTER_CONFIG_WRITE(logsnotify, bool);
+        REGISTER_CONFIG_WRITE(flipnotifications, bool);
+        REGISTER_CONFIG_WRITE(startupscene, bool);
+        REGISTER_CONFIG_WRITE(vsync, bool);
+        REGISTER_CONFIG_WRITE(startupentity, bool);
+        REGISTER_CONFIG_WRITE(enableclickselection, bool);
         logerror("Unable to write to unknown config parameter \"%s\"", argv[1]);
     } else {
         logerror("Unknown second argument \"%s\" detected - expected <read/write>", argv[0]);

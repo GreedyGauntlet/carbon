@@ -2,9 +2,9 @@
 #include "ui/panels/console.h"
 #include "core/entrypoint.h"
 #include "util/logger.h"
-#include "util/parse.h"
 #include <easyobjects.h>
 #include <easybasics.h>
+#include <easyparse.h>
 
 DECLARE_ARRLIST_NAMED(charPtr, char*);
 IMPL_ARRLIST_NAMED(charPtr, char*);
@@ -37,11 +37,11 @@ BOOL TimeEventCommand(char** argv, int argc) {
         return FALSE;
     }
     float time;
-    if (!ParseFloat(argv[0], &time)) {
+    if (!ez_parse_float(argv[0], &time)) {
         logerror("Unable to parse \"%s\" as a float", argv[0]);
         return FALSE;
     }
-    ARRLIST_charPtr_add(&g_eventcommands, ReconstructCommand(&(argv[1]), argc - 1));
+    ARRLIST_charPtr_add(&g_eventcommands, ez_reconstruct_command(&(argv[1]), argc - 1));
     ARRLIST_float_add(&g_eventtimes, time);
     logtrace("Registered command \"%s\" to run in %.3f seconds", g_eventcommands.data[g_eventcommands.size - 1], time);
     return TRUE;
