@@ -2,16 +2,16 @@
 #include "ui/panels/viewport.h"
 #include "ui/panels/edit.h"
 #include "data/definitions.h"
-#include "data/colors.h"
 #include "systems/system.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
 #include "core/application.h"
 #include "core/world.h"
-#include "core/config.h"
 #include "core/scene.h"
-#include "util/logger.h"
 #include "util/pick.h"
+#include <core/config.h>
+#include <data/colors.h>
+#include <util/logger.h>
 #include <easysort.h>
 #include <raymath.h>
 #include <float.h>
@@ -148,7 +148,7 @@ static void DrawAnimationComponent(Entity e, Vector2 origin) {
             },
             (Vector2){ 0, 0 }, GetWorldRotation(e), WHITE
         );
-        if (!ac->paused) ac->time += ac->speed * GetFrameTime() * (IsFast() ? Config()->ffspeed : 1.0f);
+        if (!ac->paused) ac->time += ac->speed * GetFrameTime() * (IsFast() ? ConfigGetFloat("ffspeed") : 1.0f);
     }
 }
 
@@ -259,8 +259,7 @@ static void DrawDrawSystem(System* system) {
     ARRLIST_EntityID* lists[DRAWTYPES] = { images, shapes, texts, animations };
     DrawComponentFunc funcs[DRAWTYPES] = { DrawTextureComponent, DrawShapeComponent, DrawTextComponent, DrawAnimationComponent };
     size_t indices[DRAWTYPES] = { 0 };
-    Config()->camera.offset = (Vector2){ GetViewportSlice().x / 2.0f, GetViewportSlice().y / 2.0f };
-    Camera2D camera = Config()->camera;
+    Camera2D camera = GetViewportCamera();
     g_viewcam_locked = FALSE;
     if (Playing() && cameras) {
         for (size_t i = 0; i < cameras->size; i++) {
@@ -304,7 +303,7 @@ static void DrawDrawSystem(System* system) {
                 if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
                 funcs[min](e, (Vector2){ 0, 0 });
                 if (useshader) EndShaderMode();
-                if (Config()->enableclickselection && !Playing()) DrawEntityHighlight(e, (Vector2){ 0, 0 });
+                if (ConfigGetBool("enableclickselection") && !Playing()) DrawEntityHighlight(e, (Vector2){ 0, 0 });
             }
         }
         indices[min]++;
@@ -319,7 +318,7 @@ static void DrawDrawSystem(System* system) {
             if (useshader) BeginShaderMode(GetShader(system->context->parent, GetComponent(e, ShaderComponent)->id));
             funcs[anchorfuncs.data[i]](e, AnchorCoordinate(e));
             if (useshader) EndShaderMode();
-            if (Config()->enableclickselection && !Playing()) DrawEntityHighlight(e, AnchorCoordinate(e));
+            if (ConfigGetBool("enableclickselection") && !Playing()) DrawEntityHighlight(e, AnchorCoordinate(e));
         }
     }
     ARRLIST_EntityID_clear(&anchors);

@@ -1,7 +1,5 @@
 #include "notify.h"
-#include "ui/notification.h"
-#include "util/logger.h"
-#include "util/extra.h"
+#include <util/logger.h>
 #include <easyparse.h>
 
 BOOL NotifyCommand(char** argv, int argc) {

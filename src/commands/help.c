@@ -1,6 +1,5 @@
 #include "help.h"
-#include "ui/panels/console.h"
-#include "util/logger.h"
+#include <util/logger.h>
 
 BOOL HelpCommand(char** argv, int argc) {
     if (argc == 0) {

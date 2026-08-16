@@ -2,10 +2,10 @@
 #include "core/application.h"
 #include "core/scene.h"
 #include "data/definitions.h"
-#include "data/colors.h"
-#include "data/input.h"
-#include "util/logger.h"
-#include "ui/ui.h"
+#include <data/colors.h>
+#include <data/input.h>
+#include <util/logger.h>
+#include <ui/ui.h>
 #include <raymath.h>
 
 static float g_canvas_height = 230;

@@ -1,8 +1,7 @@
 #include "refresh.h"
-#include "ui/notification.h"
 #include "core/application.h"
 #include "core/scene.h"
-#include "util/logger.h"
+#include <util/logger.h>
 
 BOOL RefreshCommand(char** argv, int argc) {
     if (argc == 0) {

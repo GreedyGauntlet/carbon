@@ -3,15 +3,16 @@
 #include "core/application.h"
 #include "core/scene.h"
 #include "core/binds.h"
-#include "core/config.h"
 #include "data/definitions.h"
-#include "data/colors.h"
-#include "data/input.h"
 #include "util/pick.h"
 #include "ui/panels/edit.h"
-#include "ui/ui.h"
-#include "ui/popup.h"
+#include "ui/popups/editorconfig.h"
 #include "systems/draw.h"
+#include <core/config.h>
+#include <data/colors.h>
+#include <data/input.h>
+#include <ui/ui.h>
+#include <ui/popup.h>
 #include <raymath.h>
 
 static Vector2 g_viewport_slice = { 0 };
@@ -19,6 +20,7 @@ static Vector2 g_viewport_position = { 0 };
 static RenderTexture2D g_viewport_target = { 0 };
 static BOOL g_rfocused = FALSE;
 static BOOL g_zfocused = FALSE;
+static Camera2D g_camera = { 0 };
 
 #ifndef CARBON_RELEASE
 
@@ -163,7 +165,7 @@ static BOOL DrawStepButton(float x, float y) {
 static void PanCamera() {
     if (g_rfocused && !ViewCameraLocked()) {
         Vector2 delta = GetMouseDelta();
-        Config()->camera.target = Vector2Add(Vector2Scale(delta, -1.0f / Config()->camera.zoom), Config()->camera.target);
+        g_camera.target = Vector2Add(Vector2Scale(delta, -1.0f / g_camera.zoom), g_camera.target);
     }
 }
 
@@ -173,13 +175,13 @@ static void ZoomCamera() {
         Vector2 focus = Vector2Add(GetViewportPosition(), Vector2Scale(GetViewportSlice(), 0.5f));
         Vector2 prev = Vector2Subtract(Vector2Subtract(GetMousePosition(), delta), focus);
         Vector2 current = Vector2Subtract(GetMousePosition(), focus);
-        Config()->camera.zoom += Vector2Length(delta) * 0.01f * (Vector2Length(prev) > Vector2Length(current) ? -1.0f : 1.0f);
-        if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
+        g_camera.zoom += Vector2Length(delta) * 0.01f * (Vector2Length(prev) > Vector2Length(current) ? -1.0f : 1.0f);
+        if (g_camera.zoom < 1e-6f) g_camera.zoom = 1e-6f;
     }
 }
 
 static void ResetCamera() {
-    Config()->camera = (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f };
+    g_camera = (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f };
 }
 
 #endif
@@ -192,6 +194,9 @@ static void ResizeViewportTarget() {
 }
 
 static void DrawViewportPanel(float width, float height) {
+    SetViewportSlice((Vector2){ width, height });
+    SetViewportPosition(UIGetPosition());
+    g_camera.offset = (Vector2){ width / 2.0f, height / 2.0f };
     ClearBackground(BLACK);
     #ifndef CARBON_RELEASE
         DrawRectangle(0, 0, width, 25, MappedColor(PANEL_NB_COLOR));
@@ -205,7 +210,7 @@ static void DrawViewportPanel(float width, float height) {
             if (DrawPlayButton(width / 2.0f - 25, 0)) Resume();
         }
         if (DrawFastForwardButton(width / 2.0f + 0, 0)) ToggleFastForward();
-        if (DrawStepButton(width / 2.0f + 25, 0)) Step(Config()->stepsize);
+        if (DrawStepButton(width / 2.0f + 25, 0)) Step(ConfigGetSize("stepsize"));
     #endif
     Scene* scene = GetActiveScene();
     if (scene) {
@@ -220,7 +225,7 @@ static void DrawViewportPanel(float width, float height) {
                     scene->worlds.data[i]->systems.data[j]->draw(scene->worlds.data[i]->systems.data[j]);
         }
         EndTextureMode();
-        if (!Playing() && Config()->enableclickselection) {
+        if (!Playing() && ConfigGetBool("enableclickselection")) {
             BeginPickPass();
             for (size_t i = 0; i < scene->worlds.size; i++) {
                 if (scene->worlds.data[i]->draw)
@@ -252,9 +257,9 @@ static void DrawViewportPanel(float width, float height) {
         if (g_show_hints && HoveredPanel() && strcmp(HoveredPanel(), "Viewport") == 0) {
             DrawCurrentBinds(0, 26);
         }
-        if (!Playing() && Config()->enableclickselection && GetActiveScene() && 
+        if (!Playing() && ConfigGetBool("enableclickselection") && GetActiveScene() && 
             CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){0, 25, width, height - 25})) {
-            Entity picked = ResolvePick(InputMousePosition());
+            Entity picked = ResolvePick(GameMousePosition());
             SetHoveredEntity(picked);
             if (InputButtonPressed(IK_MOUSELEFT)) SelectEntity(picked);
         } else {
@@ -272,8 +277,8 @@ static void UpdateViewportPanel(float width, float height) {
     if (InputButtonPressed(IK_MOUSERIGHT) && hovered) g_rfocused = TRUE;
     if (InputKeyPressed(IK_ZOOM) && hovered) g_zfocused = TRUE;
     if (!ViewCameraLocked() && hovered) {
-        Config()->camera.zoom += GetMouseWheelMove() * 0.1f;
-        if (Config()->camera.zoom < 1e-6f) Config()->camera.zoom = 1e-6f;
+        g_camera.zoom += GetMouseWheelMove() * 0.1f;
+        if (g_camera.zoom < 1e-6f) g_camera.zoom = 1e-6f;
     }
 }
 
@@ -314,4 +319,12 @@ void SetViewportSlice(Vector2 slice) {
 
 void SetViewportPosition(Vector2 pos) {
     g_viewport_position = pos;
+}
+
+void SetViewportCamera(Camera2D camera) {
+    g_camera = camera;
+}
+
+Camera2D GetViewportCamera() {
+    return g_camera;
 }

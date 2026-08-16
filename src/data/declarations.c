@@ -4,14 +4,11 @@
 #include <easyhash.h>
 
 IMPL_ARRLIST(EntityID);
-IMPL_ARRLIST(Panel);
-IMPL_ARRLIST(Notification);
 IMPL_ARRLIST(Script);
 IMPL_ARRLIST(Texture2D);
 IMPL_ARRLIST(Sound);
 IMPL_ARRLIST(Music);
 IMPL_ARRLIST(Animation);
-IMPL_ARRLIST(UIConfig);
 IMPL_ARRLIST(Shader);
 IMPL_ARRLIST(Entity);
 IMPL_ARRLIST_NAMED(ScenePtr, Scene*);

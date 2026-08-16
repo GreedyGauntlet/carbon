@@ -1,8 +1,6 @@
 #include "timeevent.h"
-#include "ui/panels/console.h"
 #include "core/entrypoint.h"
-#include "util/logger.h"
-#include <easyobjects.h>
+#include <util/logger.h>
 #include <easybasics.h>
 #include <easyparse.h>
 

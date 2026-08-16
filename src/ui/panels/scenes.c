@@ -2,13 +2,13 @@
 #include "core/application.h"
 #include "core/world.h"
 #include "data/definitions.h"
-#include "data/colors.h"
-#include "data/input.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
 #include "ui/panels/edit.h"
-#include "ui/ui.h"
-#include "util/logger.h"
+#include <data/colors.h>
+#include <data/input.h>
+#include <ui/ui.h>
+#include <util/logger.h>
 #include <easyhash.h>
 
 static uint64_t HashWorldPointer(World* ptr) { return ez_hash_uint64_t((uint64_t)ptr); }

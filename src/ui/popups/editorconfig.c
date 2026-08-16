@@ -1,4 +1,4 @@
-#include "popup.h"
+#include "editorconfig.h"
 #include "core/application.h"
 #include "core/config.h"
 #include "data/definitions.h"
@@ -6,7 +6,6 @@
 #include "data/input.h"
 #include "data/fonts.h"
 #include "ui/popup.h"
-#include "ui/ui.h"
 #include <float.h>
 #include <raymath.h>
 
@@ -268,8 +267,8 @@ static int edit_editor_config_popup(size_t x, size_t y, size_t w, size_t h) {
 
     UISetCursor(xpos + (width / 2) - (button_width / 2), ypos + height - 70);
     if (UIButton("Confirm", button_width) && !g_prompt_ui_add) {
-        Config()->ffspeed = g_ff_speed;
-        Config()->stepsize = g_step_count;
+        ConfigSetFloat("ffspeed", g_ff_speed);
+        ConfigSetSize("stepsize", g_step_count);
         return 0;
     }
     UISetCursor(xpos + (width / 2) - (button_width / 2), ypos + height - 40);
@@ -283,24 +282,11 @@ static void clean_editor_config_popup() {
     g_edit_ui_state = 0;
 }
 
-Popup* GenerateEmptyPopup() {
-    return EZ_ALLOC(1, sizeof(Popup));
-}
-
-void CleanPopup(Popup* popup) {
-    if (popup->clean) popup->clean();
-    if (popup->options != 0)
-        for (size_t i = 0; i < popup->options; i++)
-            CleanPopup(((Popup**)popup->results)[i]);
-    if (popup->options > 0) EZ_FREE(popup->results);
-    EZ_FREE(popup);
-}
-
 Popup* GenerateEditorConfigPopup() {
     Popup* popup = GenerateEmptyPopup();
     popup->behavior = edit_editor_config_popup;
     popup->clean = clean_editor_config_popup;
-    g_ff_speed = Config()->ffspeed;
-    g_step_count = Config()->stepsize;
+    g_ff_speed = ConfigGetFloat("ffspeed");
+    g_step_count = ConfigGetSize("stepsize");
     return popup;
 }

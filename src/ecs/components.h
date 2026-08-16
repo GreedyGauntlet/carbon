@@ -2,6 +2,7 @@
 #define COMPONENTS_H
 
 #include "data/declarations.h"
+#include "ui/ui.h"
 
 #define EXPOSE_COMPONENT(name) enum { name##_TYPE = __COUNTER__ - CLEAN_COMPONENT_COUNTER - 1 }; struct name; typedef struct name name; struct name
 #define START_COMPONENT_DEFINITIONS() enum { CLEAN_COMPONENT_COUNTER = __COUNTER__ } 

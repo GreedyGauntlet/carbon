@@ -2,6 +2,7 @@
 #define EDIT_H
 
 #include "data/declarations.h"
+#include <ui/ui.h>
 
 Panel GenerateEditPanel();
 

@@ -2,5 +2,6 @@ PROJECT src
 MAIN main.c
 MODULE easyc https://github.com/JHeflinger/EasyC.git include
 MODULE raylib https://github.com/JHeflinger/minis.git raylib
+MODULE gooey https://github.com/JHeflinger/gooey.git .
 PORT assets
 FLAG audit

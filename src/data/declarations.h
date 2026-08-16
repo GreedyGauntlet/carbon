@@ -9,8 +9,6 @@
 #define DECLARE(name) struct name; typedef struct name name;
 
 #define INVALID_ENTITY 0
-#define MAX_NAME_LEN 256
-#define MAX_LINE_WIDTH 2048
 
 typedef uint64_t EntityID;
 
@@ -20,14 +18,6 @@ typedef enum {
     INPUTDOWN,
 } InputAction;
 
-typedef enum {
-    LEVEL_NONE  = 0, // no logs at all
-    LEVEL_TRACE = 1, // verbose information
-    LEVEL_INFO  = 2, // specifically requested information
-    LEVEL_WARN  = 3, // information hinting towards failing behavior
-    LEVEL_ERROR = 4  // information explicitly stating failure
-} MessageLevel;
-
 DECLARE(Application);
 DECLARE(Scene);
 DECLARE(World);
@@ -35,15 +25,10 @@ DECLARE(Entity);
 DECLARE(System);
 DECLARE(ComponentStorage);
 DECLARE(Registry);
-DECLARE(Panel);
-DECLARE(UI);
-DECLARE(Popup);
-DECLARE(Notification);
 DECLARE(AssetPack);
 DECLARE(ScriptPack);
 DECLARE(Script);
 DECLARE(Animation);
-DECLARE(UIConfig);
 
 typedef void (*SceneInitializeFunction)(Scene* scene);
 typedef void (*SceneCleanFunction)(Scene* scene);
@@ -73,22 +58,12 @@ typedef void (*ScriptComponentMouseButtonEventFunction)(const Entity e, int key,
 typedef void (*ScriptComponentMouseScrollEventFunction)(const Entity e, Vector2 offset);
 typedef void (*ScriptComponentMouseMoveFunction)(const Entity e, Vector2 position);
 
-typedef void (*PanelFunction)(float width, float height);
-typedef void (*CleanFunction)(void);
-typedef void (*SelectFunction)(size_t index);
-typedef size_t (*DropdownSelectFunction)(void* data, size_t index, BOOL cancel);
-
-typedef int (*PopupFunction)(size_t, size_t, size_t, size_t);
-
 DECLARE_ARRLIST(EntityID);
-DECLARE_ARRLIST(Panel);
-DECLARE_ARRLIST(Notification);
 DECLARE_ARRLIST(Script);
 DECLARE_ARRLIST(Texture2D);
 DECLARE_ARRLIST(Sound);
 DECLARE_ARRLIST(Music);
 DECLARE_ARRLIST(Animation);
-DECLARE_ARRLIST(UIConfig);
 DECLARE_ARRLIST(Shader);
 DECLARE_ARRLIST(Entity);
 DECLARE_ARRLIST_NAMED(ScenePtr, Scene*);

@@ -5,9 +5,9 @@
 #include "ecs/components.h"
 #include "core/application.h"
 #include "core/world.h"
-#include "util/logger.h"
-#include "data/colors.h"
-#include "data/input.h"
+#include <util/logger.h>
+#include <data/colors.h>
+#include <data/input.h>
 #include <float.h>
 #include <raymath.h>
 

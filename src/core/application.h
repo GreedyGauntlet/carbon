@@ -2,6 +2,7 @@
 #define APPLICATION_H
 
 #include "data/declarations.h"
+#include <ui/ui.h>
 
 void InitializeApplication();
 
@@ -37,10 +38,8 @@ void Step(size_t steps);
 
 ARRLIST_StaticString* SceneNames();
 
-ARRLIST_UIConfig* GetUIConfig();
-
 ARRLIST_Panel* EditorPanels();
 
-void SetUIConfig(ARRLIST_UIConfig* config);
+Vector2 GameMousePosition();
 
 #endif

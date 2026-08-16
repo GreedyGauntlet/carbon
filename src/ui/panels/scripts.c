@@ -1,9 +1,9 @@
 #include "scripts.h"
 #include "core/application.h"
 #include "data/definitions.h"
-#include "data/colors.h"
-#include "data/input.h"
-#include "ui/ui.h"
+#include <data/colors.h>
+#include <data/input.h>
+#include <ui/ui.h>
 
 static size_t g_selected = (size_t)-1;
 static float g_scrolldiff = 0.0f;

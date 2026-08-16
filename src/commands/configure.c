@@ -1,18 +1,44 @@
 #include "configure.h"
-#include "util/logger.h"
-#include "util/extra.h"
-#include "core/config.h"
+#include <util/logger.h>
+#include <core/config.h>
 #include <easyparse.h>
 
-#define REGISTER_CONFIG_READ(name, fmt) if (strcmp(#name, argv[1]) == 0) { loginfo(fmt, Config()->name); return TRUE; }
-#define REGISTER_CONFIG_READ_BOOL(name) if (strcmp(#name, argv[1]) == 0) { loginfo("%s", Config()->name ? "true" : "false"); return TRUE; }
-#define REGISTER_CONFIG_READ_MESSAGELEVEL(name) if (strcmp(#name, argv[1]) == 0) { loginfo("%s", \
-    (Config()->name  == LEVEL_NONE ? "NONE" : \
-        (Config()->name == LEVEL_TRACE ? "TRACE" : \
-            (Config()->name == LEVEL_INFO ? "INFO" : \
-                (Config()->name == LEVEL_WARN ? "WARN" : "ERROR"))))); return TRUE; }
-#define REGISTER_CONFIG_WRITE(name, type) if (strcmp(#name, argv[1]) == 0) { \
-    if (ez_parse_##type(argv[2], &(Config()->name))) {  \
+#define REGISTER_CONFIG_READ_FLOAT(name, fmt) if (strcmp(#name, argv[1]) == 0) { loginfo(fmt, ConfigGetFloat(#name)); return TRUE; }
+#define REGISTER_CONFIG_READ_SIZE(name, fmt) if (strcmp(#name, argv[1]) == 0) { loginfo(fmt, ConfigGetSize(#name)); return TRUE; }
+#define REGISTER_CONFIG_READ_BOOL(name) if (strcmp(#name, argv[1]) == 0) { loginfo("%s", ConfigGetBool(#name) ? "true" : "false"); return TRUE; }
+#define REGISTER_CONFIG_READ_MESSAGELEVEL(name) if (strcmp(#name, argv[1]) == 0) { \
+    MessageLevel ml = ConfigGetMessageLevel(#name); \
+    loginfo("%s", \
+    (ml == LEVEL_NONE ? "NONE" : \
+        (ml == LEVEL_TRACE ? "TRACE" : \
+            (ml == LEVEL_INFO ? "INFO" : \
+                (ml == LEVEL_WARN ? "WARN" : "ERROR"))))); return TRUE; }
+#define REGISTER_CONFIG_WRITE_FLOAT(name) if (strcmp(#name, argv[1]) == 0) { \
+    float wv = ConfigGetFloat(#name); \
+    if (ez_parse_float(argv[2], &wv)) {  \
+        ConfigSetFloat(#name, wv); \
+        logtrace("Successfully set \"%s\" to \"%s\"", #name, argv[2]); \
+        return TRUE; \
+    } else { \
+        logerror("Unable to parse \"%s\"", argv[2]); \
+        return FALSE; \
+    } \
+}
+#define REGISTER_CONFIG_WRITE_SIZE(name) if (strcmp(#name, argv[1]) == 0) { \
+    size_t wv = ConfigGetSize(#name); \
+    if (ez_parse_size(argv[2], &wv)) {  \
+        ConfigSetSize(#name, wv); \
+        logtrace("Successfully set \"%s\" to \"%s\"", #name, argv[2]); \
+        return TRUE; \
+    } else { \
+        logerror("Unable to parse \"%s\"", argv[2]); \
+        return FALSE; \
+    } \
+}
+#define REGISTER_CONFIG_WRITE_BOOL(name) if (strcmp(#name, argv[1]) == 0) { \
+    BOOL wv = ConfigGetBool(#name); \
+    if (ez_parse_bool(argv[2], &wv)) {  \
+        ConfigSetBool(#name, wv); \
         logtrace("Successfully set \"%s\" to \"%s\"", #name, argv[2]); \
         return TRUE; \
     } else { \
@@ -21,7 +47,9 @@
     } \
 }
 #define REGISTER_CONFIG_WRITE_MESSAGELEVEL(name) if (strcmp(#name, argv[1]) == 0) { \
-    if (ParseMessageLevel(argv[2], &(Config()->name))) {  \
+    MessageLevel wv = ConfigGetMessageLevel(#name); \
+    if (ParseMessageLevel(argv[2], &wv)) {  \
+        ConfigSetMessageLevel(#name, wv); \
         logtrace("Successfully set \"%s\" to \"%s\"", #name, argv[2]); \
         return TRUE; \
     } else { \
@@ -40,8 +68,8 @@ BOOL ConfigureCommand(char** argv, int argc) {
             logerror("Exactly 2 arguments expected - ocnfig read <parameter>");
             return FALSE;
         }
-        REGISTER_CONFIG_READ(ffspeed, "%.3f");
-        REGISTER_CONFIG_READ(stepsize, "%lu");
+        REGISTER_CONFIG_READ_FLOAT(ffspeed, "%.3f");
+        REGISTER_CONFIG_READ_SIZE(stepsize, "%lu");
         REGISTER_CONFIG_READ_BOOL(printlogs);
         REGISTER_CONFIG_READ_BOOL(echologs);
         REGISTER_CONFIG_READ_MESSAGELEVEL(notificationfilter);
@@ -58,18 +86,18 @@ BOOL ConfigureCommand(char** argv, int argc) {
             logerror("Exactly 3 arguments expected - ocnfig write <parameter> <value>");
             return FALSE;
         }
-        REGISTER_CONFIG_WRITE(ffspeed, float);
-        REGISTER_CONFIG_WRITE(stepsize, size);
-        REGISTER_CONFIG_WRITE(printlogs, bool);
-        REGISTER_CONFIG_WRITE(echologs, bool);
+        REGISTER_CONFIG_WRITE_FLOAT(ffspeed);
+        REGISTER_CONFIG_WRITE_SIZE(stepsize);
+        REGISTER_CONFIG_WRITE_BOOL(printlogs);
+        REGISTER_CONFIG_WRITE_BOOL(echologs);
         REGISTER_CONFIG_WRITE_MESSAGELEVEL(notificationfilter);
-        REGISTER_CONFIG_WRITE(enablenotifications, bool);
-        REGISTER_CONFIG_WRITE(logsnotify, bool);
-        REGISTER_CONFIG_WRITE(flipnotifications, bool);
-        REGISTER_CONFIG_WRITE(startupscene, bool);
-        REGISTER_CONFIG_WRITE(vsync, bool);
-        REGISTER_CONFIG_WRITE(startupentity, bool);
-        REGISTER_CONFIG_WRITE(enableclickselection, bool);
+        REGISTER_CONFIG_WRITE_BOOL(enablenotifications);
+        REGISTER_CONFIG_WRITE_BOOL(logsnotify);
+        REGISTER_CONFIG_WRITE_BOOL(flipnotifications);
+        REGISTER_CONFIG_WRITE_BOOL(startupscene);
+        REGISTER_CONFIG_WRITE_BOOL(vsync);
+        REGISTER_CONFIG_WRITE_BOOL(startupentity);
+        REGISTER_CONFIG_WRITE_BOOL(enableclickselection);
         logerror("Unable to write to unknown config parameter \"%s\"", argv[1]);
     } else {
         logerror("Unknown second argument \"%s\" detected - expected <read/write>", argv[0]);

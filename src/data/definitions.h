@@ -2,8 +2,7 @@
 #define DEFINITIONS_H
 
 #include "data/declarations.h"
-
-#define MAX_NOTIFICATION_SIZE 2048
+#include <ui/ui.h>
 
 struct Application {
     const char* name;
@@ -91,49 +90,6 @@ struct Registry {
     HASHMAP_StorageMap storage;
     ARRLIST_ComponentStoragePtr dense;
     ARRLIST_size_t types;
-};
-
-struct Panel {
-    char name[MAX_NAME_LEN];
-    RenderTexture2D texture;
-    PanelFunction draw;
-    PanelFunction update;
-    CleanFunction clean;
-	BOOL flush;
-};
-
-struct UI {
-    void* left;
-    void* right;
-    size_t divide;
-    size_t x;
-    size_t y;
-    size_t w;
-    size_t h;
-	ARRLIST_Panel panels;
-	size_t selected;
-    BOOL vertical;
-};
-
-struct Popup {
-    PopupFunction behavior;
-    CleanFunction clean;
-    size_t options;
-    void* results;
-};
-
-struct Notification {
-    char message[MAX_NOTIFICATION_SIZE];
-    MessageLevel level;
-};
-
-struct UIConfig {
-    char name[MAX_NAME_LEN];
-    float divide;
-    BOOL vertical;
-    BOOL left;
-    BOOL right;
-	BOOL vine;
 };
 
 #endif

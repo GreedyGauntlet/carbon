@@ -1,7 +1,5 @@
 #include "clear.h"
-#include "ui/notification.h"
-#include "ui/panels/console.h"
-#include "util/logger.h"
+#include <util/logger.h>
 
 BOOL ClearCommand(char** argv, int argc) {
     if (argc == 0) {

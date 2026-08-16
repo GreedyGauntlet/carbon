@@ -1,25 +1,25 @@
 #include "application.h"
 #include "data/definitions.h"
-#include "data/colors.h"
-#include "data/input.h"
-#include "data/fonts.h"
 #include "core/entrypoint.h"
-#include "core/config.h"
 #include "core/scene.h"
 #include "core/world.h"
-#include "core/binds.h"
 #include "ui/panels/viewport.h"
-#include "ui/panels/console.h"
 #include "ui/panels/scenes.h"
-#include "ui/panels/graph.h"
 #include "ui/panels/edit.h"
 #include "ui/panels/assets.h"
 #include "ui/panels/scripts.h"
-#include "ui/notification.h"
 #include "ecs/components.h"
 #include "ecs/entity.h"
-#include "util/logger.h"
 #include "util/pick.h"
+#include <data/colors.h>
+#include <data/fonts.h>
+#include <core/binds.h>
+#include <core/config.h>
+#include <ui/panels/console.h>
+#include <ui/panels/graph.h>
+#include <ui/notification.h>
+#include <util/logger.h>
+#include <raymath.h>
 
 static Application g_application = { 0 };
 static ARRLIST_StaticString g_scene_names = { 0 };
@@ -31,8 +31,6 @@ static BOOL g_fastforward = FALSE;
 static size_t g_steps = 0;
 static BOOL g_vsync = TRUE;
 static ARRLIST_Panel g_shared_panels = { 0 };
-static ARRLIST_UIConfig g_ui_config = { 0 };
-static BOOL g_reset_ui = FALSE;
 
 static void ApplicationResized() {
     if ((g_windowsize.x == -1.0f && g_windowsize.y == -1.0f) ||
@@ -44,123 +42,32 @@ static void ApplicationResized() {
     }
 }
 
-static void LoadUIConfigHelper(UI** current, size_t* index) {
-	UIConfig conf = g_ui_config.data[*index];
-	if (*current == NULL) *current = GenerateUI();
-	if (conf.left || conf.right) {
-		(*current)->divide = conf.divide;
-		(*current)->vertical = conf.vertical;
-		if (conf.left) {
-			*index += 1;
-			LoadUIConfigHelper((UI**)&((*current)->left), index);
-		}
-		if (conf.right) {
-			*index += 1;
-			LoadUIConfigHelper((UI**)&((*current)->right), index);
-		}
-	} else {
-		for (size_t i = 0; i < g_shared_panels.size; i++) {
-			if (strcmp(g_shared_panels.data[i].name, conf.name) == 0) {
-				ARRLIST_Panel_add(&((*current)->panels), g_shared_panels.data[i]);
-				if (conf.vine) {
-					*index += 1;
-					LoadUIConfigHelper(current, index);
-				}
-				return;
-			}	
-		}
-		logwarn("Unable to find and set up matching panel \"%s\"", conf.name);
-	}
-}
-
-#ifndef CARBON_RELEASE
-
-static void ResetDefaultConfig() {
-    ARRLIST_UIConfig_clear(&g_ui_config);
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 1250.0f, FALSE, TRUE, TRUE, FALSE}); // root
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scenes", 0.0f, FALSE, FALSE, FALSE, TRUE}); // scenes +
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Assets", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + assets +
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Scripts", 0.0f, FALSE, FALSE, FALSE, FALSE}); // + scripts
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Profiling", 0.0f, FALSE, FALSE, FALSE, FALSE}); // graph
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE}); // viewport
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){{ 0 }, GetScreenHeight() - 360.0f, TRUE, TRUE, TRUE, FALSE}); // edit | console container
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Edit", 0.0f, FALSE, FALSE, FALSE, FALSE}); // edit
-	ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Console", 0.0f, FALSE, FALSE, FALSE, FALSE}); // console
-}
-
-static void LoadUIConfig() {
-    ResetDefaultConfig();
-    FILE* file = fopen(".uiconf", "rb");
-    if (file) {
-        fseek(file, 0, SEEK_END);
-        long filesize = ftell(file);
-        if ((filesize - sizeof(size_t)) % sizeof(UIConfig) == 0) {
-            rewind(file);
-            size_t count = 0;
-            fread(&count, 1, sizeof(size_t), file);
-            if (count > 0) {
-                if ((size_t)filesize == sizeof(size_t) + count * sizeof(UIConfig)) {
-                    ARRLIST_UIConfig_clear(&g_ui_config);
-                    for (size_t i = 0; i < count; i++) {
-                        UIConfig conf = { 0 };
-                        fread(&conf, 1, sizeof(UIConfig), file);
-                        ARRLIST_UIConfig_add(&g_ui_config, conf);
-                    }
-                    logtrace("Successfully loaded ui config");
-                } else {
-                    logwarn("Desynced panel count detected - falling back to default config");
-                }
-            } else {
-                logwarn("No configured panels detected - falling back to default config");
-            }
-        } else {
-            logwarn("Existing ui config is invalid - falling back to default config");
-        }
-        fclose(file);
-    } else {
-        logtrace("Unable to detect existing ui config - using default config");
-    }
-	size_t i = 0;
-    LoadUIConfigHelper(&(g_application.ui), &i);
-    SetPrimaryUI(g_application.ui);
-}
-
-static void SaveUIConfig() {
-    FILE *file = fopen(".uiconf", "wb");
-    if (file) {
-        fwrite(&g_ui_config.size, 1, sizeof(size_t), file);
-        for (size_t i = 0; i < g_ui_config.size; i++)
-            fwrite(&(g_ui_config.data[i]), 1, sizeof(UIConfig), file);
-        fclose(file);
-    }
-}
-
-#endif
-
-static void CopyUIDividersToConfigHelper(UI* ui, size_t* index) {
-    g_ui_config.data[*index].divide = ui->divide;
-    if (ui->left) {
-        *index += 1;
-        CopyUIDividersToConfigHelper(GetLeftUI(ui), index);
-    }
-    if (ui->right) {
-        *index += 1;
-        CopyUIDividersToConfigHelper(GetRightUI(ui), index);
-    }
-    if (ui->panels.size > 0 ) *index += ui->panels.size - 1;
-}
-
-static void CopyUIDividersToConfig() {
-    size_t i = 0;
-    CopyUIDividersToConfigHelper(g_application.ui, &i);
+static void SetupDefaultConfig() {
+    ConfigSetFloat("ffspeed", 2.0f);
+    ConfigSetSize("stepsize", 1);
+    ConfigSetCamera("camera", (Camera2D){ (Vector2){ 0, 0 }, (Vector2){ 0, 0 }, 0, 1.0f });
+    ConfigSetBool("limitlogs", FALSE);
+    ConfigSetMessageLevel("logfilter", LEVEL_NONE);
+    ConfigSetBool("printlogs", TRUE);
+    ConfigSetBool("echologs", TRUE);
+    ConfigSetMessageLevel("notificationfilter", LEVEL_NONE);
+    ConfigSetBool("enablenotifications", TRUE);
+    ConfigSetBool("logsnotify", TRUE);
+    ConfigSetBool("flipnotifications", FALSE);
+    ConfigSetString("activescene", "");
+    ConfigSetBool("startupscene", TRUE);
+    ConfigSetBool("vsync", TRUE);
+    ConfigSetSize("selectedentity", 0);
+    ConfigSetSize("selectedworld", 0);
+    ConfigSetBool("startupentity", TRUE);
+    ConfigSetBool("enableclickselection", TRUE);
 }
 
 void InitializeApplication() {
     #ifndef PROD_BUILD
     g_application.memory = EZ_ALLOCATED();
     #endif
+    SetupDefaultConfig();
     InitConfig();
 	SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
@@ -171,11 +78,11 @@ void InitializeApplication() {
     InitializeFonts();
     #ifdef CARBON_RELEASE
         ARRLIST_Panel_add(&g_shared_panels, GenerateViewportPanel());
-        ARRLIST_UIConfig_clear(&g_ui_config);
-	    ARRLIST_UIConfig_add(&g_ui_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE});
-	    size_t i = 0;
-        LoadUIConfigHelper(&(g_application.ui), &i);
-        SetPrimaryUI(g_application.ui);
+        ARRLIST_UIConfig default_config = { 0 };
+	    ARRLIST_UIConfig_add(&default_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE});
+        SetUIConfig(&default_config);
+        ARRLIST_UIConfig_clear(&default_config);
+        RefreshUI(&(g_application.ui), g_shared_panels);
     #else
         ARRLIST_Panel_add(&g_shared_panels, GenerateEditPanel());
         ARRLIST_Panel_add(&g_shared_panels, GenerateConsolePanel());
@@ -184,8 +91,23 @@ void InitializeApplication() {
         ARRLIST_Panel_add(&g_shared_panels, GenerateAssetsPanel());
         ARRLIST_Panel_add(&g_shared_panels, GenerateScriptsPanel());
         ARRLIST_Panel_add(&g_shared_panels, GenerateGraphPanel());
-        LoadUIConfig();
+        ARRLIST_UIConfig default_config = { 0 };
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){{ 0 }, 1250.0f, FALSE, TRUE, TRUE, FALSE}); // root
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){{ 0 }, 350.0f, FALSE, TRUE, TRUE, FALSE}); // [ scenes + assets + scripts | graph ] | viewport container
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){{ 0 }, GetScreenHeight() - 420.0f, TRUE, TRUE, TRUE, FALSE}); // scenes + assets + ascripts | graph container
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Scenes", 0.0f, FALSE, FALSE, FALSE, TRUE}); // scenes +
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Assets", 0.0f, FALSE, FALSE, FALSE, TRUE}); // + assets +
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Scripts", 0.0f, FALSE, FALSE, FALSE, FALSE}); // + scripts
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Profiling", 0.0f, FALSE, FALSE, FALSE, FALSE}); // graph
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Viewport", 0.0f, FALSE, FALSE, FALSE, FALSE}); // viewport
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){{ 0 }, GetScreenHeight() - 360.0f, TRUE, TRUE, TRUE, FALSE}); // edit | console container
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Edit", 0.0f, FALSE, FALSE, FALSE, FALSE}); // edit
+    	ARRLIST_UIConfig_add(&default_config, (UIConfig){"Console", 0.0f, FALSE, FALSE, FALSE, FALSE}); // console
+        SetUIConfig(&default_config);
+        ARRLIST_UIConfig_clear(&default_config);
+        LoadUIConfig(&(g_application.ui), g_shared_panels);
     #endif
+    SetViewportCamera(ConfigGetCamera("camera"));
 }
 
 void SetApplicationName(const char* name) {
@@ -205,22 +127,22 @@ void RunApplication() {
     #ifdef CARBON_RELEASE
         Resume();
     #endif
-    if (Config()->startupscene && HasScene(Config()->activescene)) {
-        SetScene(Config()->activescene);
-    } else if (Config()->startupscene) {
+    if (ConfigGetBool("startupscene") && HasScene(ConfigGetString("activescene"))) {
+        SetScene(ConfigGetString("activescene"));
+    } else if (ConfigGetBool("startupscene")) {
         logwarn("Unable to override startup scene");
     }
-    if (Config()->startupentity) {
-        if (GetActiveScene() && Config()->selectedworld < GetActiveScene()->worlds.size) {
-            SelectEntity((Entity){ Config()->selectedentity, GetActiveScene()->worlds.data[Config()->selectedworld] });
+    if (ConfigGetBool("startupentity")) {
+        if (GetActiveScene() && ConfigGetSize("selectedworld") < GetActiveScene()->worlds.size) {
+            SelectEntity((Entity){ ConfigGetSize("selectedentity"), GetActiveScene()->worlds.data[ConfigGetSize("selectedworld")] });
         } else {
             logwarn("Unable to find previously selected entity");
         }
     }
     while(!WindowShouldClose()) {
-        if (g_vsync != Config()->vsync) {
-            g_vsync = Config()->vsync;
-			if (Config()->vsync) {
+        if (g_vsync != ConfigGetBool("vsync")) {
+            g_vsync = ConfigGetBool("vsync");
+			if (ConfigGetBool("vsync")) {
                 SetWindowState(FLAG_VSYNC_HINT);
                 logtrace("VSYNC on");
             } else {
@@ -382,19 +304,20 @@ void RunApplication() {
                     }
                 }
             }
+            float ffspeed = ConfigGetFloat("ffspeed");
             for (size_t i = 0; i < scene->worlds.size; i++) {
                 if (scene->worlds.data[i]->update)
-                    scene->worlds.data[i]->update(scene->worlds.data[i], GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
+                    scene->worlds.data[i]->update(scene->worlds.data[i], GetFrameTime() * (g_fastforward ? ffspeed : 1.0f));
                 for (size_t j = 0; j < scene->worlds.data[i]->systems.size; j++)
                     if (scene->worlds.data[i]->systems.data[j]->update)
-                        scene->worlds.data[i]->systems.data[j]->update(scene->worlds.data[i]->systems.data[j], GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
+                        scene->worlds.data[i]->systems.data[j]->update(scene->worlds.data[i]->systems.data[j], GetFrameTime() * (g_fastforward ? ffspeed : 1.0f));
                 ARRLIST_EntityID* scripts = GetEntities(scene->worlds.data[i], ScriptComponent);
                 if (scripts) {
                     for (size_t j = 0; j < scripts->size; j++) {
                         Entity e = (Entity){ scripts->data[j], scene->worlds.data[i] };
                         Script* sc = EntityScript(e);
                         if (sc && !sc->initialized && sc->init) { sc->init(e); sc->initialized = TRUE; }
-                        if (sc && sc->update) sc->update(e, GetFrameTime() * (g_fastforward ? Config()->ffspeed : 1.0f));
+                        if (sc && sc->update) sc->update(e, GetFrameTime() * (g_fastforward ? ffspeed : 1.0f));
                     }
                 }
             }
@@ -411,23 +334,28 @@ void RunApplication() {
                 FlushRemovalQueue(s->worlds.data[j]);
             }
         }
-        if (g_reset_ui){
-            g_reset_ui = FALSE;
-            WipeUI(g_application.ui);
-            g_application.ui = NULL;
-            size_t i = 0;
-            LoadUIConfigHelper(&(g_application.ui), &i);
-            SetPrimaryUI(g_application.ui);
-        }
+        RefreshUI(&(g_application.ui), g_shared_panels);
     }
 }
 
 void DestroyApplication() {
     CleanPicking();
-    CopyUIDividersToConfig();
     #ifndef CARBON_RELEASE
-        SaveUIConfig();
+        SaveUIConfig(g_application.ui);
     #endif
+    if (GetActiveScene()) {
+        ConfigSetString("activescene", GetActiveScene()->name);
+    }
+    ConfigSetSize("selectedworld", 0);
+    Entity e = SelectedEntity();
+    ConfigSetSize("selectedentity", e.id);
+    for (size_t i = 0; GetActiveScene() && i < GetActiveScene()->worlds.size; i++) {
+        if (GetActiveScene()->worlds.data[i] == e.context) {
+            ConfigSetSize("selectedworld", i);
+            break;
+        }
+    }
+    ConfigSetCamera("camera", GetViewportCamera());
     CleanConfig();
     ARRLIST_StaticString_clear(&g_scene_names);
     CleanBinds();
@@ -441,7 +369,6 @@ void DestroyApplication() {
     for (size_t i = 0; i < g_application.scenes.size; i++) DestroyScene(g_application.scenes.data[i]);
     ARRLIST_ScenePtr_clear(&g_application.scenes);
     ARRLIST_Panel_clear(&g_shared_panels);
-	ARRLIST_UIConfig_clear(&g_ui_config);
     CleanNotifications();
     CleanupExtensions();
     #ifndef PROD_BUILD
@@ -527,18 +454,10 @@ ARRLIST_StaticString* SceneNames() {
     return &g_scene_names;
 }
 
-ARRLIST_UIConfig* GetUIConfig() {
-    return &g_ui_config;
-}
-
 ARRLIST_Panel* EditorPanels() {
     return &g_shared_panels;
 }
 
-void SetUIConfig(ARRLIST_UIConfig* config) {
-	ARRLIST_UIConfig_clear(&g_ui_config);
-    for (size_t i = 0; i < config->size; i++) {
-        ARRLIST_UIConfig_add(&g_ui_config, config->data[i]);
-    }
-    g_reset_ui = TRUE;
+Vector2 GameMousePosition() {
+    return Vector2Subtract(GetMousePosition(), GetViewportPosition());
 }

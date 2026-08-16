@@ -6,7 +6,8 @@
 #include "commands/clear.h"
 #include "commands/refresh.h"
 #include "ecs/components.h"
-#include "util/logger.h"
+#include <core/entrypoint.h>
+#include <util/logger.h>
 
 void DefaultPreload() { }
 
