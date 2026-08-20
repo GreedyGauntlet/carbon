@@ -372,7 +372,7 @@ void DestroyApplication() {
     CleanNotifications();
     CleanupExtensions();
     #ifndef PROD_BUILD
-    EZ_ASSERT(EZ_ALLOCATED() == 0, "Memory cleanup revealed a leak of %d bytes", (int)(EZ_ALLOCATED() - g_application.memory));
+    EZ_ASSERT((EZ_ALLOCATED() - g_application.memory) == 0, "Memory cleanup revealed a leak of %d bytes", (int)(EZ_ALLOCATED() - g_application.memory));
     #endif
     EZ_INFO("%s", g_application.goodbye == NULL ? "Hoc est omnia, amice." : g_application.goodbye);
 }

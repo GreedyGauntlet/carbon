@@ -1,0 +1,10 @@
+timestep 0.016
+schedule 10.0 mouse press left
+schedule 11.0 mouse down right
+schedule 11.0 mouse up right
+schedule 11.0 move 100 100
+schedule 12.0 key press W
+schedule 13.0 key down A
+schedule 14.0 key up D
+wait 5.0
+mouse press left
