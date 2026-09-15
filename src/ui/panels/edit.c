@@ -5,6 +5,7 @@
 #include "ecs/components.h"
 #include "core/application.h"
 #include "core/world.h"
+#include <ui/extra.h>
 #include <util/logger.h>
 #include <data/colors.h>
 #include <data/input.h>
@@ -40,62 +41,10 @@ static BOOL DrawTransformComponentUI(float width, float height) {
     if (!HasComponent(g_selected, TransformComponent)) return FALSE;
     DrawComponentTitle(width, "Transform");
     TransformComponent* tc = GetComponent(g_selected, TransformComponent);
-    float component_width = (width - 20 - (3 * 16) - (2 * 10)) / 3.0f;
     BOOL edited = FALSE;
-    UIMoveCursor(5, 5);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, RED);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        tc->translation.x = 0.0f;
-    }
-    UIDrawText("x");
-    UIMoveCursor(17, -20);
-    edited |= UIDragFloat(&(tc->translation.x), -FLT_MAX, FLT_MAX, 0.1f, component_width);
-    UIMoveCursor(component_width + 31, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, GREEN);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        tc->translation.y = 0.0f;
-    }
-    UIDrawText("y");
-    UIMoveCursor(component_width + 42, -20);
-    edited |= UIDragFloat(&(tc->translation.y), -FLT_MAX, FLT_MAX, 0.1f, component_width);
-    UIMoveCursor((2*component_width) + 56, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, BLUE);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        tc->translation.z = 0.0f;
-    }
-    UIDrawText("z");
-    UIMoveCursor((2*component_width) + 67, -20);
-    edited |= UIDragFloat(&(tc->translation.z), -FLT_MAX, FLT_MAX, 0.1f, component_width);
-    UIMoveCursor(5, 5);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, GOLD);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        tc->scale.x = 100.0f;
-    }
-    UIDrawText("w");
-    UIMoveCursor(17, -20);
-    edited |= UIDragFloat(&(tc->scale.x), -FLT_MAX, FLT_MAX, 0.1f, component_width);
-    UIMoveCursor(component_width + 31, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, MAGENTA);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        tc->scale.y = 100.0f;
-    }
-    UIDrawText("h");
-    UIMoveCursor(component_width + 42, -20);
-    edited |= UIDragFloat(&(tc->scale.y), -FLT_MAX, FLT_MAX, 0.1f, component_width);
-    UIMoveCursor((2*component_width) + 56, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, SKYBLUE);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        tc->rotation = 0.0f;
-    }
-    UIDrawText("r");
-    UIMoveCursor((2*component_width) + 67, -20);
-    edited |= UIDragFloat(&(tc->rotation), -FLT_MAX, FLT_MAX, 0.1f, component_width);
+    Color colors[] = {GOLD, MAGENTA, SKYBLUE};
+    edited |= UITriplet("xyz", UI_FLOATS, &(tc->translation.x), &(tc->translation.y), &(tc->translation.z), (UIMultiValue){ ._float = -FLT_MAX }, (UIMultiValue){ ._float = FLT_MAX }, (UIMultiValue){ ._float = 0.1f }, (UIMultiValue){ ._float = 0.0f }, width);
+    edited |= UIColoredTriplet(colors, "whr", UI_FLOATS, &(tc->scale.x), &(tc->scale.y), &(tc->rotation), (UIMultiValue){ ._float = -FLT_MAX }, (UIMultiValue){ ._float = FLT_MAX }, (UIMultiValue){ ._float = 0.1f }, (UIMultiValue){ ._float = 0.0f }, width);
     return edited;
 }
 
@@ -357,33 +306,7 @@ static BOOL DrawTextComponentUI(float width, float height) {
     size_t r = tc->color.r;
     size_t g = tc->color.g;
     size_t b = tc->color.b;
-    UIMoveCursor(5, 10);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, RED);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        r = 255;
-    }
-    UIDrawText("r");
-    UIMoveCursor(17, -20);
-    edited |= UIDragSize(&r, 0, 255, 1, component_width);
-    UIMoveCursor(component_width + 31, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, GREEN);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        g = 255;
-    }
-    UIDrawText("g");
-    UIMoveCursor(component_width + 42, -20);
-    edited |= UIDragSize(&g, 0, 255, 1, component_width);
-    UIMoveCursor((2*component_width) + 56, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, BLUE);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        b = 255;
-    }
-    UIDrawText("b");
-    UIMoveCursor((2*component_width) + 67, -20);
-    edited |= UIDragSize(&b, 0, 255, 1, component_width);
+    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width);
     tc->color.r = (unsigned char)r;
     tc->color.g = (unsigned char)g;
     tc->color.b = (unsigned char)b;
@@ -461,33 +384,7 @@ static BOOL DrawShapeComponentUI(float width, float height) {
     size_t r = sc->color.r;
     size_t g = sc->color.g;
     size_t b = sc->color.b;
-    UIMoveCursor(5, 10);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, RED);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        r = 255;
-    }
-    UIDrawText("r");
-    UIMoveCursor(17, -20);
-    edited |= UIDragSize(&r, 0, 255, 1, component_width);
-    UIMoveCursor(component_width + 31, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, GREEN);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        g = 255;
-    }
-    UIDrawText("g");
-    UIMoveCursor(component_width + 42, -20);
-    edited |= UIDragSize(&g, 0, 255, 1, component_width);
-    UIMoveCursor((2*component_width) + 56, -20);
-    DrawRectangle(UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18, BLUE);
-    if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x - 5, UIGetCursor().y + 1, 20, 18}) &&
-        InputButtonPressed(IK_MOUSELEFT)) {
-        b = 255;
-    }
-    UIDrawText("b");
-    UIMoveCursor((2*component_width) + 67, -20);
-    edited |= UIDragSize(&b, 0, 255, 1, component_width);
+    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width);
     sc->color.r = (unsigned char)r;
     sc->color.g = (unsigned char)g;
     sc->color.b = (unsigned char)b;
