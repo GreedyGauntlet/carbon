@@ -20,15 +20,6 @@ static const char* g_audio_command_labels[] = { "Send Command", "Play", "Pause",
 static const char* g_shape_labels[] = { "Rectangle", "Circle" };
 static float g_scrolldiff = 0.0f;
 
-static void DrawComponentTitle(float width, const char* title) {
-    float tratio = 2.0f * UITextWidth(title) / (width - 20.0f);
-    float thresh = (width - 20.0f) * (1.0f - tratio);
-    DrawRectangleGradientH(UIGetCursor().x + thresh, UIGetCursor().y + (LINE_HEIGHT/2.0f) - 1, width - 20.0f - thresh, 2, MappedColor(UI_DIVIDER_COLOR), (Color){ 0, 0, 0, 0 });
-    UIDivider(thresh);
-    UIMoveCursor(width - UITextWidth(title) - 30, -20);
-    UIDrawItalicText(title);
-}
-
 static void DrawTagComponentUI(float width, float height) {
     if (!HasComponent(g_selected, TagComponent)) return;
     TagComponent* tc = GetComponent(g_selected, TagComponent);
@@ -39,7 +30,7 @@ static void DrawTagComponentUI(float width, float height) {
 
 static BOOL DrawTransformComponentUI(float width, float height) {
     if (!HasComponent(g_selected, TransformComponent)) return FALSE;
-    DrawComponentTitle(width, "Transform");
+    UIDividerLabeled(width, "Transform");
     TransformComponent* tc = GetComponent(g_selected, TransformComponent);
     BOOL edited = FALSE;
     Color colors[] = {GOLD, MAGENTA, SKYBLUE};
@@ -50,12 +41,12 @@ static BOOL DrawTransformComponentUI(float width, float height) {
 
 static BOOL DrawAnchorComponentUI(float width, float height) {
     if (!HasComponent(g_selected, AnchorComponent)) return FALSE;
-    DrawComponentTitle(width, "Anchor");
+    UIDividerLabeled(width, "Anchor");
     AnchorComponent* ac = GetComponent(g_selected, AnchorComponent);
     UIMoveCursor(0, 25);
     UIDrawText("Anchor Alignment");
     UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y - 25, 2, 65, (Color){ 255, 255, 255, 130 });
+    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y - 25, 2, 65, MappedColor(UI_SUBTLE_TEXT_COLOR));
     UIMoveCursor(0, -25);
     BOOL edited = FALSE;
     float boxw = 20.0f;
@@ -91,12 +82,10 @@ static BOOL DrawTextureComponentUI(float width, float height) {
     if (!HasComponent(g_selected, TextureComponent)) return FALSE;
     TextureComponent* tc = GetComponent(g_selected, TextureComponent);
     if (tc->id == (size_t)-1) return FALSE;
-    DrawComponentTitle(width, "Texture");
+    UIDividerLabeled(width, "Texture");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Texture Asset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Texture Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.texnames.size, (char**)g_selected.context->parent->assets.texnames.data, DropdownSelectTexture, NULL);
     return edited;
 }
@@ -113,38 +102,24 @@ static BOOL DrawAnimationComponentUI(float width, float height) {
     if (!HasComponent(g_selected, AnimationComponent)) return FALSE;
     AnimationComponent* ac = GetComponent(g_selected, AnimationComponent);
     if (ac->id == (size_t)-1) return FALSE;
-    DrawComponentTitle(width, "Animation");
+    UIDividerLabeled(width, "Animation");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Animation Asset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Animation Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.animnames.size, (char**)g_selected.context->parent->assets.animnames.data, DropdownSelectAnimation, NULL);
-    UIDrawText("Speed");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Speed", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(ac->speed), 0.001f, FLT_MAX, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Reset Time");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Reset Time", LEFT_COLUMN_WIDTH);
     char fbuf[128] = { 0 };
     sprintf(fbuf, "%.3f", ac->time);
     if (UIButton(fbuf, width - LEFT_COLUMN_WIDTH - 20.0f)) ac->time = 0.0f;
-    UIDrawText("Paused");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Paused", LEFT_COLUMN_WIDTH);
     UICheckbox(&(ac->paused));
-    UIDrawText("Looped");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Looped", LEFT_COLUMN_WIDTH);
     UICheckbox(&(ac->loop));
-    UIDrawText("Flipped");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Flipped", LEFT_COLUMN_WIDTH);
     UICheckbox(&(ac->flipped));
-    UIDrawText("Flopped");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Flopped", LEFT_COLUMN_WIDTH);
     UICheckbox(&(ac->flopped));
     return edited;
 }
@@ -152,20 +127,14 @@ static BOOL DrawAnimationComponentUI(float width, float height) {
 static BOOL DrawListenerComponentUI(float width, float height) {
     if (!HasComponent(g_selected, ListenerComponent)) return FALSE;
     ListenerComponent* lc = GetComponent(g_selected, ListenerComponent);
-    DrawComponentTitle(width, "Listener");
+    UIDividerLabeled(width, "Listener");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Enabled");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Enabled", LEFT_COLUMN_WIDTH);
     UICheckbox(&(lc->enabled));
-    UIDrawText("Volume");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Volume", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(lc->volume), 0.0f, 1.0f, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Decay");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Decay", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(lc->decay), 0.0f, 1.0f, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
     return edited;
 }
@@ -190,28 +159,18 @@ static BOOL DrawSoundComponentUI(float width, float height) {
     if (!HasComponent(g_selected, SoundComponent)) return FALSE;
     SoundComponent* sc = GetComponent(g_selected, SoundComponent);
     if (sc->id == (size_t)-1) return FALSE;
-    DrawComponentTitle(width, "Sound");
+    UIDividerLabeled(width, "Sound");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Sound Asset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Sound Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.soundnames.size, (char**)g_selected.context->parent->assets.soundnames.data, DropdownSelectSound, NULL);
-    UIDrawText("Volume");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Volume", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(sc->volume), 0.0f, 1.0f, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Pitch");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Pitch", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(sc->pitch), 0.0f, FLT_MAX, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Decay");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Decay", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(sc->decay), 0.0f, 1.0f, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Audio Command");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Audio Command", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, 5, (char**)g_audio_command_labels, DropdownSetSoundAudioCommand, NULL);
     return edited;
 }
@@ -236,28 +195,18 @@ static BOOL DrawMusicComponentUI(float width, float height) {
     if (!HasComponent(g_selected, MusicComponent)) return FALSE;
     MusicComponent* mc = GetComponent(g_selected, MusicComponent);
     if (mc->id == (size_t)-1) return FALSE;
-    DrawComponentTitle(width, "Music");
+    UIDividerLabeled(width, "Music");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Music Asset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Music Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.musicnames.size, (char**)g_selected.context->parent->assets.musicnames.data, DropdownSelectMusic, NULL);
-    UIDrawText("Volume");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Volume", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(mc->volume), 0.0f, 1.0f, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Pitch");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Pitch", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(mc->pitch), 0.0f, FLT_MAX, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Decay");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Decay", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(mc->decay), 0.0f, 1.0f, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Audio Command");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Audio Command", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, 5, (char**)g_audio_command_labels, DropdownSetMusicAudioCommand, NULL);
     return edited;
 }
@@ -265,17 +214,12 @@ static BOOL DrawMusicComponentUI(float width, float height) {
 static BOOL DrawTextComponentUI(float width, float height) {
     if (!HasComponent(g_selected, TextComponent)) return FALSE;
     TextComponent* tc = GetComponent(g_selected, TextComponent);
-    DrawComponentTitle(width, "Text");
+    UIDividerLabeled(width, "Text");
     BOOL edited = FALSE;
-    float component_width = (width - 20 - (3 * 16) - (2 * 10)) / 3.0f;
     UIMoveCursor(0, 2);
-    UIDrawText("Text Content");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Text Content", LEFT_COLUMN_WIDTH);
     edited |= UITextInput(NULL, tc->text, tc->capacity, width - LEFT_COLUMN_WIDTH - 20.0f, FALSE);
-    UIDrawText("Alignment");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Alignment", LEFT_COLUMN_WIDTH);
     float boxw = 16.0f;
     float gapw = 2.0f;
     TextAlignment alignments[] = { TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, TEXT_ALIGN_RIGHT };
@@ -293,15 +237,11 @@ static BOOL DrawTextComponentUI(float width, float height) {
             DrawCircle(UIGetCursor().x + (i * (boxw + gapw)) + (boxw/2.0f), UIGetCursor().y + (boxw/2.0f), 5, RED);
     }
     UIMoveCursor(10 - UIGetCursor().x, 18);
-    UIDrawText("Opacity");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Opacity", LEFT_COLUMN_WIDTH);
     size_t alpha = tc->color.a;
     edited |= UIDragSize(&alpha, 0, 255, 1, width - LEFT_COLUMN_WIDTH - 20.0f);
     tc->color.a = (unsigned char)alpha;
-    UIDrawText("Size");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Size", LEFT_COLUMN_WIDTH);
     edited |= UIDragFloat(&(tc->size), 0.0f, FLT_MAX, 0.05f, width - LEFT_COLUMN_WIDTH - 20.0f);
     size_t r = tc->color.r;
     size_t g = tc->color.g;
@@ -317,16 +257,12 @@ static BOOL DrawCameraComponentUI(float width, float height) {
     if (!HasComponent(g_selected, CameraComponent)) return FALSE;
     CameraComponent* cc = GetComponent(g_selected, CameraComponent);
     float component_width = (width - LEFT_COLUMN_WIDTH - 20 - (2 * 16) - (1 * 10)) / 2.0f;
-    DrawComponentTitle(width, "Camera");
+    UIDividerLabeled(width, "Camera");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Enabled");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Enabled", LEFT_COLUMN_WIDTH);
     UICheckbox(&(cc->enabled));
-    UIDrawText("Offset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH - 2, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 8, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Offset", LEFT_COLUMN_WIDTH);
     DrawRectangle(UIGetCursor().x + 3, UIGetCursor().y + 1, 16, 18, RED);
     if (CheckCollisionPointRec(Vector2Subtract(GetMousePosition(), UIGetPosition()), (Rectangle){UIGetCursor().x + 3, UIGetCursor().y + 1, 16, 18}) &&
         InputButtonPressed(IK_MOUSELEFT)) {
@@ -345,13 +281,9 @@ static BOOL DrawCameraComponentUI(float width, float height) {
     UIDrawText("y");
     UIMoveCursor(component_width + 42 + LEFT_COLUMN_WIDTH, -20);
     edited |= UIDragFloat(&(cc->offset.y), -FLT_MAX, FLT_MAX, 0.1f, component_width);
-    UIDrawText("Rotation");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Rotation", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(cc->rotation), -FLT_MAX, FLT_MAX, 0.1f, width - LEFT_COLUMN_WIDTH - 20.0f);
-    UIDrawText("Zoom");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Zoom", LEFT_COLUMN_WIDTH);
     UIDragFloat(&(cc->zoom), 0.0001f, FLT_MAX, 0.001f, width - LEFT_COLUMN_WIDTH - 20.0f);
     return edited;
 }
@@ -367,17 +299,12 @@ static size_t DropdownSetShape(void* data, size_t index, BOOL cancel) {
 static BOOL DrawShapeComponentUI(float width, float height) {
     if (!HasComponent(g_selected, ShapeComponent)) return FALSE;
     ShapeComponent* sc = GetComponent(g_selected, ShapeComponent);
-    DrawComponentTitle(width, "Shape");
+    UIDividerLabeled(width, "Shape");
     BOOL edited = FALSE;
-    float component_width = (width - 20 - (3 * 16) - (2 * 10)) / 3.0f;
     UIMoveCursor(0, 2);
-    UIDrawText("Shape Type");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Shape Type", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, 2, (char**)g_shape_labels, DropdownSetShape, NULL);
-    UIDrawText("Opacity");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Opacity", LEFT_COLUMN_WIDTH);
     size_t alpha = sc->color.a;
     edited |= UIDragSize(&alpha, 0, 255, 1, width - LEFT_COLUMN_WIDTH - 20.0f);
     sc->color.a = (unsigned char)alpha;
@@ -403,12 +330,10 @@ static BOOL DrawScriptComponentUI(float width, float height) {
     if (!HasComponent(g_selected, ScriptComponent)) return FALSE;
     ScriptComponent* sc = GetComponent(g_selected, ScriptComponent);
     if (sc->id == (size_t)-1) return FALSE;
-    DrawComponentTitle(width, "Script");
+    UIDividerLabeled(width, "Script");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Script Asset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Script Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->scripts.names.size, (char**)g_selected.context->parent->scripts.names.data, DropdownSelectScript, NULL);
     return edited;
 }
@@ -425,12 +350,10 @@ static BOOL DrawShaderComponentUI(float width, float height) {
     if (!HasComponent(g_selected, ShaderComponent)) return FALSE;
     ShaderComponent* sc = GetComponent(g_selected, ShaderComponent);
     if (sc->id == (size_t)-1) return FALSE;
-    DrawComponentTitle(width, "Shader");
+    UIDividerLabeled(width, "Shader");
     BOOL edited = FALSE;
     UIMoveCursor(0, 2);
-    UIDrawText("Shader Asset");
-    UIMoveCursor(LEFT_COLUMN_WIDTH, -LINE_HEIGHT);
-    DrawRectangle(UIGetCursor().x - 10, UIGetCursor().y, 2, 20, (Color){ 255, 255, 255, 130 });
+    UIColumnHeader("Shader Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.shadernames.size, (char**)g_selected.context->parent->assets.shadernames.data, DropdownSelectShader, NULL);
     return edited;
 }
