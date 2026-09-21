@@ -69,7 +69,6 @@ void InitializeApplication() {
     #endif
     SetupDefaultConfig();
     InitConfig();
-	SetTraceLogLevel(LOG_NONE);
     SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(g_resolution_width, g_resolution_height, g_application.name == NULL ? "Carbon Engine" : g_application.name);
     InitAudioDevice();

@@ -1,8 +1,10 @@
 #include "core/entrypoint.h"
 #include "core/application.h"
 #include "data/tester.h"
+#include <raylib.h>
 
 int main(int argc, char *argv[]) {
+	SetTraceLogLevel(LOG_NONE);
     if (argc == 2) {
         LoadTester(argv[1]);
     } else if (argc > 2) {
