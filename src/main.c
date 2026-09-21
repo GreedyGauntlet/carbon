@@ -4,14 +4,12 @@
 #include <raylib.h>
 
 int main(int argc, char *argv[]) {
-	SetTraceLogLevel(LOG_NONE);
     if (argc == 2) {
         LoadTester(argv[1]);
     } else if (argc > 2) {
         EZ_ERROR("Cannot start with invalid arguments");
         return -1;
     }
-    PreloadExtensions();
     InitializeApplication();
     PostloadExtensions();
     RunApplication();
