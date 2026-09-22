@@ -58,9 +58,17 @@ void ResetScene(Scene* scene) {
 }
 
 void AddWorld(Scene* scene, World* world) {
+    EZ_ASSERT(!FindWorld(scene, world->name), "A world with this name already exists!");
     EZ_ASSERT(world->parent == NULL, "World already is linked to an existing scene");
     world->parent = scene;
     ARRLIST_WorldPtr_add(&scene->worlds, world);
+}
+
+World* FindWorld(Scene* scene, const char* name) {
+    for (size_t i = 0; i < scene->worlds.size; i++) {
+        if (strcmp(scene->worlds.data[i]->name, name) == 0) return scene->worlds.data[i];
+    }
+    return NULL;
 }
 
 size_t PackScript(Scene* scene, Script script, const char* name, const char* description) {

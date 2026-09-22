@@ -13,6 +13,8 @@ void ResetScene(Scene* scene);
 
 void AddWorld(Scene* scene, World* world);
 
+World* FindWorld(Scene* scene, const char* name);
+
 size_t PackScript(Scene* scene, Script script, const char* name, const char* description);
 
 size_t FindScript(Scene* scene, const char* name);
