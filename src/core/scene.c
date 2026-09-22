@@ -72,7 +72,7 @@ World* FindWorld(Scene* scene, const char* name) {
 }
 
 size_t PackScript(Scene* scene, Script script, const char* name, const char* description) {
-    EZ_ASSERT(FindScript(scene, name) == (size_t)-1, "A script with this name has already been packed into this scene");
+    EZ_ASSERT(FindScript(scene, name) == (size_t)-1, "A script with this name (%s) has already been packed into this scene", name);
     ARRLIST_StaticString_add(&(scene->scripts.names), name);
     ARRLIST_StaticString_add(&(scene->scripts.descriptions), description);
     ARRLIST_Script_add(&(scene->scripts.scripts), script);
@@ -86,7 +86,7 @@ size_t FindScript(Scene* scene, const char* name) {
 }
 
 size_t PackTexture(Scene* scene, const char* path, const char* name) {
-    EZ_ASSERT(FindTexture(scene, name) == (size_t)-1, "A texture with this name has already been packed into this scene");
+    EZ_ASSERT(FindTexture(scene, name) == (size_t)-1, "A texture with this name (%s) has already been packed into this scene", name);
     ARRLIST_StaticString_add(&(scene->assets.texnames), name);
     ARRLIST_StaticString_add(&(scene->assets.texpaths), path);
     ARRLIST_Texture2D_add(&(scene->assets.textures), LoadTexture(path));
@@ -100,7 +100,7 @@ size_t FindTexture(Scene* scene, const char* name) {
 }
 
 size_t PackSound(Scene* scene, const char* path, const char* name) {
-    EZ_ASSERT(FindSound(scene, name) == (size_t)-1, "A sound with this name has already been packed into this scene");
+    EZ_ASSERT(FindSound(scene, name) == (size_t)-1, "A sound with this name (%s) has already been packed into this scene", name);
     ARRLIST_StaticString_add(&(scene->assets.soundnames), name);
     ARRLIST_StaticString_add(&(scene->assets.soundpaths), path);
     ARRLIST_Sound_add(&(scene->assets.sounds), LoadSound(path));
@@ -114,7 +114,7 @@ size_t FindSound(Scene* scene, const char* name) {
 }
 
 size_t PackMusic(Scene* scene, const char* path, const char* name) {
-    EZ_ASSERT(FindMusic(scene, name) == (size_t)-1, "A stream with this name has already been packed into this scene");
+    EZ_ASSERT(FindMusic(scene, name) == (size_t)-1, "A stream with this name (%s) has already been packed into this scene", name);
     ARRLIST_StaticString_add(&(scene->assets.musicnames), name);
     ARRLIST_StaticString_add(&(scene->assets.musicpaths), path);
     ARRLIST_Music_add(&(scene->assets.musics), LoadMusicStream(path));
@@ -128,7 +128,7 @@ size_t FindMusic(Scene* scene, const char* name) {
 }
 
 size_t PackAnimation(Scene* scene, Animation animation, const char* name) {
-    EZ_ASSERT(FindAnimation(scene, name) == (size_t)-1, "An animation with this name has already been packed into this scene");
+    EZ_ASSERT(FindAnimation(scene, name) == (size_t)-1, "An animation with this name (%s) has already been packed into this scene", name);
     ARRLIST_StaticString_add(&(scene->assets.animnames), name);
     ARRLIST_Animation_add(&(scene->assets.animations), animation);
     return scene->assets.animations.size - 1;
@@ -141,7 +141,7 @@ size_t FindAnimation(Scene* scene, const char* name) {
 }
 
 size_t PackShader(Scene* scene, const char* vpath, const char* fpath, const char* name) {
-    EZ_ASSERT(FindShader(scene, name) == (size_t)-1, "An shader with this name has already been packed into this scene");
+    EZ_ASSERT(FindShader(scene, name) == (size_t)-1, "An shader with this name (%s) has already been packed into this scene", name);
     ARRLIST_Shader_add(&(scene->assets.shaders), LoadShader(vpath, fpath));
     ARRLIST_StaticString_add(&(scene->assets.shadernames), name);
     ARRLIST_StaticString_add(&(scene->assets.vertexshaderpaths), vpath);
