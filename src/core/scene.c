@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "data/definitions.h"
+#include "util/logger.h"
 #include "core/world.h"
 
 Scene* GenerateScene(const char* name, SceneInitializeFunction init, SceneCleanFunction clean) {
