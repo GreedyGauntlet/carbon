@@ -152,6 +152,7 @@ Shader GetShader(Scene* scene, size_t id) {
 }
 
 void RefreshAssets(Scene* scene) {
+    logtrace("Refreshing assets for scene \"%s\"", scene->name);
     for (size_t i = 0; i < scene->assets.textures.size; i++) {
         UnloadTexture(scene->assets.textures.data[i]);
         scene->assets.textures.data[i] = LoadTexture(scene->assets.texpaths.data[i]);
@@ -172,4 +173,5 @@ void RefreshAssets(Scene* scene) {
         scene->assets.shaders.data[i] = LoadShader(scene->assets.vertexshaderpaths.data[i], scene->assets.fragmentshaderpaths.data[i]);
         while (!IsShaderValid(scene->assets.shaders.data[i])) {}
     }
+    loginfo("Successfuly refreshed assets for scene \"%s\"", scene->name);
 }
