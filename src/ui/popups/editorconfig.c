@@ -63,6 +63,7 @@ static Rectangle ui_bounding_box(size_t index) {
 static size_t edit_ui_dropdown(void* data, size_t index, BOOL cancel) {
     if (index != (size_t)-1 || cancel) g_prompt_ui_add = FALSE;
     if (index != (size_t)-1 && index < g_ui_config_options.size - 1) {
+        g_edit_ui_state = 2;
         size_t cind = (size_t)data;
         UIConfig* conf = &(g_ui_config_state.data[cind]);
         size_t starting = strlen(conf->name) > 0 ? 0 : 2;
