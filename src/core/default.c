@@ -5,6 +5,7 @@
 #include "commands/notify.h"
 #include "commands/clear.h"
 #include "commands/refresh.h"
+#include "commands/select.h"
 #include "ecs/components.h"
 #include <core/entrypoint.h>
 #include <util/logger.h>
@@ -19,6 +20,7 @@ void DefaultPostload() {
     RegisterCommand((Command){ "notify", NotifyCommand, "notify <level> ...", "Send a notification of a given level and with the given text" });
     RegisterCommand((Command){ "clear", ClearCommand, "clear {notifications}", "Clear a given data subject" });
     RegisterCommand((Command){ "refresh", RefreshCommand, "refresh {assets}", "Refresh a given data subject" });
+    RegisterCommand((Command){ "select", SelectCommand, "select {worldname} {id}", "Select an entity given its world name and entity ID" });
 }
 
 void DefaultPreupdate() { }
