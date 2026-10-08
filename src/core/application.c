@@ -460,5 +460,11 @@ ARRLIST_Panel* EditorPanels() {
 }
 
 Vector2 GameMousePosition() {
-    return Vector2Subtract(GetMousePosition(), GetViewportPosition());
+    #ifndef CARBON_RELEASE
+        Vector2 vp = GetViewportPosition();
+        vp.y += 25;
+        return Vector2Subtract(GetMousePosition(), vp);
+    #else
+        return Vector2Subtract(GetMousePosition(), GetViewportPosition());
+    #endif
 }
