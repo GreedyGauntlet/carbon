@@ -87,6 +87,14 @@ static BOOL DrawTextureComponentUI(float width, float height) {
     UIMoveCursor(0, 2);
     UIColumnHeader("Texture Asset", LEFT_COLUMN_WIDTH);
     UIDropdownMenu(width - LEFT_COLUMN_WIDTH - 20, g_selected.context->parent->assets.texnames.size, (char**)g_selected.context->parent->assets.texnames.data, DropdownSelectTexture, NULL);
+    UIColumnHeader("Tint", LEFT_COLUMN_WIDTH);
+    size_t r = tc->tint.r;
+    size_t g = tc->tint.g;
+    size_t b = tc->tint.b;
+    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width - LEFT_COLUMN_WIDTH - 2);
+    tc->tint.r = (unsigned char)r;
+    tc->tint.g = (unsigned char)g;
+    tc->tint.b = (unsigned char)b;
     return edited;
 }
 
@@ -121,6 +129,14 @@ static BOOL DrawAnimationComponentUI(float width, float height) {
     UICheckbox(&(ac->flipped));
     UIColumnHeader("Flopped", LEFT_COLUMN_WIDTH);
     UICheckbox(&(ac->flopped));
+    UIColumnHeader("Tint", LEFT_COLUMN_WIDTH);
+    size_t r = ac->tint.r;
+    size_t g = ac->tint.g;
+    size_t b = ac->tint.b;
+    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width - LEFT_COLUMN_WIDTH - 2);
+    ac->tint.r = (unsigned char)r;
+    ac->tint.g = (unsigned char)g;
+    ac->tint.b = (unsigned char)b;
     return edited;
 }
 
@@ -243,10 +259,11 @@ static BOOL DrawTextComponentUI(float width, float height) {
     tc->color.a = (unsigned char)alpha;
     UIColumnHeader("Size", LEFT_COLUMN_WIDTH);
     edited |= UIDragFloat(&(tc->size), 0.0f, FLT_MAX, 0.05f, width - LEFT_COLUMN_WIDTH - 20.0f);
+    UIColumnHeader("Color", LEFT_COLUMN_WIDTH);
     size_t r = tc->color.r;
     size_t g = tc->color.g;
     size_t b = tc->color.b;
-    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width);
+    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width - LEFT_COLUMN_WIDTH - 2);
     tc->color.r = (unsigned char)r;
     tc->color.g = (unsigned char)g;
     tc->color.b = (unsigned char)b;
@@ -308,10 +325,11 @@ static BOOL DrawShapeComponentUI(float width, float height) {
     size_t alpha = sc->color.a;
     edited |= UIDragSize(&alpha, 0, 255, 1, width - LEFT_COLUMN_WIDTH - 20.0f);
     sc->color.a = (unsigned char)alpha;
+    UIColumnHeader("Color", LEFT_COLUMN_WIDTH);
     size_t r = sc->color.r;
     size_t g = sc->color.g;
     size_t b = sc->color.b;
-    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width);
+    edited |= UITriplet("rgb", UI_SIZES, &r, &g, &b, (UIMultiValue){ ._size = 0 }, (UIMultiValue){ ._size = 255 }, (UIMultiValue){ ._size = 1 }, (UIMultiValue){ ._size = 255 }, width - LEFT_COLUMN_WIDTH - 2);
     sc->color.r = (unsigned char)r;
     sc->color.g = (unsigned char)g;
     sc->color.b = (unsigned char)b;

@@ -46,6 +46,7 @@ EXPOSE_COMPONENT(TagComponent) {
 
 EXPOSE_COMPONENT(TextureComponent) {
     size_t id;
+    Color tint;
 };
 
 EXPOSE_COMPONENT(TransformComponent) {
@@ -116,6 +117,7 @@ EXPOSE_COMPONENT(AnimationComponent) {
     BOOL loop;
     BOOL flipped;
     BOOL flopped;
+    Color tint;
 };
 
 EXPOSE_COMPONENT(EditUIComponent) {

@@ -146,7 +146,7 @@ static void DrawAnimationComponent(Entity e, Vector2 origin) {
                 translation.y - (scale.y / 2.0f) + origin.y,
                 scale.x, scale.y
             },
-            (Vector2){ 0, 0 }, GetWorldRotation(e), WHITE
+            (Vector2){ 0, 0 }, GetWorldRotation(e), ac->tint
         );
         if (!ac->paused) ac->time += ac->speed * GetFrameTime() * (IsFast() ? ConfigGetFloat("ffspeed") : 1.0f);
     }
@@ -166,7 +166,7 @@ static void DrawTextureComponent(Entity e, Vector2 origin) {
                 translation.x - scale.x/2.0f + origin.x,
                 translation.y - scale.y/2.0f + origin.y,
                 scale.x, scale.y},
-            (Vector2){0, 0}, GetWorldRotation(e), WHITE);
+            (Vector2){0, 0}, GetWorldRotation(e), tc->tint);
     }
 }
 
