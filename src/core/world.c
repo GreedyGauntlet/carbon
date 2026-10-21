@@ -7,6 +7,7 @@
 #include "systems/draw.h"
 #include "systems/audio.h"
 #include "core/application.h"
+#include "ui/panels/viewport.h"
 #include <raymath.h>
 
 World* GenerateWorld(
@@ -183,4 +184,24 @@ BOOL IsActiveWorld(World* world) {
         if (scene->worlds.data[i] == world) return TRUE;
     }
     return FALSE;
+}
+
+Vector2 WorldMousePosition(World* world) {
+    Camera2D camera = GetViewportCamera();
+    if (Playing()) {
+        ARRLIST_EntityID* cameras = GetEntities(world, CameraComponent);
+        if (cameras) {
+            for (size_t i = 0; i < cameras->size; i++) {
+                Entity e = (Entity){ cameras->data[i], world };
+                CameraComponent* cc = GetComponent(e, CameraComponent);
+                if (cc->enabled) {
+                    camera.target = Vector2Add((Vector2){ GetWorldPosition(e).x, GetWorldPosition(e).y }, cc->offset);
+                    camera.rotation = cc->rotation + GetWorldRotation(e);
+                    camera.zoom = cc->zoom;
+                    break;
+                }
+            }
+        }
+    }
+    return GetScreenToWorld2D(GameMousePosition(), camera);
 }

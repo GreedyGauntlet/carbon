@@ -53,4 +53,6 @@ float GetWorldRotation(Entity e);
 
 BOOL IsActiveWorld(World* world);
 
+Vector2 WorldMousePosition(World* world);
+
 #endif
