@@ -16,6 +16,7 @@ BOOL EntityHasComponent(const Entity e, size_t type) {
 }
 
 void EntityRemoveComponent(const Entity e, size_t type) {
+    EZ_ASSERT(RegistryHasComponent(e.context->registry, e.id, type), "Entity does not have this component!");
     RegistryRemoveComponent(e.context->registry, e.id, type);
 }
 

@@ -110,8 +110,14 @@ void DestroyEntity(Entity e) {
 }
 
 void FlushRemovalQueue(World* world) {
-    for (size_t i = 0; i < world->removal.size; i++)
+    for (size_t i = 0; i < world->removal.size; i++) {
+        Entity e = (Entity){ world->removal.data[i], world };
+        if (HasComponent(e, TextComponent)) {
+            TextComponent* tc = GetComponent(e, TextComponent);
+            if (tc->capacity > 0) EZ_FREE(tc->text);
+        }
         RegistryEraseEntity(world->registry, world->removal.data[i]);
+    }
     ARRLIST_EntityID_clear(&(world->removal));
 }
 

@@ -51,7 +51,7 @@ BOOL RegistryHasComponent(Registry* registry, EntityID entity, size_t type) {
 }
 
 void RegistryRemoveComponent(Registry* registry, EntityID entity, size_t type) {
-    EZ_ASSERT(RegistryHasComponent(registry, entity, type), "Entity does not have this component!");
+    if (!RegistryHasComponent(registry, entity, type)) return;
     ComponentStorage* cs = HASHMAP_StorageMap_get(&registry->storage, type);
     HASHMAP_EntityMap_remove(&cs->sparse, entity);
     for (size_t i = 0; i < cs->entities.size; i++) {
