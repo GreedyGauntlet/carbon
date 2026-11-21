@@ -37,7 +37,7 @@ static void ApplicationResized() {
         (g_windowsize.x != GetScreenWidth() || g_windowsize.y != GetScreenHeight())) {
         g_windowsize.x = GetScreenWidth();
         g_windowsize.y = GetScreenHeight();
-        ResizeUI(g_application.ui);
+        ResizeUI();
         ResizePickTarget();
     }
 }
